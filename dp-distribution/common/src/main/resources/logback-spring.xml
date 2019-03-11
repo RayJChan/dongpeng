@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2010-2011 The myBatis Team
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<configuration debug="false">
+    <!-- 读取spring配置文件中的属性 -->
+    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="springCloud"/>
+    <springProperty scope="context" name="profile" source="spring.cloud.config.profile" defaultValue="dev"/>
+
+    <!--定义日志文件的存储地址-->
+    <property name="LOG_HOME" value="logs/${applicationName}" />
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%-5level：级别从左显示5个字符宽度,%thread表示线程名，%logger{50}——日志输出者的名字,%msg：日志消息，%n是换行符-->
+            <pattern>[%X{username}] %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan((%logger{50}) - %highlight(%msg%n)</pattern>
+        </encoder>
+    </appender>
+    <appender name="FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/dp.log.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+            <!--用来指定日志文件的上限大小，那么到了这个值，就会删除旧的日志-->
+            <totalSizeCap>1GB</totalSizeCap>
+            <MaxFileSize>10MB</MaxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>[%X{username}] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+
+    <!--myibatis log configure-->
+    <!-- <logger >用来设置某一个包或者具体的某一个类的日志打印级别.<loger>仅有一个name属性，一个可选的level和一个可选的addtivity属性。 -->
+    <logger name="com.apache.ibatis" level="TRACE"/>
+    <logger name="java.sql.Connection" level="DEBUG"/>
+    <logger name="java.sql.Statement" level="DEBUG"/>
+    <logger name="java.sql.PreparedStatement" level="DEBUG"/>
+
+    <!--dongpengMos log configure-->
+    <logger name="org.springframework" level="INFO"/>
+    <!--<logger name="com.dongpeng" level="DEBUG"/>-->
+
+
+    <if condition='property("profile").equals("dev")'>
+        <then>
+            <logger name="com.dongpeng" level="DEBUG"/>
+
+            <!-- 日志输出级别 -->
+            <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。 -->
+            <root level="INFO">
+                <appender-ref ref="STDOUT" />
+                <appender-ref ref="FILE" />
+            </root>
+        </then>
+    </if>
+    <if condition='property("profile").equals("test")'>
+        <then>
+            <logger name="com.dongpeng" level="DEBUG"/>
+
+            <!-- 日志输出级别 -->
+            <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。 -->
+            <root level="INFO">
+                <appender-ref ref="STDOUT" />
+                <appender-ref ref="FILE" />
+            </root>
+        </then>
+    </if>
+    <if condition='property("profile").equals("production")'>
+        <then>
+            <logger name="com.dongpeng" level="INFO"/>
+
+            <!-- 日志输出级别 -->
+            <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。 -->
+            <root level="INFO">
+                <appender-ref ref="STDOUT" />
+                <appender-ref ref="FILE" />
+            </root>
+        </then>
+    </if>
+    <!--<springProfile name="dev">
+        &lt;!&ndash; 开发环境时激活 &ndash;&gt;
+        <root level="INFO">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+
+    <springProfile name="dev,test">
+        &lt;!&ndash; 开发，测试的时候激活&ndash;&gt;
+        <root level="INFO">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        &lt;!&ndash; 当 "生产" 环境时，该配置激活&ndash;&gt;
+        <root level="ERROR">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>-->
+
+   <!-- <springProfile name="!prod">
+        &lt;!&ndash; 当 "生产" 环境时，该配置不激活&ndash;&gt;
+        <root level="ERROR">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>-->
+
+    <!-- show parameters for hibernate sql 专为 Hibernate 定制 -->
+    <!--<logger name="org.hibernate.type.descriptor.sql.BasicBinder"  level="TRACE" />
+    <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"  level="DEBUG" />
+    <logger name="org.hibernate.SQL" level="DEBUG" />
+    <logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />
+    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />-->
+
+    <!--日志异步到数据库 -->
+    <!-- <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
+        日志异步到数据库
+        <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
+           连接池
+           <dataSource class="com.mchange.v2.c3p0.ComboPooledDataSource">
+              <driverClass>com.mysql.jdbc.Driver</driverClass>
+              <url>jdbc:mysql://127.0.0.1:3306/databaseName</url>
+              <user>root</user>
+              <password>root</password>
+            </dataSource>
+        </connectionSource>
+  </appender> -->
+</configuration>

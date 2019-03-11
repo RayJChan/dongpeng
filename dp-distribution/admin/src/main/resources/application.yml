@@ -1,0 +1,20 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://lancer:123456@eureka-server:7000/eureka
+spring:
+  security:
+    user:
+      name: dongpeng
+      password: Dpof2018
+  boot:
+    admin:
+      discovery:
+        ignored-services:
+          - admin
+          - config-server
+  application:
+    name: admin
+
+server:
+  port: 8888

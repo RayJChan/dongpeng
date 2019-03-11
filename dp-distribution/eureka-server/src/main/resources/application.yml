@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: eureka-server
+  security:
+    user:
+      name: lancer
+      password: 123456
+server:
+  port: 7000
+eureka:
+  instance:
+    hostname: eureka-server
+    prefer-ip-address: true
+  client:
+    register-with-eureka: false #表示是否将自己注册到 Eureka Server，默认为 true。
+    fetch-registry: false #表示是否从 Eureka Server 获取注册信息，默认为 true
+    service-url:
+      #没有启用账号密码验证时
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      #启用账号密码验证时，格式 http://账号:密码@hostname:端口号/eureka
+#      defaultZone: http://lancer:123456@${eureka.instance.hostname}:${server.port}/eureka

@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.CouponDao">
+  <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.Coupon">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="cpn_name" jdbcType="VARCHAR" property="cpnName" />
+    <result column="cpn_no" jdbcType="VARCHAR" property="cpnNo" />
+    <result column="cpn_intro" jdbcType="VARCHAR" property="cpnIntro" />
+    <result column="cpn_num" jdbcType="INTEGER" property="cpnNum" />
+    <result column="cpn_received_num" jdbcType="INTEGER" property="cpnReceivedNum" />
+    <result column="org_id" jdbcType="BIGINT" property="orgId" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="type_id" jdbcType="BIGINT" property="typeId" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
+    <result column="use_condition" jdbcType="DECIMAL" property="useCondition" />
+    <result column="face_value" jdbcType="VARCHAR" property="faceValue" />
+    <result column="score_percent" jdbcType="VARCHAR" property="scorePercent" />
+    <result column="receive_begin_time" jdbcType="TIMESTAMP" property="receiveBeginTime" />
+    <result column="receive_end_time" jdbcType="TIMESTAMP" property="receiveEndTime" />
+    <result column="use_begin_time" jdbcType="TIMESTAMP" property="useBeginTime" />
+    <result column="use_end_time" jdbcType="TIMESTAMP" property="useEndTime" />
+    <result column="rank_id" jdbcType="BIGINT" property="rankId" />
+    <result column="rank_name" jdbcType="VARCHAR" property="rankName" />
+    <result column="is_share" jdbcType="BIT" property="isShare" />
+    <result column="receive_type_id" jdbcType="BIGINT" property="receiveTypeId" />
+    <result column="receive_type_name" jdbcType="VARCHAR" property="receiveTypeName" />
+    <result column="status_id" jdbcType="BIGINT" property="statusId" />
+    <result column="status_name" jdbcType="VARCHAR" property="statusName" />
+    <result column="examine_status_id" jdbcType="BIGINT" property="examineStatusId" />
+    <result column="examine_status_name" jdbcType="VARCHAR" property="examineStatusName" />
+    <result column="receive_percent" jdbcType="DECIMAL" property="receivePercent" />
+    <result column="writeoff_num" jdbcType="INTEGER" property="writeoffNum" />
+    <result column="writeoff_percent" jdbcType="DECIMAL" property="writeoffPercent" />
+    <result column="writeoff_amount" jdbcType="DECIMAL" property="writeoffAmount" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="pay_amount" jdbcType="DECIMAL" property="payAmount" />
+    <result column="source_id" jdbcType="BIGINT" property="sourceId" />
+    <result column="source_name" jdbcType="VARCHAR" property="sourceName" />
+    <result column="tag" jdbcType="VARCHAR" property="tag" />
+    <result column="service_area" jdbcType="VARCHAR" property="serviceArea"/>
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+    <result column="use_note" jdbcType="VARCHAR" property="useNote" />
+    <collection property="personCoupons" javaType="java.util.ArrayList" ofType="com.dongpeng.entity.system.PersonCoupon">
+      <id column="p_id" property="id"/>
+      <result column="p_status_id" property="statusId"/>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, cpn_name, cpn_no, cpn_intro, cpn_num, cpn_received_num, org_id, org_name, type_id, 
+    type_name, use_condition, face_value, score_percent, receive_begin_time, receive_end_time, 
+    use_begin_time, use_end_time, rank_id, rank_name, is_share, receive_type_id, receive_type_name, 
+    status_id, status_name, examine_status_id, examine_status_name, receive_percent, 
+    writeoff_num, writeoff_percent, writeoff_amount, score, pay_amount, source_id, source_name, creater_id,
+    creater_name, create_time, modifier_id, modifier_name, modify_time, delete_flag, use_note,tag,service_area,
+    version
+  </sql>
+  <select id="get" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from bl_coupon
+    where id = #{id,jdbcType=BIGINT}
+    AND delete_flag = '0'
+  </select>
+  <select id="findList"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bl_coupon
+    where delete_flag = '0'
+    <if test="cpnNo !=null and cpnNo != ''">
+      and cpn_no like CONCAT('%',#{cpnNo},'%')
+    </if>
+    <if test="cpnName != null and cpnName != ''">
+      and cpn_name like concat('%',#{cpnName},'%')
+    </if>
+    <if test="receiveBeginTime != null">
+      and receive_begin_time &gt;= #{receiveBeginTime}
+    </if>
+    <if test="receiveEndTime != null">
+      and receive_end_time &lt;= #{receiveEndTime}
+    </if>
+    <if test="useBeginTime !=null">
+      and  use_begin_time &gt;= #{useBeginTime}
+    </if>
+    <if test="useEndTime != null">
+      and use_end_time &lt;= #{useEndTime}
+    </if>
+    <if test="cpnIntro != null and cpnIntro != ''">
+      and cpn_intro like concat('%',#{cpnIntro},'%')
+    </if>
+    <if test="orgName != null and orgName != ''">
+      and org_name like concat('%',#{orgName},'%')
+    </if>
+    <if test="tag != null and tag != ''">
+      and tag like concat('%',#{tag},'%')
+    </if>
+    <if test="typeId != null">
+      and type_id = #{typeId}
+    </if>
+    <if test="statusId != null">
+      and status_id = #{statusId}
+    </if>
+    <if test="examineStatusId != null">
+      and examine_status_id = #{examineStatusId}
+    </if>
+    ${dataScope}
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+      <otherwise>
+        ORDER BY create_time desc
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert" parameterType="com.dongpeng.entity.system.Coupon">
+    insert into bl_coupon (id, cpn_name, cpn_no, 
+      cpn_intro, cpn_num, org_id, org_name, type_id,
+      type_name, use_condition, face_value, 
+      score_percent, receive_begin_time, receive_end_time, 
+      use_begin_time, use_end_time, rank_id, 
+      rank_name, is_share, receive_type_id, 
+      receive_type_name, status_id, status_name, 
+      examine_status_id, examine_status_name,
+      source_id, source_name,tag,service_area,
+      creater_id, creater_name,modifier_id, modifier_name,use_note,writeoff_amount
+      )
+    values (#{id,jdbcType=BIGINT}, #{cpnName,jdbcType=VARCHAR}, #{cpnNo,jdbcType=VARCHAR}, 
+      #{cpnIntro,jdbcType=VARCHAR}, #{cpnNum,jdbcType=INTEGER},#{orgId,jdbcType=BIGINT},
+      #{orgName,jdbcType=VARCHAR}, #{typeId,jdbcType=BIGINT},
+      #{typeName,jdbcType=VARCHAR}, #{useCondition,jdbcType=DECIMAL}, #{faceValue,jdbcType=VARCHAR}, 
+      #{scorePercent,jdbcType=VARCHAR}, #{receiveBeginTime,jdbcType=TIMESTAMP}, #{receiveEndTime,jdbcType=TIMESTAMP}, 
+      #{useBeginTime,jdbcType=TIMESTAMP}, #{useEndTime,jdbcType=TIMESTAMP}, #{rankId,jdbcType=BIGINT}, 
+      #{rankName,jdbcType=VARCHAR}, #{isShare,jdbcType=BIT}, #{receiveTypeId,jdbcType=BIGINT},
+      #{receiveTypeName,jdbcType=VARCHAR}, #{statusId,jdbcType=BIGINT}, #{statusName,jdbcType=VARCHAR}, 
+      #{examineStatusId,jdbcType=BIGINT}, #{examineStatusName,jdbcType=VARCHAR},
+      #{sourceId,jdbcType=BIGINT}, #{sourceName,jdbcType=VARCHAR},#{tag,jdbcType=VARCHAR},#{serviceArea,jdbcType=VARCHAR},
+      #{createrId,jdbcType=BIGINT}, #{createrName,jdbcType=VARCHAR},#{modifierId,jdbcType=BIGINT},
+      #{modifierName,jdbcType=VARCHAR}, #{useNote,jdbcType=VARBINARY}, #{payAmount,jdbcType=DECIMAL}
+      )
+  </insert>
+  <update id="update" parameterType="com.dongpeng.entity.system.Coupon">
+    update bl_coupon
+    set cpn_name = #{cpnName,jdbcType=VARCHAR},
+      cpn_intro = #{cpnIntro,jdbcType=VARCHAR},
+      cpn_num = #{cpnNum,jdbcType=INTEGER},
+      cpn_received_num = #{cpnReceivedNum},
+      org_id = #{orgId,jdbcType=BIGINT},
+      org_name = #{orgName,jdbcType=VARCHAR},
+      type_id = #{typeId,jdbcType=BIGINT},
+      type_name = #{typeName,jdbcType=VARCHAR},
+      use_condition = #{useCondition,jdbcType=DECIMAL},
+      face_value = #{faceValue,jdbcType=VARCHAR},
+      score_percent = #{scorePercent,jdbcType=VARCHAR},
+      receive_begin_time = #{receiveBeginTime,jdbcType=TIMESTAMP},
+      receive_end_time = #{receiveEndTime,jdbcType=TIMESTAMP},
+      use_begin_time = #{useBeginTime,jdbcType=TIMESTAMP},
+      use_end_time = #{useEndTime,jdbcType=TIMESTAMP},
+      rank_id = #{rankId,jdbcType=BIGINT},
+      rank_name = #{rankName,jdbcType=VARCHAR},
+      is_share = #{isShare,jdbcType=BIT},
+      receive_type_id = #{receiveTypeId,jdbcType=BIGINT},
+      receive_type_name = #{receiveTypeName,jdbcType=VARCHAR},
+      receive_percent = #{receivePercent,jdbcType=DECIMAL},
+      writeoff_num = #{writeoffNum,jdbcType=INTEGER},
+      writeoff_percent = #{writeoffPercent,jdbcType=DECIMAL},
+      score = #{score,jdbcType=INTEGER},
+      pay_amount = #{payAmount,jdbcType=DECIMAL},
+      writeoff_amount = #{writeoffAmount,jdbcType=DECIMAL},
+      <if test="modifierId != null ">
+        modifier_id = #{modifierId,jdbcType=BIGINT},
+      </if>
+      <if test="modifierName != null and modifierName !=''">
+        modifier_name = #{modifierName,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime},
+      </if>
+      version = version + 1,
+      use_note = #{useNote,jdbcType=VARBINARY},
+      tag = #{tag,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+    and  version = #{version,jdbcType=INTEGER}
+    and  delete_flag = 0
+  </update>
+  <update id="deleteToggle" parameterType="com.dongpeng.entity.system.Coupon">
+    update bl_coupon
+    set delete_flag = '1',
+        version = version+1
+    where id = #{id}
+  </update>
+
+  <update id="statusChange" parameterType="com.dongpeng.entity.system.Coupon">
+    update bl_coupon
+      set
+          status_id = #{statusId,jdbcType=BIGINT},
+          status_name = #{statusName,jdbcType=VARCHAR},
+          version = version + 1
+    where id = #{id,jdbcType=BIGINT}
+      and  version = #{version,jdbcType=INTEGER}
+      and  delete_flag = 0
+  </update>
+
+  <update id="examineStatusChange" parameterType="com.dongpeng.entity.system.Coupon">
+    update bl_coupon
+    set
+        examine_status_id = #{examineStatusId,jdbcType=BIGINT},
+        examine_status_name = #{examineStatusName,jdbcType=VARCHAR},
+        version = version + 1
+    where id = #{id,jdbcType=BIGINT}
+      and  version = #{version,jdbcType=INTEGER}
+      and  delete_flag = 0
+  </update>
+
+  <select id="findPublicCoupons" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bl_coupon
+    where delete_flag = '0'
+    and (tag is null or tag ='')
+    and #{date} between receive_begin_time and receive_end_time
+    and status_id = #{statusId}
+    <if test="receiveTypeId != null">
+      and receive_type_id = #{receiveTypeId}
+    </if>
+    and source_id = #{sourceId}
+    and exists(select bl_organization.id from bl_organization ,bl_org_area where bl_organization.id = bl_org_area.org_id
+                  and bl_organization.id = bl_coupon.org_id and bl_org_area.region_id = #{regionId})
+  </select>
+
+  <select id="findTagCoupons" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bl_coupon
+    where delete_flag = '0'
+    and tag is not null
+    and tag != ''
+    and #{date} between receive_begin_time and receive_end_time
+    and status_id = #{statusId}
+    <if test="receiveTypeId != null">
+      and receive_type_id = #{receiveTypeId}
+    </if>
+    and source_id = #{sourceId}
+    <if test="regionId != null">
+      and exists(select bl_organization.id from bl_organization ,bl_org_area where bl_organization.id = bl_org_area.org_id
+      and bl_organization.id = bl_coupon.org_id and bl_org_area.region_id = #{regionId})
+    </if>
+  </select>
+
+  <select id="findCouponsByOrgId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bl_coupon
+    where delete_flag = '0'
+    and #{date} between receive_begin_time and receive_end_time
+    and status_id = #{statusId}
+    <if test="receiveTypeId != null">
+      and receive_type_id = #{receiveTypeId}
+    </if>
+    and source_id = #{sourceId}
+    and ( org_id=#{orgId} or org_id in (#{orgParentIds}))
+  </select>
+
+  <select id="findShareCoupons" resultMap="BaseResultMap">
+    SELECT
+           c.*,
+           pc.id p_id,
+           pc.status_id p_status_id
+    FROM
+         bl_person_coupon_share_link s,
+         bl_coupon c,
+         bl_person_coupon pc
+    WHERE
+            s.to_id = pc.person_id
+      AND s.cpn_id = pc.cpn_id
+      AND c.id = s.cpn_id
+      AND s.from_id = #{userId}
+      AND c.status_id = #{couponStatusId}
+  </select>
+
+  <select id="findAbleShareCoupons" resultMap="BaseResultMap">
+    SELECT
+            *
+    FROM
+         (
+         SELECT
+                 *
+         FROM
+              bl_coupon
+         WHERE
+                 delete_flag = '0'
+           AND is_share = '1'
+           AND #{date} BETWEEN receive_begin_time
+                         AND receive_end_time
+           AND status_id = #{statusId}
+           AND receive_type_id = #{receiveTypeId} UNION
+         SELECT
+                c.*
+         FROM
+              bl_coupon c,
+              bl_person_coupon pc
+         WHERE
+                 c.id = pc.cpn_id
+           AND c.is_share = '1'
+           AND pc.person_id = #{userId}
+           AND c.status_id = #{statusId}
+         ) t
+    LIMIT #{limitIndex},#{limitCount}
+  </select>
+
+  <select id="findExpiredCoupon" resultMap="BaseResultMap">
+    select * from bl_coupon where delete_flag=0
+    and now() > use_end_time
+    and status_id = #{activeStatusId}
+  </select>
+
+  <select id="findReceivedUserFromShare" resultType="com.dongpeng.entity.system.User">
+    select u.person_name,u.head
+    from bl_person_coupon_share_link s ,sys_user u
+    where s.from_id = #{userId}
+    and  s.cpn_id= #{couponId}
+    and  s.to_id = u.id
+    and  u.delete_flag = 0
+  </select>
+</mapper>

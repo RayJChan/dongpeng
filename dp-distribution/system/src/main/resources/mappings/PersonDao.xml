@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.PersonDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="personColumns">
+        a.*
+    </sql>
+
+    <sql id="personJoins"><!--
+		LEFT JOIN bl_person_role ur ON ur.person_id = a.id
+        LEFT JOIN sys_role r ON r.id = ur.role_id -->
+    </sql>
+
+    <!-- 根据id获得小程序用户 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Person">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person a
+        <include refid="personJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据小程序账户查询小程序用户 -->
+    <select id="getByAccount" resultType="com.dongpeng.entity.system.Person" >
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person a
+        <include refid="personJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.person_name = #{personName}
+    </select>
+
+    <!-- 根据微信id查询小程序用户 -->
+    <select id="getByWxId" resultType="com.dongpeng.entity.system.Person" >
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person a
+        <include refid="personJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.wx_id = #{wxId}
+    </select>
+
+    <!-- 分页查询小程序用户信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Person">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person a
+        <include refid="personJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="personName != null and personName != ''">
+            AND a.person_name like CONCAT('%', #{personName}, '%')
+        </if>
+        <if test="personAccount != null and personAccount != ''">
+            AND a.person_account like CONCAT('%', #{personAccount}, '%')
+        </if>
+        <if test="wxAccount != null and wxAccount != ''">
+            AND a.wx_account like CONCAT('%', #{wxAccount}, '%')
+        </if>
+        <if test="wxId != null">
+            AND a.wx_id = #{wxId}
+        </if>
+        <if test="phone != null and phone != ''">
+            AND a.phone like CONCAT('%', #{phone}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部小程序用户 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Person">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person a
+        <include refid="personJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ORDER BY a.id
+    </select>
+
+    <!-- 查询全部小程序用户数目 -->
+    <!--<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM bl_person a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>-->
+
+    <!-- 插入小程序用户 -->
+    <insert id="insert">
+		INSERT INTO bl_person(
+			id ,
+           person_name ,
+           person_account,
+           head ,
+           wx_account,
+           wx_id ,
+           phone ,
+           type_id ,
+           type_name ,
+           org_id ,
+           org_name ,
+           rank_id ,
+           rank_name,
+           score ,
+           delete_flag,
+           creater_id,
+           creater_name ,
+           create_time ,
+           modifier_id ,
+           modifier_name ,
+           modify_time,
+           version
+		) VALUES (
+           #{id} ,
+           #{personName} ,
+           #{personAccount},
+           #{head} ,
+           #{wxAccount},
+           #{wxId} ,
+           #{phone} ,
+           #{typeId} ,
+           #{typeName} ,
+           #{orgId },
+           #{orgName} ,
+           #{rankId} ,
+           #{rankName},
+           #{score} ,
+           #{deleteFlag},
+           #{createrId},
+           #{createrName} ,
+           #{createTime} ,
+           #{modifierId} ,
+           #{modifierName} ,
+           #{modifyTime},
+           #{version}
+		)
+	</insert>
+
+    <!-- 批量插入小程序用户 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_person(
+        id ,
+        person_name ,
+        person_account,
+        head ,
+        wx_account,
+        wx_id ,
+        phone ,
+        type_id ,
+        type_name ,
+        org_id ,
+        org_name ,
+        rank_id ,
+        rank_name,
+        score ,
+        delete_flag,
+        creater_id,
+        creater_name ,
+        create_time ,
+        modifier_id ,
+        modifier_name ,
+        modify_time,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id} ,
+            #{item.personName} ,
+            #{item.personAccount},
+            #{item.head} ,
+            #{item.wxAccount},
+            #{item.wxId} ,
+            #{item.phone} ,
+            #{item.typeId} ,
+            #{item.typeName} ,
+            #{item.orgId },
+            #{item.orgName} ,
+            #{item.rankId} ,
+            #{item.rankName},
+            #{item.score} ,
+            #{item.deleteFlag},
+            #{item.createrId},
+            #{item.createrName} ,
+            #{item.createTime} ,
+            #{item.modifierId} ,
+            #{item.modifierName} ,
+            #{item.modifyTime},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新小程序用户 -->
+    <update id="update">
+		UPDATE bl_person SET
+           person_name=#{personName} ,
+           person_account=#{personAccount},
+           head=#{head} ,
+           wx_account=#{wxAccount},
+           wx_id=#{wxId} ,
+           phone=#{phone} ,
+           type_id=#{typeId} ,
+           type_name=#{typeName} ,
+           org_id=#{orgId },
+           org_name=#{orgName} ,
+           rank_id=#{rankId} ,
+           rank_name=#{rankName},
+           score=#{score} ,
+           modifier_id=#{modifierId} ,
+           modifier_name=#{modifierName} ,
+           modify_time=#{modifyTime},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除小程序用户 -->
+    <!--<update id="delete">
+		DELETE FROM bl_person
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 小程序用户 -->
+    <update id="deleteToggle">
+		UPDATE bl_person SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Person" statementType="STATEMENT">
+		select * from bl_person where ${propertyName} = '${value}'
+	</select>
+</mapper>

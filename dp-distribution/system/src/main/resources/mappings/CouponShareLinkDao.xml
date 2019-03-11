@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.CouponShareLinkDao">
+  <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.CouponShareLink">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="cpn_name" jdbcType="VARCHAR" property="cpnName" />
+    <result column="cpn_id" jdbcType="BIGINT" property="cpnId" />
+    <result column="from_id" jdbcType="BIGINT" property="fromId" />
+    <result column="from_name" jdbcType="VARCHAR" property="fromName" />
+    <result column="to_id" jdbcType="BIGINT" property="toId" />
+    <result column="to_name" jdbcType="VARCHAR" property="toName" />
+    <result column="from_ids" jdbcType="VARCHAR" property="fromIds" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, cpn_name, cpn_id, from_id, from_name, to_id, to_name, from_ids, creater_id, creater_name, 
+    create_time, modifier_id, modifier_name, modify_time, version
+  </sql>
+  <select id="get" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from bl_person_coupon_share_link
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <insert id="insert" parameterType="com.dongpeng.entity.system.CouponShareLink">
+    insert into bl_person_coupon_share_link (id, cpn_name, cpn_id, 
+      from_id, from_name, to_id, 
+      to_name, from_ids, creater_id, 
+      creater_name, create_time, modifier_id, 
+      modifier_name, modify_time, version
+      )
+    values (#{id,jdbcType=BIGINT}, #{cpnName,jdbcType=VARCHAR}, #{cpnId,jdbcType=BIGINT}, 
+      #{fromId,jdbcType=BIGINT}, #{fromName,jdbcType=VARCHAR}, #{toId,jdbcType=BIGINT}, 
+      #{toName,jdbcType=VARCHAR}, #{fromIds,jdbcType=VARCHAR}, #{createrId,jdbcType=BIGINT}, 
+      #{createrName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT}, 
+      #{modifierName,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{version,jdbcType=INTEGER}
+      )
+  </insert>
+
+  <select id="getParent" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from bl_person_coupon_share_link
+    where cpn_id = #{cpnId,jdbcType=BIGINT}
+    and  to_id = #{fromId,jdbcType=BIGINT}
+  </select>
+
+  <select id="isExisted" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from bl_person_coupon_share_link where from_id=#{fromId}
+    and to_id = #{toId}
+    and cpn_id = #{cpnId}
+  </select>
+</mapper>

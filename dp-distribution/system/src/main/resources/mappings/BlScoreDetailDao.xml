@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dongpeng.system.dao.BlScoreDetailDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="blScoreDetailColumns">
+        a.id AS  "id",
+        a.user_id AS "userId",
+        a.pc_id AS  "pcId",
+        a.source_id AS  "sourceId",
+        a.source_name AS  "sourceName",
+        a.org_name AS  "orgName",
+        a.produce_time AS  "produceTime",
+        a.score AS  "score",
+        a.creater_id AS  "createrId",
+        a.creater_name AS  "createrName",
+        a.create_time AS  "createTime",
+        a.modifier_id AS  "modifierId",
+        a.modifier_name AS  "modifierName",
+        a.modify_time AS  "modifyTime",
+        a.version AS  "version"
+    </sql>
+
+
+    <!-- 根据id获得菜单 -->
+    <select id="get" resultType="com.dongpeng.entity.system.BlScoreDetail">
+        SELECT
+        <include refid="blScoreDetailColumns"/>
+        FROM bl_score_detail a
+        WHERE a.id = #{id}
+    </select>
+
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.BlScoreDetail">
+        SELECT
+
+        <include refid="blScoreDetailColumns"/>
+
+        FROM bl_score_detail a
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="orgName != null and orgName != ''">
+            AND a.org_name like CONCAT('%', #{orgName}, '%')
+        </if>
+
+        <if test="pcId != null">
+            AND a.pc_id = #{pcId}
+        </if>
+
+        <if test="userId != null">
+            AND a.user_id = #{userId}
+        </if>
+
+        <if test="sourceId != null">
+            AND a.source_id = #{sourceId}
+        </if>
+
+        <if test="sourceName != null and sourceName != ''">
+            AND a.source_name LIKE CONCAT('%',#{sourceName},'%')
+        </if>
+
+        <if test="produceBeginTime != null">
+            and a.produce_time > #{produceBeginTime}
+        </if>
+        <if test="produceEndTime != null">
+            and a.produce_time &lt;  #{produceEndTime}
+        </if>
+
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findListPage" resultType="com.dongpeng.entity.system.BlScoreDetail" parameterType="Map" >
+        SELECT
+
+        <include refid="blScoreDetailColumns"/>
+
+        ,u.user_name AS "userName"
+
+        FROM bl_score_detail a
+
+        LEFT JOIN sys_user u ON u.id = a.user_id
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="userName != null and userName != ''">
+            AND u.user_name like CONCAT('%', #{userName}, '%')
+        </if>
+
+        <if test="orgName != null and orgName != ''">
+            AND a.org_name like CONCAT('%', #{orgName}, '%')
+        </if>
+
+        <if test="pcId != null">
+            AND a.pc_id = #{pcId}
+        </if>
+
+        <if test="userId != null">
+            AND a.user_id = #{userId}
+        </if>
+
+        <if test="sourceId != null">
+            AND a.source_id = #{sourceId}
+        </if>
+
+        <if test="sourceName != null and sourceName != ''">
+            AND a.source_name LIKE CONCAT('%',#{sourceName},'%')
+        </if>
+
+        <if test="createrName != null and createrName != ''">
+            AND a.creater_name LIKE CONCAT('%',#{createrName},'%')
+        </if>
+
+        <if test="produceBeginTime != null">
+            and a.produce_time > #{produceBeginTime}
+        </if>
+        <if test="produceEndTime != null">
+            and a.produce_time &lt;  #{produceEndTime}
+        </if>
+
+        ${dataScope}
+
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO bl_score_detail(
+            id,
+            user_id,
+            pc_id,
+            source_id,
+            source_name,
+            org_name,
+            produce_time,
+            score,
+            creater_id,
+            creater_name,
+            create_time,
+            modifier_id,
+            modifier_name,
+            modify_time,
+            delete_flag,
+            version
+        ) VALUES (
+            #{id},
+            ${userId},
+            #{pcId},
+            #{sourceId},
+            #{sourceName},
+            #{orgName},
+            #{produceTime},
+            #{score},
+            #{createrId},
+            #{createrName},
+            #{createTime},
+            #{modifierId},
+            #{modifierName},
+            #{modifyTime},
+            #{deleteFlag},
+            #{version}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_score_detail(
+            id,
+            user_id,
+            pc_id,
+            source_id,
+            source_name,
+            org_name,
+            produce_time,
+            score,
+            creater_id,
+            creater_name,
+            create_time,
+            modifier_id,
+            modifier_name,
+            modify_time,
+            delete_flag,
+            version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+                #{item.id},
+                #{item.userId},
+                #{item.pcId},
+                #{item.sourceId},
+                #{item.sourceName},
+                #{item.orgName},
+                #{item.produceTime},
+                #{item.score},
+                #{item.createrId},
+                #{item.createrName},
+                #{item.createTime},
+                #{item.modifierId},
+                #{item.modifierName},
+                #{item.modifierTime},
+                #{item.deleteFlag},
+                #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+
+    <!-- 根据id获得菜单 -->
+    <select id="getScoreByUserId"  parameterType="Long" resultType="BigDecimal">
+        SELECT
+          SUM(a.score) as score
+        FROM bl_score_detail a
+        WHERE a.user_id = #{userId}
+    </select>
+
+
+    <!-- 根据id获得菜单 -->
+    <select id="getScoreByPersonCouponId"  parameterType="Long" resultType="BigDecimal">
+        SELECT
+        SUM(a.score) as score
+        FROM bl_score_detail a
+        WHERE a.pc_id = #{pcId}
+    </select>
+
+
+</mapper>

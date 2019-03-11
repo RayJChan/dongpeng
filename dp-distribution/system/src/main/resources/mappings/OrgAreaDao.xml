@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.OrgAreaDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="orgAreaColumns">
+         a.*
+    </sql>
+
+    <sql id="orgAreaJoins">
+    </sql>
+
+    <!-- 根据id获得组织服务范围 -->
+    <select id="get" resultType="com.dongpeng.entity.system.OrgArea">
+        SELECT
+        <include refid="orgAreaColumns"/>
+        FROM bl_org_area a
+        <include refid="orgAreaJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页查询组织服务范围信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.OrgArea">
+        SELECT
+        <include refid="orgAreaColumns"/>
+        FROM bl_org_area a
+        <include refid="orgAreaJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+        <if test="orgId != null">
+            AND a.org_id = #{orgId}
+        </if>
+        <if test="regionId != null">
+            AND a.region_id = #{regionId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部组织服务范围 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.OrgArea">
+        SELECT
+        <include refid="orgAreaColumns"/>
+        FROM bl_org_area a
+        <include refid="orgAreaJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入组织服务范围 -->
+    <insert id="insert">
+		INSERT INTO bl_org_area(
+		id, org_id, org_name,
+      region_id, region_name, delete_flag ,creater_id,
+      creater_name, create_time, modifier_id,
+      modifier_name, modify_time, version
+      ) VALUES (
+			#{id,jdbcType=BIGINT}, #{orgId,jdbcType=BIGINT}, #{orgName,jdbcType=VARCHAR},
+      #{regionId,jdbcType=BIGINT}, #{regionName,jdbcType=VARCHAR},#{deleteFlag} , #{createrId,jdbcType=BIGINT},
+      #{createrName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT},
+      #{modifierName,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{version,jdbcType=INTEGER}
+		)
+	</insert>
+
+    <!-- 批量插入组织服务范围 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_org_area(
+        id, org_id, org_name,
+        region_id, region_name, delete_flag ,creater_id,
+        creater_name, create_time, modifier_id,
+        modifier_name, modify_time, version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id,jdbcType=BIGINT},
+            #{item.orgId,jdbcType=BIGINT},
+            #{item.orgName,jdbcType=VARCHAR},
+            #{item.regionId,jdbcType=BIGINT},
+            #{item.regionName,jdbcType=VARCHAR},
+            #{item.deleteFlag},
+            #{item.createrId,jdbcType=BIGINT},
+            #{item.createrName,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.modifierId,jdbcType=BIGINT},
+            #{item.modifierName,jdbcType=VARCHAR},
+            #{item.modifyTime,jdbcType=TIMESTAMP},
+            #{item.version,jdbcType=INTEGER}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新组织服务范围 -->
+    <update id="update">
+		UPDATE bl_org_area SET
+			org_id = #{orgId,jdbcType=BIGINT},
+          org_name = #{orgName,jdbcType=VARCHAR},
+          region_id = #{regionId,jdbcType=BIGINT},
+          region_name = #{regionName,jdbcType=VARCHAR},
+
+          modifier_id = #{modifierId,jdbcType=BIGINT},
+          modifier_name = #{modifierName,jdbcType=VARCHAR},
+          modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除组织服务范围 -->
+    <!--<update id="delete">
+		DELETE FROM bl_org_area
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 根据组织id物理删除组织服务范围 -->
+    <update id="deleteByOrgId">
+		DELETE FROM bl_org_area
+		WHERE org_id = #{orgId}
+	</update>
+
+    <!-- 逻辑 删除/启用 组织服务范围 -->
+    <update id="deleteToggle">
+		UPDATE bl_org_area SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.OrgArea" statementType="STATEMENT">
+		select * from bl_org_area where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

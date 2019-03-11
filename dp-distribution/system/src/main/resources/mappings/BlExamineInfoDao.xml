@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dongpeng.system.dao.BlExamineInfoDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="columns">
+        a.id AS "id",
+        a.business_id AS "businessId",
+        a.business_type AS "businessType",
+        a.business_type_id AS "businessTypeId",
+        a.business_desc AS "businessDesc",
+        a.user_id AS "userId",
+        a.user_name AS "userName",
+        a.next_user_id AS "nextUserId",
+        a.next_user_name AS "nextUserName",
+        a.examine_remark AS "examineRemark",
+        a.examine_result_id AS "examineResultId",
+        a.examine_result_name AS "examineResultName",
+        a.process_end AS "processEnd",
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+        a.create_time AS "createTime",
+        a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+        a.modify_time AS "modifyTime",
+        a.delete_flag AS "deleteFlag",
+        a.version AS "version"
+    </sql>
+
+    <sql id="columnsAndCoupon">
+        <include refid="columns"/>
+        ,c.cpn_name as  "cpnName",
+        c.cpn_no as  "cpnNo",
+        c.cpn_intro as  "cpnIntro",
+        c.cpn_num as  "cpnNum",
+        c.org_id as  "orgId",
+        c.org_name as  "orgName",
+        c.type_id as  "typeId",
+        c.type_name as  "typeName",
+        c.use_condition as  "useCondition",
+        c.face_value as  "faceValue",
+        c.receive_begin_time as  "receiveBeginTime",
+        c.receive_end_time as  "receiveEndTime",
+        c.use_begin_time as  "useBeginTime",
+        c.use_end_time as  "useEndTime",
+        c.rank_id as  "rankId",
+        c.rank_name as  "rankName",
+        c.is_share as  "isShare",
+        c.receive_type_id as  "receiveTypeId",
+        c.receive_type_name  as  "receiveTypeName",
+        c.status_id as  "statusId",
+        c.status_name as  "statusName",
+        c.examine_status_id as  "couponExamineStatusId",
+        c.examine_status_name as  "couponExamineStatusName",
+        c.creater_name as  "createrCouponName",
+        c.create_time as  "createCouponTime",
+        c.modifier_name as  "modifierCouponName",
+        c.modify_time as  "modifyCouponTime"
+    </sql>
+
+
+
+    <!-- 根据id获得菜单 -->
+    <select id="get" resultType="com.dongpeng.entity.system.BlExamineInfo">
+        SELECT
+        <include refid="columns"/>
+        FROM bl_examine_info a
+        WHERE a.id = #{id}
+    </select>
+
+
+    <select id="findPageCouponExamine" resultType="com.dongpeng.entity.system.BlExamineCouponInfo">
+
+        SELECT
+
+            <include refid="columnsAndCoupon"/>
+
+        FROM bl_examine_info a
+
+        LEFT JOIN bl_coupon c  ON c.id = a.business_id
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="cpnNo !=null and cpnNo != ''">
+            and c.cpn_no like CONCAT('%',#{cpnNo},'%')
+        </if>
+        <if test="cpnName != null and cpnName != ''">
+            and c.cpn_name like concat('%',#{cpnName},'%')
+        </if>
+        <if test="receiveBeginTime != null">
+            and c.receive_begin_time &gt; #{receiveBeginTime}
+        </if>
+        <if test="receiveEndTime != null">
+            and c.receive_end_time &lt; #{receiveEndTime}
+        </if>
+        <if test="useBeginTime !=null">
+            and  c.use_begin_time &gt; #{useBeginTime}
+        </if>
+        <if test="useEndTime != null">
+            and c.use_end_time &lt; #{useEndTime}
+        </if>
+
+        <if test="cpnIntro != null and cpnIntro != ''">
+            and c.cpn_intro like concat('%',#{cpnIntro},'%')
+        </if>
+        <if test="orgName != null and orgName != ''">
+            and c.org_name like concat('%',#{orgName},'%')
+        </if>
+        <if test="typeId != null">
+            and c.type_id = #{typeId}
+        </if>
+        <if test="typeName != null and typeName!=''">
+            and c.type_name = #{typeName}
+        </if>
+        <if test="statusId != null">
+            and c.status_id = #{statusId}
+        </if>
+        <if test="statusName != null and statusName!='' ">
+            and c.status_name = #{statusName}
+        </if>
+        <if test="couponExamineStatusId != null">
+            and c.examine_status_id = #{couponExamineStatusId}
+        </if>
+
+        <if test="couponExamineStatusName != null and couponExamineStatusName!='' ">
+            and c.examine_status_name = #{couponExamineStatusName}
+        </if>
+
+        <if test="examineResultId != null">
+            and a.examine_result_id = #{examineResultId}
+        </if>
+
+        <if test="examineResultName != null and examineResultName!='' ">
+            and a.examine_result_name = #{examineResultName}
+        </if>
+
+        <if test="userId != null">
+            and a.user_id = #{userId}
+        </if>
+
+        <if test="userName != null and userName!='' ">
+            and a.user_name = #{userName}
+        </if>
+
+        <if test="nextUserId != null">
+            and a.next_user_id = #{nextUserId}
+        </if>
+
+        <if test="nextUserName != null and nextUserName!='' ">
+            and a.next_user_name = #{nextUserName}
+        </if>
+
+        <if test="businessTypeId != null ">
+            and a.business_type_id = #{businessTypeId}
+        </if>
+
+        <if test="businessType != null and businessType!='' ">
+            and a.business_type LIKE CONCAT('%',#{businessType},'%')
+        </if>
+
+        <!-- 创建审批申请时间 -->
+         <if test="createBeginTime != null">
+            and a.create_time > #{createBeginTime}
+        </if>
+
+        <if test="createEndTime != null">
+            and a.create_time &lt;  #{createEndTime}
+        </if>
+
+        <if test="examineResultIdList != null and examineResultIdList.size > 0">
+            AND a.examine_result_id IN
+            <foreach collection="examineResultIdList" index="index" item="ob" open="(" separator="," close=")">
+                #{examineResultIdList[${index}]}
+            </foreach>
+        </if>
+
+        <if test="notExamineResultId != null and notExamineResultId.size > 0">
+            AND a.examine_result_id NOT IN
+            <foreach collection="notExamineResultId" index="index" item="ob" open="(" separator="," close=")">
+                #{notExamineResultId[${index}]}
+            </foreach>
+        </if>
+
+        ${dataScope}
+
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO bl_examine_info(
+        id,
+        business_id,
+        business_type,
+        business_type_id,
+        business_desc,
+        user_id,
+        user_name,
+        next_user_id,
+        next_user_name,
+        examine_result_id,
+        examine_result_name,
+        examine_remark,
+        process_end ,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        ) VALUES (
+        #{id},
+        #{businessId},
+        #{businessType},
+        #{businessTypeId},
+        #{businessDesc},
+        #{userId},
+        #{userName},
+        #{nextUserId},
+        #{nextUserName},
+        #{examineResultId},
+        #{examineResultName},
+        #{examineRemark},
+        #{processEnd},
+        #{createrId},
+        #{createrName},
+        #{createTime},
+        #{modifierId},
+        #{modifierName},
+        #{modifyTime},
+        #{deleteFlag},
+        #{version}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_examine_info(
+        id,
+        business_id,
+        business_type,
+        business_type_id,
+        business_desc,
+        user_id,
+        user_name,
+        next_user_id,
+        next_user_name,
+        examine_result_id,
+        examine_result_name,
+        examine_remark,
+        process_end ,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+                #{item.id},
+                #{item.businessId},
+                #{item.businessType},
+                #{item.businessTypeId},
+                #{item.businessDesc},
+                #{item.userId},
+                #{item.userName},
+                #{item.nextUserId},
+                #{item.nextUserName},
+                #{item.examineResultId},
+                #{item.examineResultName},
+                #{item.examineRemark},
+                #{item.processEnd},
+                #{item.createrId},
+                #{item.createrName},
+                #{item.createTime},
+                #{item.modifierId},
+                #{item.modifierName},
+                #{item.modifyTime},
+                #{item.deleteFlag},
+                #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE bl_examine_info SET
+        user_id=#{userId},
+        user_name=#{userName},
+        next_user_id=#{nextUserId},
+        next_user_name=#{nextUserName},
+        examine_result_id=#{examineResultId},
+        examine_result_name=#{examineResultName},
+        examine_remark=#{examineRemark},
+        process_end=#{processEnd},
+        modifier_id = #{modifierId},
+        modifier_name = #{modifierName},
+        modify_time = #{modifyTime},
+        version=version + 1
+        WHERE id = #{id} and version=#{version}
+    </update>
+
+    <!-- 逻辑 删除/启用 菜单 -->
+    <update id="deleteToggle">
+        UPDATE bl_examine_info SET
+        delete_flag = #{deleteFlag}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.BlExamineInfo" statementType="STATEMENT">
+        select * from bl_examine_info where ${propertyName} = '${value}'
+    </select>
+
+    <!-- 根据 businessId 获取审批信息-->
+    <select id="findBlExamineInfoByBusinessId" resultType="com.dongpeng.entity.system.BlExamineInfo">
+        SELECT
+          <include refid="columns"/>
+          ,u.rank_name AS rankName
+        FROM bl_examine_info a
+          LEFT JOIN sys_user u ON u.id = a.next_user_id
+          WHERE a.business_id = #{businessId}
+        ORDER BY a.modify_time asc
+    </select>
+
+
+    <!-- 根据 businessId 和 状态 批量删除-->
+    <update id="deleteToggleByBisIdAndExResultId" parameterType="Map" >
+        UPDATE bl_examine_info SET
+        delete_flag = #{deleteFlag},
+        version=version + 1
+        WHERE
+         business_id = #{businessId}
+        <if test="examineResultIdList != null and examineResultIdList.size > 0">
+            AND examine_result_id IN
+            <foreach collection="examineResultIdList" index="index" item="ob" open="(" separator="," close=")">
+                #{examineResultIdList[${index}]}
+            </foreach>
+        </if>
+    </update>
+
+</mapper>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.UserDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="userColumns">
+        a.*
+    </sql>
+
+    <sql id="userJoins"><!--
+		LEFT JOIN sys_user_role ur ON ur.user_id = a.id
+        LEFT JOIN sys_role r ON r.id = ur.role_id -->
+    </sql>
+
+    <!-- 根据id获得用户 -->
+    <select id="get" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="getByUserName" resultType="com.dongpeng.entity.system.User" >
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.user_name = #{userName}
+    </select>
+
+    <!-- 根据微信id查询用户 -->
+    <select id="getByWxId" resultType="com.dongpeng.entity.system.User" >
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.wx_id = #{wxId}
+    </select>
+
+    <!-- 根据手机号码查询用户 -->
+    <select id="getByPhone" resultType="com.dongpeng.entity.system.User" >
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.phone = #{phone}
+    </select>
+
+    <!-- 分页查询用户信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+
+        <if test="userName != null and userName != ''">
+            AND a.user_name like CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="roleId != null">
+            AND a.role_id = #{roleId}
+        </if>
+        <if test="phone != null and phone != ''">
+            AND a.phone like CONCAT('%', #{phone}, '%')
+        </if>
+        <if test="personName != null and personName != ''">
+            AND a.person_name like CONCAT('%', #{personName}, '%')
+        </if>
+        <if test="wxAccount != null and wxAccount != ''">
+            AND a.wx_account like CONCAT('%', #{wxAccount}, '%')
+        </if>
+        <if test="wxId != null and wxId != ''">
+            AND a.wx_id = #{wxId}
+        </if>
+        <if test="typeId != null">
+            AND a.type_id = #{typeId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部用户 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ORDER BY a.id
+    </select>
+
+    <!-- 查询全部用户数目 -->
+    <!--<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM sys_user a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>-->
+
+    <!-- 插入用户 -->
+    <insert id="insert">
+		INSERT INTO sys_user(
+			id,
+            user_name,
+            password,
+            role_id,
+            role_name,
+            phone,
+
+            person_name ,
+           head ,
+           wx_account,
+           wx_id ,
+           type_id ,
+           type_name ,
+           org_id ,
+           org_name ,
+           rank_id ,
+           rank_name,
+           score ,
+           examine_status_id,
+           examine_status_name,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{userName},
+            #{password},
+            #{roleId},
+            #{roleName},
+            #{phone},
+
+            #{personName} ,
+           #{head} ,
+           #{wxAccount},
+           #{wxId} ,
+           #{typeId} ,
+           #{typeName} ,
+           #{orgId },
+           #{orgName} ,
+           #{rankId} ,
+           #{rankName},
+           #{score} ,
+           #{examineStatusId} ,
+           #{examineStatusName} ,
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入用户 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_user(
+        id,
+        user_name,
+        password,
+        role_id,
+        role_name,
+        phone,
+
+        person_name ,
+        head ,
+        wx_account,
+        wx_id ,
+        type_id ,
+        type_name ,
+        org_id ,
+        org_name ,
+        rank_id ,
+        rank_name,
+        score ,
+        examine_status_id,
+        examine_status_name,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.userName},
+            #{item.password},
+            #{item.roleId},
+            #{item.roleName},
+            #{item.phone},
+
+            #{item.personName} ,
+            #{item.head} ,
+            #{item.wxAccount},
+            #{item.wxId} ,
+            #{item.typeId} ,
+            #{item.typeName} ,
+            #{item.orgId },
+            #{item.orgName} ,
+            #{item.rankId} ,
+            #{item.rankName},
+            #{item.score} ,
+            #{item.examineStatusId} ,
+            #{item.examineStatusName} ,
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新用户 -->
+    <update id="update">
+		UPDATE sys_user SET
+			user_name=#{userName},
+			password=#{password},
+			role_id=#{roleId},
+			role_name=#{roleName},
+			phone=#{phone},
+
+			 person_name=#{personName} ,
+           head=#{head} ,
+           wx_account=#{wxAccount},
+           wx_id=#{wxId} ,
+           type_id=#{typeId} ,
+           type_name=#{typeName} ,
+           org_id=#{orgId },
+           org_name=#{orgName} ,
+           rank_id=#{rankId} ,
+           rank_name=#{rankName},
+           score=#{score} ,
+           examine_status_id=#{examineStatusId} ,
+           examine_status_name=#{examineStatusName} ,
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除用户 -->
+    <!--<update id="delete">
+		DELETE FROM sys_user
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 用户 -->
+    <update id="deleteToggle">
+		UPDATE sys_user SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.User" statementType="STATEMENT">
+		select * from sys_user where ${propertyName} = '${value}'
+	</select>
+
+    <!-- 根据菜单id查找用户信息 -->
+    <select id="findListByMenuId" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        JOIN sys_user_menu rm ON rm.user_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.menu_id = #{menuId}
+    </select>
+</mapper>

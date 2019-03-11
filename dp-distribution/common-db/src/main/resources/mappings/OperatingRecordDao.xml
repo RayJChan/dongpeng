@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.common.db.dao.OperatingRecordDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <!--<cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>-->
+
+    <sql id="dperatingRecordColumns">
+        a.*
+    </sql>
+
+    <sql id="dperatingRecordJoins">
+    </sql>
+
+    <!-- 根据id获得操作记录 -->
+    <select id="get" resultType="com.dongpeng.entity.system.OperatingRecord">
+        SELECT
+        <include refid="dperatingRecordColumns"/>
+        FROM operating_record a
+        <include refid="dperatingRecordJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+    <!-- 分页查询操作记录信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.OperatingRecord">
+        SELECT
+        <include refid="dperatingRecordColumns"/>
+        FROM operating_record a
+        <include refid="dperatingRecordJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="handledescribe != null and handledescribe != ''">
+            AND a.handledescribe like CONCAT('%', #{handledescribe}, '%')
+        </if>
+        <if test="createrId != null">
+            AND a.creater_id = #{createrId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部操作记录 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.OperatingRecord">
+        SELECT
+        <include refid="dperatingRecordColumns"/>
+        FROM operating_record a
+        <include refid="dperatingRecordJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入操作记录 -->
+    <insert id="insert">
+		INSERT INTO operating_record(
+			id,
+            handledescribe,
+            handlerecord,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{handledescribe},
+            #{handlerecord},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入操作记录 -->
+    <insert id="insertBatch">
+        INSERT INTO operating_record(
+        id,
+        handledescribe,
+        handlerecord,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.handledescribe},
+            #{item.handlerecord},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新操作记录 -->
+    <update id="update">
+		UPDATE operating_record SET
+			handledescribe=#{handledescribe},
+			handlerecord=#{handlerecord},
+
+			creater_name = #{createrName},
+			create_time = #{createTime},
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除操作记录 -->
+    <update id="delete">
+		DELETE FROM operating_record
+		WHERE id = #{id}
+	</update>
+
+    <!-- 逻辑 删除/启用 操作记录 -->
+    <update id="deleteToggle">
+		UPDATE operating_record SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.OperatingRecord" statementType="STATEMENT">
+		select * from operating_record where ${propertyName} = '${value}'
+	</select>
+
+</mapper>

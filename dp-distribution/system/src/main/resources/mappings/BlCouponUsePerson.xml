@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dongpeng.system.dao.BlCouponUsePersonDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="personColumns">
+        a.id AS "id",
+        a.examine_coupon_id AS "examineCouponId",
+        a.user_name AS "userName",
+        a.phone AS "phone",
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+        a.create_time AS "createTime",
+        a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+        a.modify_time AS "modifyTime",
+        a.delete_flag AS "deleteFlag",
+        a.version AS "version"
+    </sql>
+
+    <sql id="blRankJoins">
+    </sql>
+
+    <!-- 根据id获得菜单 -->
+    <select id="getUsers" resultType="com.dongpeng.entity.system.BlCouponUsePerson">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_coupon_use_person a
+        WHERE a.examine_coupon_id = #{examineCouponId}
+    </select>
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.BlCouponUsePerson">
+        SELECT
+
+        <include refid="personColumns"/>
+
+        FROM bl_coupon_use_person a
+
+        WHERE
+
+        <if test="examineCouponId != null and examineCouponId != ''">
+            AND a.examine_coupon_id = #{examineCouponId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.BlCouponUsePerson">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_coupon_use_person a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        <if test="examineCouponId != null and examineCouponId != ''">
+            AND a.examine_coupon_id = #{examineCouponId}
+        </if>
+        ${dataScope}
+        ORDER BY a.create_time
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO bl_coupon_use_person(
+        id,
+        examine_coupon_id,
+        user_name,
+        phone,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        ) VALUES (
+        #{id},
+        #{examineCouponId},
+        #{userName},
+        #{phone},
+        #{createrId},
+        #{createrName},
+        #{createTime},
+        #{modifierId},
+        #{modifierName},
+        #{modifyTime},
+        #{deleteFlag},
+        #{version}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_coupon_use_person(
+        id,
+        examine_coupon_id,
+        user_name ,
+        phone,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.examineCouponId},
+            #{item.userName},
+            #{item.phone},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+
+    <!-- 物理删除菜单 -->
+    <update id="deleteUsers">
+        DELETE FROM bl_coupon_use_person
+        WHERE examine_coupon_id = #{examineCouponId}
+    </update>
+
+
+</mapper>

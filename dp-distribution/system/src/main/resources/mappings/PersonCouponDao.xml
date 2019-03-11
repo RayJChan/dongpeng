@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.PersonCouponDao">
+  <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.PersonCoupon">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="pc_no" jdbcType="VARCHAR" property="pcNo" />
+    <result column="cpn_name" jdbcType="VARCHAR" property="cpnName" />
+    <result column="cpn_id" jdbcType="BIGINT" property="cpnId" />
+    <result column="cpn_no" jdbcType="VARCHAR" property="cpnNo"></result>
+    <result column="person_id" jdbcType="BIGINT" property="personId" />
+    <result column="person_name" jdbcType="VARCHAR" property="personName" />
+    <result column="person_phone" jdbcType="BIGINT" property="personPhone"/>
+    <result column="from_id" jdbcType="BIGINT" property="fromId" />
+    <result column="from_name" jdbcType="VARCHAR" property="fromName" />
+    <result column="status_id" jdbcType="BIGINT" property="statusId" />
+    <result column="person_phone" property="personPhone"/>
+    <result column="status_name" jdbcType="VARCHAR" property="statusName" />
+    <result column="org_id" jdbcType="BIGINT" property="orgId" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="writeoff_id" jdbcType="BIGINT" property="writeoffId" />
+    <result column="writeoff_name" jdbcType="VARCHAR" property="writeoffName" />
+    <result column="writeoff_phone" jdbcType="BIGINT" property="writeoffPhone"/>
+    <result column="writeoff_time" jdbcType="TIMESTAMP" property="writeoffTime" />
+    <result column="writeoff_remark" jdbcType="VARCHAR" property="writeoffRemark" />
+    <result column="deal_amount" jdbcType="DECIMAL" property="dealAmount" />
+    <result column="pay_amount" jdbcType="DECIMAL" property="payAmount" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="deal_bill_url" jdbcType="VARCHAR" property="dealBillUrl" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+    <association property="coupon" javaType="com.dongpeng.entity.system.Coupon">
+      <id column="c_id" jdbcType="BIGINT" property="id" />
+      <result column="c_cpn_intro"  jdbcType="VARCHAR" property="cpnIntro" />
+      <result column="c_cpn_no" jdbcType="VARCHAR" property="cpnNo"/>
+      <result column="c_org_id" jdbcType="BIGINT" property="orgId" />
+      <result column="c_org_name" jdbcType="VARCHAR" property="orgName" />
+      <result column="c_type_id" jdbcType="BIGINT" property="typeId"/>
+      <result column="c_type_name" jdbcType="VARCHAR" property="typeName" />
+      <result column="c_use_condition" jdbcType="DECIMAL" property="useCondition" />
+      <result column="c_face_value" jdbcType="VARCHAR" property="faceValue" />
+      <result column="c_use_begin_time" jdbcType="TIMESTAMP" property="useBeginTime" />
+      <result column="c_use_end_time" jdbcType="TIMESTAMP" property="useEndTime" />
+      <result column="c_receive_type_name" jdbcType="VARCHAR" property="receiveTypeName" />
+      <result column="c_use_note" jdbcType="VARBINARY" property="useNote" />
+      <result column="c_service_area" jdbcType="VARBINARY" property="serviceArea"/>
+    </association>
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, pc_no, cpn_name, cpn_id,cpn_no, person_id, person_name,person_phone, from_id, from_name, status_id,
+    status_name, org_id, org_name, writeoff_id, writeoff_name,writeoff_phone, writeoff_time, writeoff_remark,
+    deal_amount, pay_amount, score, deal_bill_url, creater_id, creater_name, create_time, 
+    modifier_id, modifier_name, modify_time, delete_flag, version
+  </sql>
+  <select id="get" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+           c.id as c_id , c.cpn_intro as c_cpn_intro, c.org_id as c_org_id, c.org_name as c_org_name,
+           c.type_name as c_type_name, c.use_condition as c_use_condition, c.face_value as c_face_value,
+           c.use_begin_time as c_use_begin_time, c.use_end_time as c_use_end_time,
+           c.receive_type_name as c_receive_type_name, c.use_note as c_use_note,
+           pc.*
+    from bl_person_coupon pc, bl_coupon as c
+    where pc.id = #{id,jdbcType=BIGINT}
+    and pc.delete_flag = 0
+  </select>
+  <insert id="insert" parameterType="com.dongpeng.entity.system.PersonCoupon">
+    insert into bl_person_coupon (id, pc_no, cpn_name, 
+      cpn_id,cpn_no, person_id, person_name,
+      from_id, from_name, status_id, 
+      status_name, org_id, org_name, 
+      writeoff_id, writeoff_name,writeoff_phone, writeoff_time,
+      writeoff_remark, deal_amount, pay_amount, 
+      score, deal_bill_url, creater_id, 
+      creater_name, create_time, modifier_id, 
+      modifier_name, modify_time, delete_flag, 
+      version)
+    values (#{id,jdbcType=BIGINT}, #{pcNo,jdbcType=VARCHAR}, #{cpnName,jdbcType=VARCHAR}, 
+      #{cpnId,jdbcType=BIGINT},#{cpnNo,jdbcType=BIGINT}, #{personId,jdbcType=BIGINT}, #{personName,jdbcType=VARCHAR},
+      #{fromId,jdbcType=BIGINT}, #{fromName,jdbcType=VARCHAR}, #{statusId,jdbcType=BIGINT}, 
+      #{statusName,jdbcType=VARCHAR}, #{orgId,jdbcType=BIGINT}, #{orgName,jdbcType=VARCHAR}, 
+      #{writeoffId,jdbcType=BIGINT}, #{writeoffName,jdbcType=VARCHAR}, #{writeoffPhone,jdbcType=BIGINT},#{writeoffTime,jdbcType=TIMESTAMP},
+      #{writeoffRemark,jdbcType=VARCHAR}, #{dealAmount,jdbcType=DECIMAL}, #{payAmount,jdbcType=DECIMAL}, 
+      #{score,jdbcType=INTEGER}, #{dealBillUrl,jdbcType=VARCHAR}, #{createrId,jdbcType=BIGINT}, 
+      #{createrName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT}, 
+      #{modifierName,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{deleteFlag,jdbcType=BIT}, 
+      #{version,jdbcType=INTEGER})
+  </insert>
+  <select id="findList"  resultMap="BaseResultMap">
+    select
+    c.id as c_id ,c.cpn_no as c_cpn_no, c.cpn_intro as c_cpn_intro, c.org_id as c_org_id, c.org_name as c_org_name,
+    c.type_name as c_type_name, c.use_condition as c_use_condition, c.face_value as c_face_value,
+    c.use_begin_time as c_use_begin_time, c.use_end_time as c_use_end_time,
+    c.receive_type_name as c_receive_type_name, c.use_note as c_use_note,
+    pc.*
+    from bl_person_coupon pc, bl_coupon as c
+    where pc.delete_flag = '0'
+    and pc.cpn_id  = c.id
+    <if test="cpnNo !=null and cpnNo != ''">
+      and  pc.cpn_no like CONCAT('%',#{cpnNo},'%')
+    </if>
+    <if test="cpnName != null and cpnName != ''">
+      and  pc.cpn_name like concat('%',#{cpnName},'%')
+    </if>
+    <if test="statusId != null">
+      and  pc.status_id = #{statusId}
+    </if>
+    ${dataScope}
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+      <otherwise>
+        ORDER BY  pc.modify_time desc
+      </otherwise>
+    </choose>
+  </select>
+  <select id="findListByCouponId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+      from bl_person_coupon where delete_flag = 0
+      and  cpn_id = #{id}
+  </select>
+
+  <update id="statusChange">
+    update bl_person_coupon
+    set
+        status_id = #{statusId},
+        status_name = #{statusName},
+        version = version + 1
+    where id = #{id}
+    and version = #{version}
+  </update>
+
+  <select id="findListByCouponIdAndUserId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from bl_person_coupon
+    where delete_flag = 0
+    and person_id = #{userId}
+    and cpn_id = #{couponId}
+  </select>
+
+  <select id="findMyCoupons" resultMap="BaseResultMap">
+    select
+    c.id as c_id , c.cpn_intro as c_cpn_intro, c.org_id as c_org_id, c.org_name as c_org_name,
+    c.type_name as c_type_name, c.use_condition as c_use_condition, c.face_value as c_face_value,
+    c.use_begin_time as c_use_begin_time, c.use_end_time as c_use_end_time,
+    c.receive_type_name as c_receive_type_name, c.use_note as c_use_note,
+    c.service_area as c_service_area, c.type_id as c_type_id,
+    pc.*
+    from bl_person_coupon pc,bl_coupon c
+    where pc.cpn_id = c.id
+    and pc.delete_flag = 0
+    and pc.person_id = #{userId}
+    <if test="personCouponStatusId != null">
+      and pc.status_id = #{personCouponStatusId}
+    </if>
+  </select>
+
+  <update id="writeoff" >
+    update bl_person_coupon set deal_amount = #{dealAmount},
+                                pay_amount = #{payAmount},
+                                score = #{score},
+                                status_id = #{statusId},
+                                status_name = #{statusName},
+                                org_id = #{orgId},
+                                org_name = #{orgName},
+                                writeoff_id = #{writeoffId},
+                                writeoff_name = #{writeoffName},
+                                writeoff_phone = #{writeoffPhone},
+                                writeoff_time = #{writeoffTime},
+                                writeoff_remark = #{writeoffRemark},
+                                deal_bill_url = #{dealBillUrl},
+                                person_name = #{personName},
+                                person_phone = #{personPhone},
+                                version = version+1
+    where
+                                id=#{id}
+    and                         version = #{version}
+  </update>
+
+  <select id="getWriteoffInfo" resultMap="writeoffInfoResultMap">
+    SELECT COUNT(*) count, SUM(deal_amount) deal_amount FROM bl_person_coupon where delete_flag=0
+        and status_id = #{personCouponStatusId} and writeoff_time between #{startDate} and #{endDate}
+        and writeoff_id = #{userId}
+  </select>
+
+  <resultMap id="writeoffInfoResultMap" type="com.dongpeng.entity.system.WriteoffInfoVo">
+    <result column="count" property="writeoffCount"/>
+    <result column="deal_amount" property="writeoffDealAmount"/>
+  </resultMap>
+
+  <select id="listWriteOff" resultMap="BaseResultMap">
+    SELECT pc.id, pc.deal_amount,pc.pay_amount,pc.writeoff_time, pc.writeoff_name,pc.writeoff_phone,pc.deal_bill_url,pc.pc_no,
+           c.cpn_intro c_cpn_intro,c.use_note c_use_note, c.type_id c_type_id, c.face_value  c_face_value,c.use_condition c_use_condition, c.receive_type_name c_receive_type_name,c.service_area c_service_area,c.use_begin_time c_use_begin_time,c.use_end_time c_use_end_time
+    FROM bl_person_coupon pc,bl_coupon c where c.id = pc.cpn_id and pc.delete_flag=0
+        and pc.status_id = #{personCouponStatusId} and pc.writeoff_time between #{startDate} and #{endDate}
+        and pc.writeoff_id = #{userId} order by writeoff_time desc limit #{limitIndex},#{limitCount}
+  </select>
+
+  <select id="getWriteoffInfoDetail" resultMap="BaseResultMap">
+    select   pc.deal_amount,pc.pay_amount,pc.pc_no,pc.writeoff_time,pc.person_name  person_name ,pc.person_phone  person_phone,pc.deal_bill_url,
+             c.face_value c_face_value ,c.use_condition c_use_condition,c.type_id c_type_id,
+             c.cpn_intro c_cpn_intro,c.use_note c_use_note, c.receive_type_name c_receive_type_name,c.service_area c_service_area,c.use_begin_time c_use_begin_time,c.use_end_time c_use_end_time
+    from bl_person_coupon pc, bl_coupon c where  pc.cpn_id=c.id
+    and pc.writeoff_id = #{userId} and pc.id=#{personCouponId}
+  </select>
+</mapper>

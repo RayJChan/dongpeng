@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.BlPersonExamineDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="personColumns">
+        a.id AS  "id",
+        a.person_name AS  "personName",
+        a.phone AS  "phone",
+        a.org_id AS  "orgId",
+        a.org_name AS  "orgName",
+        a.province AS  "province",
+        a.city AS  "city",
+        a.district AS  "district",
+        a.address AS  "address",
+        a.apply_id AS  "applyId",
+        a.apply_name AS  "applyName",
+        a.delete_flag AS  "deleteFlag",
+        a.creater_id AS  "createrId",
+        a.creater_name AS  "createrName",
+        a.create_time AS  "createTime",
+        a.modifier_id AS  "modifierId",
+        a.modifier_name AS  "modifierName",
+        a.modify_time AS  "modifyTime",
+        a.version AS  "version"
+    </sql>
+
+    <sql id="examineInfoColumns">
+        ,b.id AS "examineId",
+        b.business_id AS "businessId",
+        b.business_type AS "businessType",
+        b.business_type_id AS "businessTypeId",
+        b.business_desc AS "businessDesc",
+        b.user_id AS "userId",
+        b.user_name AS "userName",
+        b.next_user_id AS "nextUserId",
+        b.next_user_name AS "nextUserName",
+        b.examine_remark AS "examineRemark",
+        b.examine_result_id AS "examineResultId",
+        b.examine_result_name AS "examineResultName",
+        b.process_end AS "processEnd",
+        b.create_time AS "examineCreateTime"
+    </sql>
+
+    <sql id="personJoins">
+
+    </sql>
+
+    <!-- 根据id获得菜单 -->
+    <select id="get" resultType="com.dongpeng.entity.system.BlPersonExamine">
+        SELECT
+        <include refid="personColumns"/>
+        FROM bl_person_examine a
+        <include refid="personJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.BlPersonExamine">
+        SELECT
+
+        <include refid="personColumns"/>
+
+        FROM bl_person_examine a
+
+        <include refid="personJoins"/>
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="personName != null and personName != ''">
+            AND a.person_name like CONCAT('%', #{personName}, '%')
+        </if>
+        <if test="orgName != null and orgName != ''">
+            AND a.org_name like CONCAT('%', #{orgName}, '%')
+        </if>
+        <if test="orgId != null">
+            AND a.org_id = #{orgId}
+        </if>
+        <if test="province != null and province != ''">
+            AND a.province like CONCAT('%', #{province}, '%')
+        </if>
+        <if test="city != null and city != ''">
+            AND a.city like CONCAT('%', #{city}, '%')
+        </if>
+        <if test="district != null and district != '' ">
+            AND a.district like CONCAT('%', #{district}, '%')
+        </if>
+        <if test="applyId != null ">
+            AND a.apply_id = #{applyId}
+        </if>
+        <if test="applyName != null and applyName != '' ">
+            AND a.apply_name = #{applyName}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO bl_person_examine(
+                id,
+                person_name,
+                phone,
+                org_id,
+                org_name,
+                province,
+                city,
+                district,
+                address ,
+                apply_id ,
+                apply_name,
+                delete_flag,
+                creater_id,
+                creater_name,
+                create_time,
+                modifier_id,
+                modifier_name,
+                modify_time,
+                version
+        ) VALUES (
+            #{id},
+            #{personName},
+            #{phone},
+            #{orgId},
+            #{orgName},
+            #{province},
+            #{city},
+            #{district},
+            #{address},
+            #{applyId},
+            #{applyName},
+            #{deleteFlag},
+            #{createrId},
+            #{createrName},
+            #{createTime},
+            #{modifierId},
+            #{modifierName},
+            #{modifyTime},
+            #{version}
+        )
+    </insert>
+
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE bl_person_examine SET
+            person_name=#{personName},
+            phone=#{phone},
+            org_id=#{orgId},
+            org_name=#{orgName},
+            province=#{province},
+            city=#{city},
+            district=#{district},
+            address=#{address},
+            apply_id=#{applyId},
+            apply_name=#{applyName},
+            modifier_id=#{modifierId},
+            modifier_name=#{modifierName},
+            modify_time=#{modifyTime},
+            version=version + 1
+        WHERE id = #{id} and version=#{version}
+    </update>
+
+
+    <!-- 逻辑 删除/启用 菜单 -->
+    <update id="deleteToggle">
+        UPDATE bl_person_examine SET
+        delete_flag = #{deleteFlag}
+        WHERE id = #{id}  OR parent_ids LIKE concat('%',#{id},'%')
+    </update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.BlPersonExamine" statementType="STATEMENT">
+        select * from bl_person_examine where ${propertyName} = '${value}'
+    </select>
+
+
+    <update id="updateStatus" parameterType="com.dongpeng.entity.system.BlPersonExamine">
+        UPDATE bl_person_examine SET
+        <if test="applyId != null">
+            apply_id=#{applyId},
+        </if>
+        <if test="applyName != null">
+            apply_name=#{applyName},
+        </if>
+        modifier_id = #{modifierId},
+        modifier_name = #{modifierName},
+        modify_time = #{modifyTime},
+        version=version + 1
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="findListPersonExaminePage" resultType="com.dongpeng.entity.system.BlPersonExamineInfo">
+
+        SELECT
+
+        <include refid="personColumns"/>
+        <include refid="examineInfoColumns"/>
+
+        FROM bl_person_examine a
+
+        LEFT JOIN bl_examine_info b ON a.id=b.business_id
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="personName != null and personName != ''">
+            AND a.person_name like CONCAT('%', #{personName}, '%')
+        </if>
+        <if test="orgName != null and orgName != ''">
+            AND a.org_name like CONCAT('%', #{orgName}, '%')
+        </if>
+        <if test="orgId != null">
+            AND a.org_id = #{orgId}
+        </if>
+        <if test="province != null and province != ''">
+            AND a.province like CONCAT('%', #{province}, '%')
+        </if>
+        <if test="city != null and city != ''">
+            AND a.city like CONCAT('%', #{city}, '%')
+        </if>
+        <if test="district != null and district != '' ">
+            AND a.district like CONCAT('%', #{district}, '%')
+        </if>
+        <if test="applyId != null ">
+            AND a.apply_id = #{applyId}
+        </if>
+        <if test="applyName != null and applyName != '' ">
+            AND a.apply_name = #{applyName}
+        </if>
+        <if test="examineResultId != null ">
+            AND b.examine_result_id = #{examineResultId}
+        </if>
+
+        <!-- 创建审批申请时间 -->
+        <if test="createBeginTime != null">
+            and a.create_time > #{createBeginTime}
+        </if>
+        <if test="createEndTime != null">
+            and a.create_time &lt;  #{createEndTime}
+        </if>
+
+        <if test="examineResultIdList != null and examineResultIdList.size > 0">
+            AND b.examine_result_id IN
+            <foreach item="item" index="index" collection="examineResultIdList" open="(" separator="," close=")">
+                #{examineResultIdList[${index}]}
+            </foreach>
+        </if>
+
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

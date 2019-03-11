@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.OrganizationDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="organizationColumns">
+        a.*
+    </sql>
+
+    <sql id="organizationJoins">
+    </sql>
+
+    <!-- 根据id获得组织 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据上级id获得组织 -->
+    <select id="getByParentId" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM sys_menu a
+        <include refid="organizationJoins"/>
+        WHERE a.parent_id = #{parentId}
+    </select>
+
+    <!-- 根据name获得组织 -->
+    <select id="getByName" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.org_name = #{orgName}
+    </select>
+
+    <!-- 根据name和parentname获得组织 -->
+    <select id="getByNameAndParentName" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.org_name = #{orgName} and parent_name= #{parentName}
+    </select>
+
+    <!-- 根据code获得组织 -->
+    <select id="getByCode" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.org_code = #{orgCode}
+    </select>
+
+
+    <!-- 分页查询组织信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+
+        <if test="orgName != null and orgName != ''">
+            AND a.org_name LIKE CONCAT('%',#{orgName},'%')
+        </if>
+        <if test="orgCode != null and orgCode != ''">
+            AND a.org_code LIKE CONCAT('%',#{orgCode},'%')
+        </if>
+        <if test="typeId != null">
+            AND a.type_id = #{typeId}
+        </if>
+        <if test="id != null and parentIds != null and parentIds != ''">
+            AND (a.id = #{id} OR a.parent_ids LIKE CONCAT('%',#{parentIds},'%'))
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="lat != null and lng !=null">
+            AND (a.lat BETWEEN #{beginLat} AND #{endLat}) AND (a.lng BETWEEN #{beginLng} AND #{endLng})
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部组织 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        <include refid="organizationJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入组织 -->
+    <insert id="insert">
+		INSERT INTO bl_organization(
+			id,
+           org_name,
+           org_code,
+           org_leader ,
+           approval_id ,
+           approval_name ,
+           phone,
+           type_id,
+           type_name ,
+           province,
+           city ,
+           district ,
+           address ,
+           lat  ,
+           lng ,
+           photo  ,
+           business_hours,
+           service_area,
+           province_id,
+           city_id ,
+           district_id ,
+
+           parent_id ,
+           parent_name ,
+           parent_ids ,
+           delete_flag ,
+           creater_id ,
+           creater_name ,
+           create_time ,
+           modifier_id ,
+           modifier_name ,
+           modify_time ,
+           version
+		) VALUES (
+			#{id},
+           #{orgName},
+           #{orgCode},
+           #{orgLeader} ,
+           #{approvalId} ,
+           #{approvalName} ,
+           #{phone},
+           #{typeId},
+           #{typeName} ,
+           #{province},
+           #{city} ,
+           #{district} ,
+           #{address} ,
+           #{lat}  ,
+           #{lng} ,
+           #{photo}  ,
+           #{businessHours},
+           #{serviceArea},
+           #{provinceId},
+           #{cityId} ,
+           #{districtId} ,
+
+           #{parentId} ,
+           #{parentName} ,
+           #{parentIds} ,
+           #{deleteFlag} ,
+           #{createrId} ,
+           #{createrName} ,
+           #{createTime} ,
+           #{modifierId} ,
+           #{modifierName} ,
+           #{modifyTime} ,
+           #{version}
+		)
+	</insert>
+
+    <!-- 批量插入组织 -->
+    <insert id="insertBatch">
+        INSERT INTO bl_organization(
+        id,
+        org_name,
+        org_code,
+        org_leader ,
+        approval_id ,
+        approval_name ,
+        phone,
+        type_id,
+        type_name ,
+        province,
+        city ,
+        district ,
+        address ,
+        lat  ,
+        lng ,
+        photo  ,
+        business_hours,
+        service_area,
+        province_id,
+        city_id ,
+        district_id ,
+
+        parent_id ,
+        parent_name ,
+        parent_ids ,
+        delete_flag ,
+        creater_id ,
+        creater_name ,
+        create_time ,
+        modifier_id ,
+        modifier_name ,
+        modify_time ,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.orgName},
+            #{item.orgCode},
+            #{item.orgLeader} ,
+            #{item.approvalId} ,
+            #{item.approvalName} ,
+            #{item.phone},
+            #{item.typeId},
+            #{item.typeName} ,
+            #{item.province},
+            #{item.city} ,
+            #{item.district} ,
+            #{item.address} ,
+            #{item.lat}  ,
+            #{item.lng} ,
+            #{item.photo}  ,
+            #{item.businessHours},
+            #{item.serviceArea},
+            #{item.provinceId},
+            #{item.cityId} ,
+            #{item.districtId} ,
+
+            #{item.parentId} ,
+            #{item.parentName} ,
+            #{item.parentIds} ,
+            #{item.deleteFlag} ,
+            #{item.createrId} ,
+            #{item.createrName} ,
+            #{item.createTime} ,
+            #{item.modifierId} ,
+            #{item.modifierName} ,
+            #{item.modifyTime} ,
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新组织 -->
+    <update id="update">
+		UPDATE bl_organization SET
+           org_name=#{orgName},
+           org_leader=#{orgLeader} ,
+           approval_id=#{approvalId} ,
+           approval_name=#{approvalName} ,
+           phone=#{phone},
+           type_id=#{typeId},
+           type_name=#{typeName} ,
+           province=#{province},
+           city=#{city} ,
+           district=#{district} ,
+           address=#{address} ,
+           lat=#{lat}  ,
+           lng=#{lng} ,
+           photo=#{photo}  ,
+           business_hours=#{businessHours},
+           service_area=#{serviceArea},
+           province_id=#{provinceId},
+           city_id=#{cityId} ,
+           district_id=#{districtId} ,
+
+           parent_id=#{parentId} ,
+           parent_name=#{parentName} ,
+           parent_ids=#{parentIds} ,
+           modifier_id=#{modifierId} ,
+           modifier_name=#{modifierName} ,
+           modify_time=#{modifyTime} ,
+		   version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除组织 -->
+    <!--<update id="delete">
+		DELETE FROM bl_organization
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 组织 -->
+    <update id="deleteToggle">
+		UPDATE bl_organization SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id} or parent_ids LIKE CONCAT('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Organization" statementType="STATEMENT">
+		select * from bl_organization where ${propertyName} = '${value}'
+	</select>
+
+
+    <!-- ########## 用户组织 相关dao ################ -->
+    <!-- 根据用户组织查找菜单信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Organization">
+        SELECT
+        <include refid="organizationColumns"/>
+        FROM bl_organization a
+        JOIN bl_user_org uo ON uo.org_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND uo.user_id = #{userId}
+        ORDER BY a.id
+    </select>
+
+    <!-- 删除用户组织 -->
+    <delete id="deleteUseOrg">
+        DELETE FROM bl_user_org WHERE 1=1
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="orgId != null">
+            AND org_id =#{orgId}
+        </if>
+    </delete>
+
+    <!-- 插入用户组织 -->
+    <insert id="insertUserOrg">
+        INSERT INTO bl_user_org(
+        id,
+        user_id,
+        user_name,
+        org_id,
+        org_name,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userOrgList" item="userOrg" separator=" union all ">
+            SELECT
+            #{userOrg.id},
+            #{userOrg.userId},
+            #{userOrg.userName},
+            #{userOrg.orgId},
+            #{userOrg.orgName},
+
+            #{userOrg.createrId},
+            #{userOrg.createrName},
+            #{userOrg.createTime},
+            #{userOrg.modifierId},
+            #{userOrg.modifierName},
+            #{userOrg.modifyTime},
+            #{userOrg.deleteFlag},
+            #{userOrg.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+</mapper>

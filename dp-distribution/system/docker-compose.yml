@@ -1,0 +1,95 @@
+version: '2'
+services:
+  registry:
+    image: registry:2.6.2
+    restart: always
+    ports:
+      - '5000:5000'
+    volumes:
+      - /root/docker/registry:/var/lib/registry
+      - /root/docker/auth:/root/registry/auth
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+      - REGISTRY_AUTH_HTPASSWD_PATH=/root/registry/auth/htpasswd
+
+  redis:
+    image: redis:5.0-rc3
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - /root/docker/redis/conf:/usr/local/etc/redis
+      - /root/docker/redis/data:/data
+      - /etc/localtime:/etc/localtime:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  rabbitmq:
+    image: rabbitmq:3.6-management
+    restart: always
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+      - '15671:15671'
+      - '5671:5671'
+    volumes:
+      - /root/docker/rabbitmq:/var/lib/rabbitmq
+      - /root/docker/rabbitmq/conf/rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+      - /etc/localtime:/etc/localtime:ro
+      - /root/docker/rabbitmq/data:/var/lib/rabbitmq/mnesia
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    ports:
+      - '3306:3306'
+    volumes:
+      - /root/docker/mysql/conf:/etc/mysql/conf.d
+      - /root/docker/mysql/data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=dongpengmos
+
+  eureak-server:
+    image: 120.79.216.43:5000/eureka-server:latest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '7000:7000'
+
+  config-server:
+    image: 120.79.216.43:5000/config-server-git:latest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - eureak-server
+    ports:
+      - '12000:12000'
+  api-gateway:
+    image: 120.79.216.43:5000/api-gateway
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '14000:14000'
+    depends_on:
+      - eureak-server
+      - config-server
+      - rabbitmq
+      - redis
+
+  system:
+    image: 120.79.216.43:5000/system:latest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '13001:13001'
+    depends_on:
+      - eureak-server
+      - config-server
+      - api-gateway
+      - mysql
+      - rabbitmq
+      - redis
+

@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.BlPersonCouponExamineDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="blPersonCouponExamineColumns">
+        a.id AS  "id",
+        a.person_id AS  "personId",
+        a.person_name AS  "personName",
+        a.apply_org_id AS  "applyOrgId",
+        a.apply_org_name AS  "applyOrgName",
+        a.phone AS  "phone",
+        a.use_org_id AS  "useOrgId",
+        a.use_org_name AS  "useOrgName",
+        a.apply_product_name AS  "applyProductName",
+        a.discount AS  "discount",
+        a.use_type_id AS  "useTypeId",
+        a.use_type_name AS  "useTypeName",
+        a.use_reason AS  "useReason",
+        a.coupon_id AS  "couponId",
+        a.coupon_name AS  "couponName",
+        a.apply_status_name AS  "applyStatusName",
+        a.apply_status_id AS  "applyStatusId",
+        a.examine_user_name AS  "examineUserName",
+        a.examine_user_id AS  "examineUserId",
+        a.apply_num AS "applyNum",
+        a.service_area AS "serviceArea",
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+        a.create_time AS "createTime",
+        a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+        a.modify_time AS "modifyTime",
+        a.delete_flag AS "deleteFlag",
+        a.version AS "version"
+    </sql>
+
+    <sql id="columnsAndCoupon">
+        <include refid="blPersonCouponExamineColumns"/>
+        ,c.cpn_name as  "cpnName",
+        c.cpn_no as  "cpnNo",
+        c.cpn_intro as  "cpnIntro",
+        c.cpn_num as  "cpnNum",
+        c.org_id as  "orgId",
+        c.org_name as  "orgName",
+        c.type_id as  "typeId",
+        c.type_name as  "typeName",
+        c.use_condition as  "useCondition",
+        c.face_value as  "faceValue",
+        c.receive_begin_time as  "receiveBeginTime",
+        c.receive_end_time as  "receiveEndTime",
+        c.use_begin_time as  "useBeginTime",
+        c.use_end_time as  "useEndTime",
+        c.rank_id as  "rankId",
+        c.rank_name as  "rankName",
+        c.is_share as  "isShare",
+        c.receive_type_id as  "receiveTypeId",
+        c.receive_type_name  as  "receiveTypeName",
+        c.status_id as  "statusId",
+        c.status_name as  "statusName",
+        c.examine_status_id as  "couponExamineStatusId",
+        c.examine_status_name as  "couponExamineStatusName",
+        c.creater_name as  "createrCouponName",
+        c.create_time as  "createCouponTime",
+        c.modifier_name as  "modifierCouponName",
+        c.modify_time as  "modifyCouponTime"
+    </sql>
+
+    <sql id="columnsAndExamineInfo">
+        <include refid="blPersonCouponExamineColumns"/>
+        ,e.id AS  "examineInfoId",
+        e.business_id AS  "businessId",
+        e.business_type_id AS  "businessTypeId",
+        e.business_type AS  "businessType",
+        e.business_desc AS  "businessDesc",
+        e.user_id AS  "userId",
+        e.user_name AS  "userName",
+        e.next_user_id AS  "nextUserId",
+        e.next_user_name AS  "nextUserName",
+        e.examine_result_id AS  "examineResultId",
+        e.examine_result_name AS  "examineResultName",
+        e.examine_remark AS  "examineRemark",
+        e.process_end AS  "processEnd",
+        e.creater_name AS  "createrExamineName",
+        e.create_time AS  "createExamineTime",
+        e.modifier_name AS  "modifierExamineName",
+        e.modify_time AS  "modifyExamineTime"
+    </sql>
+
+    <sql id="BlPersonCouponExamineJoins">
+
+    </sql>
+
+    <!-- 根据id获得菜单 -->
+    <select id="get" resultType="com.dongpeng.entity.system.BlPersonCouponExamine">
+        SELECT
+        <include refid="blPersonCouponExamineColumns"/>
+        FROM bl_person_coupon_examine a
+        <include refid="BlPersonCouponExamineJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.BlPersonCouponExamine">
+        SELECT
+
+        <include refid="blPersonCouponExamineColumns"/>
+
+        FROM bl_person_coupon_examine a
+
+        <include refid="BlPersonCouponExamineJoins"/>
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="applyStatusId != null">
+            and a.apply_status_id = #{applyStatusId}
+        </if>
+
+        <if test="applyStatusName != null">
+            and a.apply_status_name = #{applyStatusName}
+        </if>
+
+        <if test="personId != null">
+            and a.person_id = #{personId}
+        </if>
+
+        <if test="useTypeId != null">
+            and a.use_type_id = #{useTypeId}
+        </if>
+
+        <if test="useTypeName != null">
+            and a.use_type_name = #{useTypeName}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO bl_person_coupon_examine(
+        id ,
+        person_id ,
+        person_name,
+        apply_org_id,
+        apply_org_name,
+        phone,
+        use_org_id ,
+        use_org_name,
+        apply_product_name,
+        discount ,
+        use_type_id,
+        use_type_name,
+        use_reason,
+        coupon_id,
+        coupon_name ,
+        apply_status_name,
+        apply_status_id,
+        examine_user_name,
+        examine_user_id,
+        apply_num,
+        service_area,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        ) VALUES (
+         #{id},
+         #{personId},
+         #{personName},
+         #{applyOrgId},
+         #{applyOrgName},
+         #{phone},
+         #{useOrgId},
+         #{useOrgName},
+         #{applyProductName},
+         #{discount},
+         #{useTypeId},
+         #{useTypeName},
+         #{useReason},
+         #{couponId},
+         #{couponName},
+         #{applyStatusName},
+         #{applyStatusId},
+         #{examineUserName},
+         #{examineUserId},
+         #{applyNum},
+         #{serviceArea},
+         #{createrId},
+         #{createrName},
+         #{createTime},
+         #{modifierId},
+         #{modifierName},
+         #{modifyTime},
+         #{deleteFlag},
+         #{version}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE bl_person_coupon_examine SET
+            person_id=#{personId},
+            person_name=#{personName},
+            apply_org_id=#{applyOrgId},
+            apply_org_name=#{applyOrgName},
+            phone=#{phone},
+            use_org_id=#{useOrgId},
+            use_org_name=#{useOrgName},
+            apply_product_name=#{applyProductName},
+            discount=#{discount},
+            use_type_id=#{useTypeId},
+            use_type_name=#{useTypeName},
+            use_reason=#{useReason},
+            coupon_id=#{couponId},
+            coupon_name=#{couponName},
+            apply_status_name=#{applyStatusName},
+            apply_status_id=#{applyStatusId},
+            examine_user_name=#{examineUserName},
+            examine_user_id=#{examineUserId},
+            apply_num = #{applyNum},
+            service_area =#{serviceArea},
+            modifier_id = #{modifierId},
+            modifier_name = #{modifierName},
+            modify_time = #{modifyTime},
+            version=version + 1
+            WHERE id = #{id} and version=#{version}
+    </update>
+
+    <update id="updateStatus" parameterType="com.dongpeng.entity.system.Coupon">
+        UPDATE bl_person_coupon_examine SET
+            <if test="couponName != null">
+                coupon_id=#{couponId},
+            </if>
+            <if test="couponName != null">
+                coupon_name=#{couponName},
+            </if>
+            <if test="applyStatusName != null">
+                apply_status_name=#{applyStatusName},
+            </if>
+            <if test="applyStatusId != null">
+                apply_status_id=#{applyStatusId},
+            </if>
+            modifier_id = #{modifierId},
+            modifier_name = #{modifierName},
+            modify_time = #{modifyTime},
+            version=version + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑 删除/启用 菜单 -->
+    <update id="deleteToggle">
+        UPDATE bl_person_coupon_examine SET
+        delete_flag = #{deleteFlag}
+        WHERE id = #{id} 
+    </update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.BlPersonCouponExamine" statementType="STATEMENT">
+        select * from bl_person_coupon_examine where ${propertyName} = '${value}'
+    </select>
+
+
+    <!-- 我申请的优惠券 -->
+    <select id="findMyApplyCouponPage" resultType="com.dongpeng.entity.system.MyApplyCoupon">
+
+        SELECT
+
+        <include refid="columnsAndCoupon"/>
+
+        FROM bl_person_coupon_examine a
+
+        LEFT JOIN bl_coupon c  ON c.id = a.coupon_id
+
+        WHERE c.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="cpnNo !=null and cpnNo != ''">
+            and c.cpn_no = #{cpnNo}
+        </if>
+        <if test="cpnName != null and cpnName != ''">
+            and c.cpn_name like concat('%',#{cpnName},'%')
+        </if>
+        <if test="receiveBeginTime != null">
+            and c.receive_begin_time &gt; #{receiveBeginTime}
+        </if>
+        <if test="receiveEndTime != null">
+            and c.receive_end_time &lt; #{receiveEndTime}
+        </if>
+        <if test="useBeginTime !=null">
+            and  c.use_begin_time &gt; #{useBeginTime}
+        </if>
+        <if test="useEndTime != null " >
+            and c.use_end_time &lt; #{useEndTime}
+        </if>
+
+        <if test="cpnIntro != null and cpnIntro != ''">
+            and c.cpn_intro like concat('%',#{cpnIntro},'%')
+        </if>
+        <if test="orgName != null and orgName != ''">
+            and c.org_name =#{org_name}
+        </if>
+        <if test="typeId != null">
+            and c.type_id = #{typeId}
+        </if>
+        <if test="typeName != null and typeName!=''">
+            and c.type_name = #{typeName}
+        </if>
+        <if test="statusId != null">
+            and c.status_id = #{statusId}
+        </if>
+        <if test="statusName != null and statusName!='' ">
+            and c.status_name = #{statusName}
+        </if>
+        <if test="couponExamineStatusId != null">
+            and c.examine_status_id = #{couponExamineStatusId}
+        </if>
+
+        <if test="couponExamineStatusName != null">
+            and c.examine_status_name = #{examineStatusName}
+        </if>
+
+        <if test="applyStatusId != null">
+            and a.apply_status_id = #{applyStatusId}
+        </if>
+
+        <if test="applyStatusName != null">
+            and a.apply_status_name = #{applyStatusName}
+        </if>
+
+        <if test="personId != null">
+            and a.person_id = #{personId}
+        </if>
+
+        <if test="useTypeId != null">
+            and a.use_type_id = #{useTypeId}
+        </if>
+
+        <if test="useTypeName != null">
+            and a.use_type_name = #{useTypeName}
+        </if>
+
+        <!-- 创建审批申请时间 -->
+        <if test="createBeginTime != null" >
+            and a.create_time > #{createBeginTime}
+        </if>
+        <if test="createEndTime != null" >
+            and a.create_time &lt;  #{createEndTime}
+        </if>
+
+        ${dataScope}
+
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 个人优惠券申请表和审核信息绑定查询 -->
+    <select id="findPersonAndExamineInfoPage" resultType="com.dongpeng.entity.system.BlPersonCouponExamineInfo">
+
+        SELECT
+
+        <include refid="columnsAndExamineInfo"/>
+
+        FROM bl_person_coupon_examine a
+
+        LEFT JOIN bl_examine_info e ON a.id =e.business_id
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+
+        <if test="examineResultId != null">
+            and e.examine_result_id = #{examineResultId}
+        </if>
+
+        <if test="examineResultName != null and examineResultName!='' ">
+            and e.examine_result_name = #{examineResultName}
+        </if>
+
+        <if test="userId != null">
+            and e.user_id = #{userId}
+        </if>
+
+        <if test="userName != null and userName!='' ">
+            and e.user_name = #{userName}
+        </if>
+
+        <if test="nextUserId != null">
+            and e.next_user_id = #{nextUserId}
+        </if>
+
+        <if test="nextUserName != null and nextUserName!='' ">
+            and e.next_user_name = #{nextUserName}
+        </if>
+
+        <if test="businessTypeId != null ">
+            and e.business_type_id = #{businessTypeId}
+        </if>
+
+        <if test="businessType != null and businessType!='' ">
+            and e.business_type LIKE CONCAT('%',#{businessType},'%')
+        </if>
+
+        <if test="applyStatusId != null">
+            and a.apply_status_id = #{applyStatusId}
+        </if>
+
+        <if test="applyStatusName != null and applyStatusName != ''  ">
+            and a.apply_status_name = #{applyStatusName}
+        </if>
+
+        <if test="personId != null">
+            and a.person_id = #{personId}
+        </if>
+
+        <if test="phone != null and phone != '' ">
+            and a.phone = #{phone}
+        </if>
+
+        <if test="personName != null and  personName != '' ">
+            and a.person_name = #{personName}
+        </if>
+
+        <if test="useTypeId != null">
+            and a.use_type_id = #{useTypeId}
+        </if>
+
+        <if test="useTypeName != null and  useTypeName != '' ">
+            and a.use_type_name = #{useTypeName}
+        </if>
+
+        <if test="applyOrgName != null and  applyOrgName != '' ">
+            and a.apply_org_name = #{applyOrgName}
+        </if>
+
+        <if test="applyStatusId != null ">
+            and a.apply_status_id = #{applyStatusId}
+        </if>
+
+        <!-- 创建审批申请时间 -->
+        <if test="createBeginTime != null">
+            and a.create_time > #{createBeginTime}
+        </if>
+        <if test="createEndTime != null">
+            and a.create_time &lt;  #{createEndTime}
+        </if>
+
+       <if test="examineResultIdList != null and examineResultIdList.size > 0">
+            AND e.examine_result_id IN
+            <foreach item="item" index="index" collection="examineResultIdList" open="(" separator="," close=")">
+                #{examineResultIdList[${index}]}
+            </foreach>
+        </if>
+
+        <if test="notExamineResultId != null and notExamineResultId.size > 0">
+            AND e.examine_result_id NOT IN
+            <foreach collection="notExamineResultId" index="index" item="ob" open="(" separator="," close=")">
+                #{notExamineResultId[${index}]}
+            </foreach>
+        </if>
+
+        ${dataScope}
+
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <!-- 根据 couponid  获取审核表信息 -->
+    <select id="getPersonCouponExamineByCouponId" resultType="com.dongpeng.entity.system.BlPersonCouponExamine">
+        SELECT
+        <include refid="blPersonCouponExamineColumns"/>
+        FROM bl_person_coupon_examine a
+        <include refid="BlPersonCouponExamineJoins"/>
+        WHERE a.coupon_id = #{couponId}
+    </select>
+
+
+
+    <!-- 我的发起 未完成优惠券 -->
+    <select id="findMyApplyCouponUnfinished" resultType="java.util.HashMap" parameterType="Map">
+        SELECT
+
+        <include refid="blPersonCouponExamineColumns"/>
+
+        FROM bl_person_coupon_examine a
+
+        LEFT JOIN bl_organization o ON o.id = a.use_org_id
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="inReviewStatus != null and reviewFailureStatus != null ">
+            and (a.apply_status_id = #{inReviewStatus} or a.apply_status_id = #{reviewFailureStatus} )
+        </if>
+
+        <if test="applyStatusId != null ">
+            and  a.apply_status_id = #{applyStatusId}
+        </if>
+
+        <if test="personId != null">
+            and a.person_id = #{personId}
+        </if>
+
+        <if test="useTypeId != null">
+            and a.use_type_id = #{useTypeId}
+        </if>
+
+        <if test="useTypeName != null">
+            and a.use_type_name = #{useTypeName}
+        </if>
+
+        ${dataScope}
+
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--获取优惠券详情-->
+    <select id="getPersonCouponExamineMap" resultType="java.util.HashMap" parameterType="java.lang.Long">
+
+        SELECT
+
+        <include refid="blPersonCouponExamineColumns"/>
+
+        ,o.service_area AS serviceArea
+
+        FROM bl_person_coupon_examine a
+
+        LEFT JOIN bl_organization o ON o.id = a.use_org_id
+
+        WHERE  a.id = #{id}
+
+    </select>
+
+</mapper>

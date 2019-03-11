@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.FeedbackDao">
+
+    <!-- 插入反馈 -->
+    <insert id="insert">
+        INSERT INTO bl_feedback(
+        id,
+        score,
+        content,
+        person_id,
+        person_account,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        ) VALUES (
+        #{id},
+        #{score},
+        #{content},
+        #{personId},
+        #{personAccount},
+
+        #{createrId},
+        #{createrName},
+        #{createTime},
+        #{modifierId},
+        #{modifierName},
+        #{modifyTime},
+        #{deleteFlag},
+        #{version}
+        )
+    </insert>
+    <sql id="feedbackColumns">
+		a.id AS "id",
+        a.score AS "score",
+        a.content AS "content",
+        a.person_id AS "personId",
+        a.person_account AS "personAccount",
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.version AS "version"
+    </sql>
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Feedback">
+        SELECT
+
+        <include refid="feedbackColumns"/>
+
+        FROM bl_feedback a
+
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="personId != null">
+            AND a.person_id = #{personId}
+        </if>
+        <if test="personAccount != null and personAccount != ''">
+            AND a.person_account = #{personccount}
+        </if>
+        <if test="content != null and content != ''">
+            AND a.content LIKE CONCAT('%', #{content}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_time desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--获取反馈列表-->
+    <select id="findListByPersonId" resultType="com.dongpeng.entity.system.Feedback">
+        SELECT
+        <include refid="feedbackColumns"/>
+        FROM bl_feedback a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.person_id = #{personId}
+        ORDER BY a.create_time DESC
+    </select>
+
+
+</mapper>
