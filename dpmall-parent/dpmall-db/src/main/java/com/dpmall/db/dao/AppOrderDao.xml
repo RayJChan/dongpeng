@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.AppOrderDao">
+
+
+	<select id="get2DistributeCount" resultType="java.lang.Integer">
+
+		SELECT
+		count(*)
+		FROM
+		dbo.tb_sd_xiaos_title xt
+
+		INNER JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+		WHERE
+		1 = 1
+		AND dt.dingdLeix = '1'
+		AND dt.convertFlag = '1'
+
+
+		<if test='distributorId != null'>
+			AND xt.fenxkhCode = #{distributorId}
+			</if>
+			<if test='status=="1"'>
+				AND xt.app_status_agency ='WAITFORRECEIVE'
+			</if>
+			<if test='status=="2"'>
+				AND xt.app_status_agency ='INPROGRESS'
+			</if>
+			<if test='status=="3"'>
+				AND xt.app_status_agency ='WAITFORREFUND'
+			</if>
+			<if test='status=="4"'>
+				AND xt.app_status_agency in ('COMPLETED','CLOSED')
+			</if>
+
+		
+	</select>
+	<select id="get2StoreCount" resultType="java.lang.Integer">
+			SELECT
+				COUNT (1)
+			FROM
+			(
+			SELECT 
+				COUNT (c.pk)
+			FROM CONSIGNMENTS c 
+			LEFT JOIN O2OCONSIGNMENTITEMS O ON o.P_CONSIGNMENT = c.PK	
+			WHERE 1=1
+			AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+			<if test="storeId != null">
+				AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+			</if>
+			
+			<if test='status!="1"'>
+				<if test="acceptorId!=null"  >
+						and o.P_ACCEPTEDBY=#{acceptorId}
+				</if>
+			</if>
+			<if test='status=="1"'>
+				AND O.P_STOREO2OSTATUS ='WAITFORRECEIVE'
+			</if>
+			<if test='status=="2"'>
+				AND O.P_STOREO2OSTATUS ='INPROGRESS'
+			</if>
+			<if test='status=="3"'>
+				AND O.P_STOREO2OSTATUS ='COMPLETED'
+			</if>
+				GROUP BY
+					c.pk
+				HAVING
+					COUNT (c.pk) &lt; 2
+			)	
+	</select>
+	
+	<select id="get2AcceptCount" resultType="int">
+		select count(1) from O2OCONSIGNMENTITEMS where P_STATUS='10'
+		<if test="storeId != null">
+		    and P_RECOMMENDSTORE=${storeId}
+		</if>
+	</select>
+	
+	<!--经销商接单 -->
+	<update id="acceptOfAgency">
+	UPDATE dbo.tb_sd_xiaos_title
+		<set>
+			app_status_agency = #{po.agencyO2OStatus},
+			isDeliverSelf = #{po.isDeliverSelf},
+			oms_status  = #{po.omsStatus},
+			<if test="po.storeO2OStatus!=null  and  po.storeO2OStatus != ''">
+			app_status_store = #{po.storeO2OStatus},
+			</if>
+
+			<if test="po.storeId !=null  and  po.storeId != ''">
+				suggest_store = #{po.storeId},
+			</if>
+
+			<if test="po.acceptTime !=null  ">
+				accept_time = #{po.acceptTime},
+			</if>
+		</set>
+		WHERE
+		xiaosTitleID = #{po.consignmentId};
+	</update>
+
+
+
+	<!--经销商拒单 -->
+	<update id="rejectOfAgency">
+		UPDATE dbo.tb_sd_xiaos_title
+		<set>
+			app_status_agency = null,
+			isDeliverSelf = #{po.isDeliverSelf},
+			oms_status  = #{po.omsStatus},
+			accept_time  =  NULL,
+			app_status_store = null,
+            suggest_store = null
+
+		</set>
+		WHERE
+		xiaosTitleID = #{po.consignmentId};
+	</update>
+
+
+	<!--经销商接单 -->
+	<update id="acceptOfStore">
+		UPDATE dbo.tb_sd_xiaos_title
+		<set>
+			app_status_agency = #{po.agencyO2OStatus},
+			oms_status = #{po.omsStatus},
+			app_status_store = #{po.storeO2OStatus},
+			accept_time = #{po.acceptTime},
+			isDeliverSelf = #{po.isDeliverSelf},
+		</set>
+		WHERE
+		xiaosTitleID = #{po.consignmentId};
+	</update>
+	
+
+	<resultMap type="com.dpmall.db.bean.OrderEntity" id="listResultMap">
+		<id property="id" column="id"/>
+		<result property="referencedCode" column="referencedCode"/>
+		<result property="consignment" column="consignment"/>
+		<result property="consignmentCode" column="consignmentCode"/>
+		<result property="status" column="omsStatus"/>
+		<result property="clientName" column="clientName"/>
+		<result property="clientTel" column="clientTel"/>
+		<result property="address" column="address"/>
+		<result property="webStatus" column="webStatus"/>
+		<result property="operateStatus" column="P_OPERATESTATUS"/>
+		<result property="deliveryPoint" column="P_DELIVERYPOINTOFSERVICE"/>
+	    <result property="deliveryPointOfServiceId" column="deliveryPointOfServiceId"/>
+	    <result property="OrderStatus" column="orderStatus"/>
+	    <result property="salesApplication" column="salesApplication"/>
+	    <result property="isDeliverySelf" column="isDeliverSelf"/>
+	    <result property="returnStatus" column="returnStatus"/>
+		<result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+		<result property="waitShipments" column="waitShipments"/>
+		<result property="returnOderCode" column="returnOderCode"/>
+		<result property="returnCheck" column="returnCheck"/>
+			<collection property="items" ofType="com.dpmall.db.bean.OrderItemEntity">
+				<id property="id" column="itemsId"/>
+			    <result property="splitOrderType" column="splitOrderType"/>
+			    <result property="returnOderCode" column="returnOderCode"/>
+				<result property="packQua" column="packQua"/>
+				<result property="productCode" column="productCode"/>
+				<result property="name" column="name"/>
+				<result property="description" column="description"/>
+				<result property="category" column="category"/>
+				<result property="unit" column="unit"/>
+				<result property="netWeight" column="netWeight"/>
+				<result property="volume" column="volume"/>
+				<result property="size" column="size"/>
+				<result property="quantity" column="quantity"/>
+				<result property="tmallQuantity" column="tmallQuantity"/>
+				<result property="basePrice" column="basePrice"/>
+				<result property="totalPrice" column="totalPrice"/>
+				<result property="deliveryCost" column="deliveryCost"/>
+				<result property="promotionTotalsaved" column="promotionTotalsaved"/>
+				<result property="payAmount" column="payAmount"/>
+				<result property="juntanPrice" column="juntanPrice"/>
+				<result property="serviceAmount" column="serviceAmount"/>
+		    </collection>
+	</resultMap>
+	
+	<select id="getOnePage4Distribute" resultMap="listResultMap">
+		SELECT
+		xt.chuangjTime,
+		xt.fenxkhCode ,
+		xt.xiaosTitleID as id,
+		xt.xiaosTitleID as consignment,
+		xl.xiaosListID as itemsId,
+		xt.cankNo as  referencedCode,
+		xt.cankNo as  consignmentCode,
+		xt.xiaosSum AS payAmount,
+		xl.shangpCode AS productCode,
+		xt.kehName as clientName,
+		xt.shouhTel as clientTel,
+		xt.shouhAddress AS address,
+		dt.yuansdStatus AS orderStatus,
+		org.shopType as  salesApplication,
+		xt.isDeliverSelf AS isDeliverSelf,
+		xt.oms_status AS omsStatus,
+		tt.tuihNo as returnOderCode,
+		tt.tuihStatusName as  returnStatus,
+		tt.tuihStatus as returnCheck
+		FROM
+			dbo.tb_sd_xiaos_title xt
+			LEFT JOIN dbo.tb_sd_xiaos_list xl ON xt.xiaosTitleID = xl.xiaosTitleID
+			LEFT JOIN dbo.tb_sys_record_shangp sp ON sp.shangpID = xl.shangpID
+			LEFT JOIN dbo.tb_sd_tuih_title tt ON xt.xiaosTitleID = tt.xiaosTitleID
+			INNER JOIN dbo.tb_sys_record_keh kh ON kh.kehCode = xt.kehCode
+			INNER JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+			INNER JOIN dbo.tb_sys_record_org org ON dt.yewOrgID =org.orgID
+
+		WHERE
+			1 = 1
+			AND sp.shangpType = '0'
+		<if test="search != null">
+			<if test="search != ''">
+				AND (
+				xt.cankNo like '%${search}%'
+				or xt.kehName like '%${search}%'
+				or xt.shouhTel like '%${search}%'
+				or xt.shouhAddress LIKE '%${search}%'
+				)
+
+			</if>
+		</if>
+			AND xt.xiaosTitleID
+				IN (
+					SELECT
+						TOP ${pageSize} c.xiaosTitleID
+					FROM
+						(
+							SELECT
+								row_number () OVER (ORDER BY chuangjTime DESC) AS rownumber ,*
+							FROM
+								(
+									SELECT
+										xt.xiaosTitleID,
+										xt.chuangjTime
+									FROM
+										dbo.tb_sd_xiaos_title xt
+										inner JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+									WHERE
+										1 = 1
+										AND dt.dingdLeix = '1'
+										AND dt.convertFlag = '1'
+										AND xt.fenxkhCode =  #{distributorId}
+-- 										AND xt.app_status_agency in
+										<if test='status=="1"'>
+											('WAITFORRECEIVE')
+										</if>
+										<if test='status=="2"'>
+											('INPROGRESS')
+										</if>
+										<if test='status=="3"'>
+											('WAITFORREFUND')
+										</if>
+										<if test='status=="4"'>
+											('COMPLETED','CLOSED')
+										</if>
+								) AS o
+						) AS c
+					WHERE
+					rownumber &gt;= (${offset}-1)*${pageSize}+1
+					ORDER BY rownumber
+				)
+		ORDER BY chuangjTime desc
+	</select>
+
+
+	<select id="getOnePage4StoreId" resultMap="listResultMap">
+		SELECT
+		xt.chuangjTime,
+		xt.fenxkhCode ,
+		xt.xiaosTitleID as id,
+		xt.xiaosTitleID as consignment,
+		xl.xiaosListID as itemsId,
+		xt.cankNo as  referencedCode,
+		xt.cankNo as  consignmentCode,
+		xt.xiaosSum AS payAmount,
+		xl.shangpCode AS productCode,
+		xt.kehName as clientName,
+		xt.shouhTel as clientTel,
+		xt.shouhAddress AS address,
+		dt.yuansdStatus AS orderStatus,
+		org.shopType as  salesApplication,
+		xt.isDeliverSelf AS isDeliverSelf,
+		xt.oms_status AS omsStatus,
+		tt.tuihNo as returnOderCode,
+		tt.tuihStatusName as  returnStatus,
+		tt.tuihStatus as returnCheck
+		FROM
+		dbo.tb_sd_xiaos_title xt
+		LEFT JOIN dbo.tb_sd_xiaos_list xl ON xt.xiaosTitleID = xl.xiaosTitleID
+		LEFT JOIN dbo.tb_sys_record_shangp sp ON sp.shangpID = xl.shangpID
+		LEFT JOIN dbo.tb_sd_tuih_title tt ON xt.xiaosTitleID = tt.xiaosTitleID
+		INNER JOIN dbo.tb_sys_record_keh kh ON kh.kehCode = xt.kehCode
+		INNER JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+		INNER JOIN dbo.tb_sys_record_org org ON dt.yewOrgID =org.orgID
+
+		WHERE
+		1 = 1
+		AND sp.shangpType = '0'
+		<if test="search != null">
+			<if test="search != ''">
+				AND (
+				xt.cankNo like '%${search}%'
+				or xt.kehName like '%${search}%'
+				or xt.shouhTel like '%${search}%'
+				or xt.shouhAddress LIKE '%${search}%'
+				)
+
+			</if>
+		</if>
+		AND xt.xiaosTitleID
+		IN (
+		SELECT
+		TOP ${pageSize} c.xiaosTitleID
+		FROM
+		(
+		SELECT
+		row_number () OVER (ORDER BY chuangjTime DESC) AS rownumber ,*
+		FROM
+		(
+		SELECT
+		xt.xiaosTitleID,
+		xt.chuangjTime
+		FROM
+		dbo.tb_sd_xiaos_title xt
+		inner JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+		WHERE
+		1 = 1
+		AND dt.dingdLeix = '1'
+		AND dt.convertFlag = '1'
+		AND xt.suggest_store =  #{storeId}
+		AND xt.app_status_store in
+		<if test='status=="1"'>
+			('WAITFORRECEIVE')
+		</if>
+		<if test='status=="2"'>
+			('INPROGRESS')
+		</if>
+		<if test='status=="3"'>
+			('WAITFORREFUND')
+		</if>
+		<if test='status=="4"'>
+			('COMPLETED','CLOSED')
+		</if>
+		) AS o
+		) AS c
+		WHERE
+		rownumber &gt;= (${offset}-1)*${pageSize}+1
+		ORDER BY rownumber
+		)
+		ORDER BY chuangjTime desc
+	</select>
+
+
+	<resultMap id="DetailMap" type="com.dpmall.db.bean.OrderEntity">
+		<id property="id" column="PK" />
+		<result property="referencedCode" column="referencedCode" />
+		<result property="recommendStore" column="P_RECOMMENDSTORE" />
+		<result property="consignment" column="P_CONSIGNMENT" />
+		<result property="cusComment" column="cusComment"/>
+		<result property="serverComment" column="serverComment"/>
+		<result property="cusRefuseComment" column="P_CUSREFUSECOMMET"/>
+		<result property="agencyComment" column="agencyComment"/>
+		<result property="refuseType" column="P_REFUSETYPE"/>
+		<result property="refuseComment" column="refuseComment"/>
+		<result property="acceptedRefuseComment" column="acceptedRefuseComment"/>
+		<result property="deliverPic" column="P_DELIVERYPIC"/>
+		<result property="signPic" column="P_SIGNPIC"/>
+		<result property="status" column="omsStatus"/>
+		<result property="OrderStatus" column="OrderStatus"/>
+		<result property="acceptedBy" column="P_ACCEPTEDBY"/>
+		<result property="acceptedComment" column="acceptedComment"/>
+		<result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+		<result property="isDeliverySelf" column="P_ISDELIVERYSELF"/>
+		<result property="waitShipments" column="waitShipments"/>
+		<result property="deliveryTime" column="P_DELIVERYTIME"/>
+		<result property="finishTime" column="P_FINISHTIME"/>
+		<result property="deliveryPoint" column="deliveryPoint"/>
+		<result property="deliveryPointOfServiceId" column="deliveryPointOfServiceId"/>
+		<result property="deliveryMode" column="deliveryMode"/>
+		<result property="orderCode" column="p_code"/>
+		<result property="address" column="address"/>
+		<result property="allocatCode" column="P_ALLOCATIONEMPLOYEECODE"/>
+		<result property="shippingAddress" column="P_SHIPPINGADDRESS"/>
+		<result property="buyerNick" column="P_BUYERNICK"/>
+		<result property="firstName" column="clientName"/>
+		<result property="phone1" column="clentTel"/>
+		<result property="consignmentCode" column="P_CCODE"/>
+		<result property="logisticsInfo" column="P_LOGISTICSINFO"/>
+		<result property="logisticsCompany" column="P_LOGISTICSCOMPANY"/>
+		<result property="trackingId" column="P_TRACKINGID"/>
+		<result property="salesApplication" column="salesApplication"/>
+		<result property="deliveryMethods" column="deliveryMethods"/>
+		<result property="name" column="P_NAME"/>
+		<result property="RegionName" column="RegionName"/>
+		<result property="CityName" column="CityName"/>
+		<result property="DistrictName" column="DistrictName"/>
+		<result property="deliveryRemark" column="deliveryRemark"/>
+		<result property="splitOrderType" column="splitOrderType"/>
+		<result property="length" column="P_LENGTH"/>
+		<result property="width" column="P_WIDTH"/>
+		<result property="orderShipmentsDate" column="P_ORDERSHIPMENTSDATE" />
+		<result property="appointmentDate" column="P_APPOINTMENTDATE" />
+		<result property="storeO2OStatus" column="storeO2OStatus" />
+		<result property="agencyO2OStatus" column="agencyO2OStatus" />
+		<result property="returnStatus" column="returnStatus"/>
+		<result property="returnOderCode" column="returnOderCode"/>
+		<result property="returnCheck" column="P_RETURNCHECK"/>
+		<result property="isDeliverySelf" column="isDeliverSelf"/>
+		<collection property="items" ofType="com.dpmall.db.bean.OrderItemEntity">
+			<id property="id" column="itemsId"/>
+			<result property="returnOderCode" column="returnOderCode"/>
+			<result property="splitOrderType" column="splitOrderType"/>
+			<result property="packQua" column="packQua"/>
+			<result property="code" column="productCode"/>
+			<result property="name" column="productName"/>
+			<result property="returnMony" column="returnMony"/>
+			<result property="returnQuantity" column="returnQuantity"/>
+			<result property="description" column="description"/>
+			<result property="category" column="category"/>
+			<result property="unit" column="unit"/>
+			<result property="netWeight" column="netWeight"/>
+			<result property="volume" column="volume"/>
+			<result property="size" column="size"/>
+			<result property="quantity" column="quantity"/>
+			<result property="tmallQuantity" column="tmallQuantity"/>
+			<result property="basePrice" column="basePrice"/>
+			<result property="totalPrice" column="totalPrice"/>
+			<result property="deliveryCost" column="deliveryCost"/>
+			<result property="promotionTotalsaved" column="promotionTotalsaved"/>
+			<result property="payAmount" column="payAmount"/>
+			<result property="juntanPrice" column="juntanPrice"/>
+			<result property="serviceAmount" column="serviceAmount"/>
+			<result property="productCategory" column="productCategory"/>
+			<result property="productCode" column="productCode"/>
+			<result property="returnOderCode" column="returnOderCode"/>
+		</collection>
+		<collection property="historyItems" ofType="com.dpmall.db.bean.OrderHistoryItemEntity">
+			<id property="id" column="itemsId"/>
+			<result property="deliveryTime" column="P_DELIVERYTIME"/>
+			<result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+			<result property="finishTime" column="P_FINISHTIME"/>
+			<result property="acceptedBy" column="P_ACCEPTEDBY"/>
+			<result property="recommendStore" column="P_RECOMMENDSTORE" />
+			<result property="orderShipmentsDate" column="P_ORDERSHIPMENTSDATE" />
+			<result property="appointmentDate" column="P_APPOINTMENTDATE" />
+			<result property="storeO2OStatus" column="P_STOREO2OSTATUS" />
+			<result property="agencyO2OStatus" column="P_AGENCYO2OSTATUS" />
+		</collection>
+
+	</resultMap>
+
+	
+	<select id="getOrderDetails"  resultMap="DetailMap">
+		SELECT DISTINCT
+		xt.xiaosTitleID AS pk,
+		xt.cankNo AS referencedCode,
+		sp.leibName AS category,
+		sp.miaos AS productName,
+		sp.shangpCode AS productCode,
+		sp.danwName AS unit,
+		xl.xiaosNum AS quantity,
+		xl.xiaosPrice AS basePrice,
+		xl.listSum AS payAmount,
+		xt.xiaosDefine5 AS deliveryMethods,
+		xt.kehName as clientName,
+		xt.shouhTel as clentTel,
+		xt.shouhAddress AS address,
+		xt.dingdRemark AS serverComment,
+		xt.fenxkhCode,
+		xl.xiaosListID AS itemsId,
+		dt.yuansdStatus AS orderStatus,
+		org.shopType salesApplication,
+		xt.isDeliverSelf AS isDeliverSelf,
+		xt.oms_status AS omsStatus,
+		xt.app_status_agency as agencyO2OStatus,
+		xt.app_status_store  as storeO2OStatus,
+		tt.tuihNo as returnOderCode,
+		tt.tuihStatusName AS returnStatus,
+		tt.tuihStatus
+		FROM dbo.tb_sd_xiaos_title xt
+		LEFT JOIN dbo.tb_sd_xiaos_list xl	ON xt.xiaosTitleID = xl.xiaosTitleID
+		LEFT JOIN dbo.tb_sys_record_shangp sp	ON sp.shangpID = xl.shangpID
+		LEFT JOIN dbo.tb_sd_tuih_title tt	ON xt.xiaosTitleID = tt.xiaosTitleID
+		INNER JOIN dbo.tb_sys_record_keh kh	ON kh.kehCode = xt.kehCode
+		INNER JOIN dbo.tb_sd_dingd_title dt	ON dt.dingdTitleID = xt.dingdTitleID
+		INNER JOIN dbo.tb_sys_record_org org	ON dt.yewOrgID = org.orgID
+		WHERE 1 = 1
+		AND sp.shangpType = '0'
+		AND xt.xiaosTitleID = #{consignmentId}
+
+
+	</select>
+	
+	<!-- 实物类获取退货单据明细 -->
+	<select id="getReturnRequestDetails"  resultMap="DetailMap">
+		SELECT DISTINCT
+			xt.xiaosTitleID AS pk,
+			xt.cankNo AS referencedCode,
+			sp.leibName AS category,
+			sp.miaos AS productName,
+			sp.shangpCode AS productCode,
+			sp.danwName AS unit,
+			xl.xiaosNum AS quantity,
+			xl.xiaosPrice AS basePrice,
+			xl.listSum AS payAmount,
+			xt.xiaosDefine5 AS deliveryMethods,
+			xt.kehName AS clientName,
+			xt.shouhTel AS clentTel,
+			xt.shouhAddress AS address,
+			xt.dingdRemark AS serverComment,
+			xt.fenxkhCode,
+			xl.xiaosListID AS itemsId,
+			dt.yuansdStatus AS orderStatus,
+			org.shopType salesApplication,
+			xt.isDeliverSelf AS isDeliverSelf,
+			xt.oms_status AS omsStatus,
+			xt.app_status_agency AS agencyO2OStatus,
+			xt.app_status_store AS storeO2OStatus,
+			tt.tuihNo as returnOderCode,
+			tt.tuihStatusName AS returnStatus
+		FROM
+		dbo.tb_sd_xiaos_title xt
+		LEFT JOIN dbo.tb_sd_xiaos_list xl ON xt.xiaosTitleID = xl.xiaosTitleID
+		LEFT JOIN dbo.tb_sys_record_shangp sp ON sp.shangpID = xl.shangpID
+		LEFT JOIN dbo.tb_sd_tuih_title tt ON xt.xiaosTitleID = tt.xiaosTitleID
+		INNER JOIN dbo.tb_sys_record_keh kh ON kh.kehCode = xt.kehCode
+		INNER JOIN dbo.tb_sd_dingd_title dt ON dt.dingdTitleID = xt.dingdTitleID
+		INNER JOIN dbo.tb_sys_record_org org ON dt.yewOrgID = org.orgID
+		WHERE
+		1 = 1
+		AND tt.tuihCancelFlag = '0'
+		AND sp.shangpType = '0'
+		AND tt.tuihStatus in ('1','2')
+		AND xt.xiaosTitleID = #{consignmentId}
+	</select>
+	
+	<!-- 实物类导购员订单状态条数 -->
+	<select id="get2AcceptorCount" resultType="int">
+		SELECT
+			COUNT (1)
+		FROM
+			CONSIGNMENTS
+		WHERE
+		P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+		<if test="acceptorId != null">
+		AND PK IN (
+			SELECT
+				P_CONSIGNMENT
+			FROM
+				O2OCONSIGNMENTITEMS
+			WHERE
+				1 = 1
+			AND P_ACCEPTEDBY = #{acceptorId}
+		)
+		</if>
+		AND P_STATUS IN (
+			SELECT
+				t2.pk
+			FROM
+				COMPOSEDTYPES t1,
+				ENUMERATIONVALUES t2
+			WHERE
+				t1.INTERNALCODe = 'ConsignmentStatus'
+			AND t2.TYPEPKSTRING = t1.PK
+			<if test='status=="1"'>
+							AND code ='STOREWAIT'
+					</if>
+					<if test='status=="2"'>
+							AND code in ('ALLOCATED','BOOKED','SHIPPED','DPRECEIVE','ACCEPT')
+					</if>
+					<if test='status=="3"'>
+							AND code in ('COMPLETED','RECEIVE')
+					</if>
+		)
+	</select>
+	
+	<select id="getOnePage4AcceptorId" resultMap="listResultMap">
+		SELECT
+				*
+			FROM
+				(
+					SELECT
+						c.p_code,
+						o.P_EXTERNALORDERCODE,
+						c.pk,
+						OE.P_QUANTITY AS quantity,
+						OE.P_TMALLQUANTITY AS tmallQuantity,
+						OE.P_DELIVERYCOST AS deliveryCost,
+						OE.P_SERVICEAMOUNT AS serviceAmount,
+						OE.p_payamount AS payAmount,
+                        T2.code AS P_STATUS,
+						OE.pk AS itemsId,
+						OE.P_PAYAMOUNT,
+						OE.P_JUNTANPRICE as juntanPrice,
+						A .P_FIRSTNAME,
+						A .p_phone1,
+						A .P_STREETNAME,
+						U .P_CODE AS unit,
+						R.P_NAME as RegionName,
+                        CLP.P_NAME as CityName,
+                        DLP.P_NAME as DistrictName,
+                        PS.P_DISPLAYNAME as P_DELIVERYPOINTOFSERVICE,
+                        T3.code AS OrderStatus,
+						ROWNUM rn
+					FROM
+						CONSIGNMENTS c
+					LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+					LEFT JOIN CONSIGNMENTENTRIES CE ON CE.P_CONSIGNMENT = c.pk
+					LEFT JOIN ORDERENTRIES OE ON CE.P_ORDERENTRY = OE.pk
+					LEFT JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+
+					  LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT=DPT.PK
+   		 			 LEFT JOIN UNITS U ON U .PK = DPT.P_UNIT
+				<!-- 	LEFT JOIN UNITS U ON OE.P_UNIT = U .pk -->
+
+					LEFT JOIN ORDERS O ON C.P_ORDER=O.PK
+                    LEFT JOIN POINTOFSERVICE PS ON C.P_DELIVERYPOINTOFSERVICE=PS.PK
+					LEFT JOIN REGIONSLP R ON A.P_REGION =R.itempk
+   		            LEFT JOIN citieslp CLP ON  CLP.itempk=A.P_CITY
+   		            LEFT JOIN districtslp DLP ON DLP.itempk=A.P_CITYDISTRICT
+                    LEFT JOIN ENUMERATIONVALUES T2 ON T2.PK = C.P_STATUS
+                    LEFT JOIN ENUMERATIONVALUES T3 ON T3.PK = O.P_STATUS
+		            LEFT JOIN COMPOSEDTYPES T1 ON T2.TYPEPKSTRING = T1.PK
+		            LEFT JOIN languages l ON r.LANGPK = l.pk
+					LEFT JOIN languages l2 ON CLP.LANGPK = l2.pk
+					LEFT JOIN languages l3 ON  DLP.LANGPK = l3.pk
+					
+					WHERE
+					 1=1
+					and  NVL(l.p_ISOCODE, 'zh') = 'zh'
+					AND NVL(l2.p_ISOCODE, 'zh') = 'zh'
+					AND NVL(l3.p_ISOCODE, 'zh') = 'zh'
+					
+					AND c.PK IN (
+					 SELECT
+						pk
+					FROM
+						(
+							SELECT
+								c.pk,
+								ROWNUM rn
+							FROM
+								CONSIGNMENTS c
+							LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+							WHERE
+								1 = 1
+							AND O2O.P_ACCEPTEDBY = #{acceptorId}
+							and c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+							AND C.P_STATUS IN (
+								SELECT
+									t2.pk
+								FROM
+									COMPOSEDTYPES t1,
+									ENUMERATIONVALUES t2
+								WHERE
+								1=1
+									AND T1.INTERNALCODe in('ConsignmentStatus','OrderStatus')
+								AND t2.TYPEPKSTRING = t1.PK
+								<if test='status=="1"'>
+									AND t2.code ='STOREWAIT'
+								</if>
+								<if test='status=="2"'>
+										AND t2.code in ('ALLOCATED','BOOKED','SHIPPED','DPRECEIVE','ACCEPT')
+								</if>
+								<if test='status=="3"'>
+										AND t2.code in ('COMPLETED','RECEIVE')
+								</if>
+							)
+							AND ROWNUM &lt; ${startNum}+${pageSize}+1
+						) p1
+					WHERE
+						p1.rn &gt; ${startNum}
+					  )
+					  )
+	</select>
+	
+	<!-- 查询单位 -->
+	<select id="formatUnit" resultType="string">
+		SELECT
+			UL.P_NAME
+		FROM
+			UNITS U
+		LEFT JOIN UNITSLP ul ON U .PK = UL.ITEMPK
+		LEFT JOIN LANGUAGES l ON ul.LANGPK = l.pk
+		WHERE
+			1 = 1
+		AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+		AND U .P_CODE = #{unit}
+	</select>
+	<resultMap type="com.dpmall.db.bean.OrderEntity" id="listCommentsMap">
+		<id property="id" column="pk"/>
+		<result property="buyerMessage" column="buyerMessage"/>
+		<result property="sellerMessage" column="sellerMessage"/>
+		<result property="consignmentCode" column="consignmentCode"/>
+	</resultMap>
+	
+	<!-- 查询客服备注，客户备注 -->
+	<select id="getComments" resultMap="listCommentsMap">
+		SELECT
+			oe.P_BUYERMESSAGE as buyerMessage,
+			oe.P_SELLERMESSAGE as sellerMessage,
+			c.P_CODE as consignmentCode
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN ORDERS o ON o.pk = c.P_ORDER
+		LEFT JOIN ORDERENTRIES oe ON oe.P_ORDER = o.pk
+		WHERE
+			1 = 1
+		AND c.P_CODE = #{consignmentId}
+	</select>
+	<select id="distributedOrders" resultMap="listResultMap">
+		SELECT
+			c.pk,
+			O2O.P_ACCEPTEDTIME,
+			o2.P_DELIVERYCOST AS deliveryCost,
+			o2.P_SERVICEAMOUNT AS serviceAmount,
+			o2.p_payamount AS payAmount,
+			o2.P_JUNTANPRICE AS juntanPrice,
+			O2.P_QUANTITY AS quantity,
+			o2.pk AS itemsId
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+		LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+		LEFT JOIN ORDERS O ON c.P_ORDER = O.PK
+		LEFT JOIN ORDERENTRIES o2 ON c2.P_ORDERENTRY = o2.pk
+		LEFT JOIN POINTOFSERVICE P ON c.P_DELIVERYPOINTOFSERVICE = P .PK
+
+		WHERE P.PK IN 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+            #{item}  
+       </foreach>
+       and o2o.CREATEDTS between #{startdate,jdbcType=TIMESTAMP} and #{enddate,jdbcType=TIMESTAMP}
+		
+	</select>
+	
+	
+	<resultMap id="PartOfReturnDetailsMap" type="com.dpmall.db.bean.OrderReturnEntity">
+		<result property="returnOderCode" column="returnOderCode"/>
+		<result property="returnStatus" column="returnStatus"/>
+		<result property="returnTotalPrice" column="returnTotalPrice"/>
+
+		<collection property="returnDetailsList" ofType="com.dpmall.db.bean.OrderReturnDetailsEntity">
+			<result property="returnOderCode" column="returnOderCode"/>
+			<result property="productCode" column="productCode"/>
+			<result property="productName" column="productName"/>
+			<result property="returnPayAmount" column="returnPayAmount"/>
+			<result property="returnQuantity" column="returnQuantity"/>
+			<result property="category" column="category"/>
+			<result property="unit" column="unit"/>
+			<result property="returnStatus" column="returnStatus"/>
+			<result property="returnCheck" column="returnCheck"/>
+		</collection>
+		
+		
+	</resultMap>
+	
+	
+	<!-- 部分退货时，退货单明细 -->
+	<select id="getPartOfReturnDetails" resultMap="PartOfReturnDetailsMap">
+		SELECT DISTINCT
+			tt.tuihNo as returnOderCode,
+			tt.tuihStatusName,
+			tt.tuihStatus AS returnStatus,
+			tl.tuihNum as returnQuantity,
+			tl.tuihPrice as returnPayAmount,
+			tt.tuihSum as returnTotalPrice,
+			xt.xiaosTitleID AS id,
+			xt.cankNo AS referencedCode,
+			sp.leibName AS category,
+			sp.miaos AS productName,
+			sp.shangpCode AS productCode,
+			sp.danwName AS unit
+		FROM
+			dbo.tb_sd_xiaos_title xt
+			LEFT JOIN dbo.tb_sd_xiaos_list xl ON xt.xiaosTitleID = xl.xiaosTitleID
+			LEFT JOIN dbo.tb_sys_record_shangp sp ON sp.shangpID = xl.shangpID
+			LEFT JOIN dbo.tb_sd_tuih_title tt ON xt.xiaosTitleID = tt.xiaosTitleID
+			LEFT JOIN dbo.tb_sd_tuih_list tl ON tl.tuihTitleID = tt.tuihTitleID
+		WHERE
+			1 = 1
+			AND tt.tuihCancelFlag = '0'
+			AND sp.shangpType = '0'
+			AND xt.xiaosTitleID = #{consignmentId}
+		<!--AND (tt.tuihNo in
+		<foreach collection="returnOderCode" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		)-->
+
+	</select>
+	
+	<!-- 部分退货时，退货单单号 -->
+	<select id="getPartOfReturnCodes" resultType="String">
+		SELECT DISTINCT
+			R.P_CODE AS returnOderCode
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ORDERS O ON O.PK = C.P_ORDER
+		LEFT JOIN RETURNREQUEST R ON R.P_ORDER = O.PK
+		LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+		WHERE
+			1 = 1
+		AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		AND C.P_CODE = #{consignmentId}
+		GROUP BY
+			R.P_CODE
+	</select>
+	
+	<!-- 计算总的退货金额 -->
+	<select id="getReturnPriceSum" resultType="string">
+		SELECT DISTINCT
+			SUM (R2.P_RETURNMONEY) AS returnPriceSum
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ORDERS O ON O.PK = C.P_ORDER
+		LEFT JOIN RETURNREQUEST R ON R.P_ORDER = O.PK
+		LEFT JOIN RETURNENTRY R2 ON R2.P_RETURNREQUEST = R.PK
+		LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+		WHERE
+			1 = 1
+		AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		AND C.P_CODE = #{consignmentId}
+	</select>
+	
+	
+	<update id="editStatus">
+		UPDATE dbo.tb_sd_xiaos_title
+		<set>
+			<if test="po.date !=null and po.date !=''" >
+				appionted_time = #{po.date},
+			</if>
+			<if test="po.shippedDate !=null and po.shippedDate !=''" >
+				shipped_time = #{po.shippedDate},
+			</if>
+			<if test="po.deliveryPic !=null and po.deliveryPic !=''" >
+				deliveryPic =  #{po.deliveryPic},
+			</if>
+			<if test="po.signPic !=null and po.signPic !=''" >
+				signPic = #{po.signPic},
+			</if>
+			<if test="po.isDeliverSelf !=null and po.isDeliverSelf !=''" >
+				isDeliverSelf =  #{po.isDeliverSelf},
+			</if>
+			<if test="po.storeId !=null and po.storeId !=''" >
+				suggest_store =  #{po.storeId},
+			</if>
+
+		</set>
+
+		WHERE
+			1 = 1
+			AND xiaosTitleID = #{po.consignmentCode}
+
+	</update>
+	
+	
+	
+	
+</mapper>

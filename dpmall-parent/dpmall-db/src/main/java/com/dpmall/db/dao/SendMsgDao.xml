@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.SendMsgDao">
+
+	<resultMap id="sendMsgResultMap" type="com.dpmall.db.bean.SendMsgEntiy">
+	    <result property="msgtemplate" column="msgtemplate" />
+	</resultMap>
+	<select id="getMsgtemplateByCode" resultType="java.lang.String">
+		SELECT
+			s.P_MSGTEMPLATE
+		FROM
+			SENDMSGCONFIG s,
+			ENUMERATIONVALUES e
+		WHERE
+			s.SCOPE = e.pk
+			AND e.CODE = 'salesLeads'
+			and s.p_code = #{code}
+	</select>
+
+
+</mapper>

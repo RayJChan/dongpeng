@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.ProductStatisticDao">
+	<resultMap id="productStatisticResultMap" type="com.dpmall.db.bean.ProductStatisticEntity">
+	    <id property="id" column="ID" />
+	    <result property="fromTime" column="FROM_TIME" />
+	    <result property="endTime" column="END_TIME" />
+	    <result property="productId" column="PRODUCT_ID" />
+		<result property="productCode" column="PRODUCT_CODE" />
+		<result property="saleTotal" column="TTL_SALE" />
+	    <result property="totalAmount" column="TTL_AMOUNT" />
+	    <result property="totalDeals" column="TTL_DEALS" />
+		<result property="totalAccess" column="TTL_ACCESS" />
+		<result property="createTime" column="CREATE_TIME" />
+	    <result property="updateTime" column="UPDATE_TIME" />
+	</resultMap>
+	
+	<select id="search"  resultMap="productStatisticResultMap">
+		select 
+			ID,
+			FROM_TIME,
+			END_TIME,
+			PRODUCT_ID,
+			PRODUCT_CODE,
+			TTL_SALE,
+			TTL_AMOUNT,
+			TTL_DEALS,
+			TTL_ACCESS,
+			CREATE_TIME,
+			UPDATE_TIME,
+			ROWNUM RN
+		from T_PRODUCT_STATISTICS where 1= 1
+		<if test="productCode != null">
+		    AND PRODUCT_CODE = ${productCode}
+		</if>
+		<if test="fromTime != null">
+		    AND FROM_TIME &gt; #{fromTime} 
+		</if>
+		<if test="endTime != null">
+		    AND END_TIME &lt;  #{endTime}  
+		</if>
+		AND  ROWNUM between ${page.start} and ${page.pageSize}
+		 
+	</select>
+	
+	<update id="updateByTemplate">
+	    update T_PRODUCT_STATISTICS set
+	    <if test="template.saleTotal != null">
+		    TTL_SALE=#{template.saleTotal},
+		</if>
+	    <if test="template.totalAmount != null">
+		    TTL_AMOUNT=#{template.totalAmount},
+		</if>
+	    <if test="template.totalDeals != null">
+		    TTL_DEALS=#{template.totalDeals},
+		</if>
+	    <if test="template.totalAccess != null">
+		    TTL_DEALS=#{template.totalAccess}
+		</if>
+	    where id = #{template.id}
+	</update>
+	
+	<insert id="insert">
+		insert into T_PRODUCT_STATISTICS(
+			FROM_TIME,
+			END_TIME,
+			PRODUCT_ID,
+			PRODUCT_CODE,
+			TTL_SALE,
+			TTL_AMOUNT,
+			TTL_DEALS,
+			TTL_ACCESS,
+			CREATE_TIME,
+			UPDATE_TIME
+		) values (
+			#{template.fromTime},
+			#{template.endTime},
+			#{template.productId},
+			#{template.productCode},
+			#{template.saleTotal},
+			#{template.totalAmount},
+			#{template.totalDeals},
+			#{template.totalAccess},
+			#{template.createTime},
+			#{template.updateTime}
+		)
+	</insert>
+	
+	
+</mapper>

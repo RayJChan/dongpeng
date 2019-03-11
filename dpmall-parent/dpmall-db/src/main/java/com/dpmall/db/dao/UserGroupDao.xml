@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.UserGroupDao">
+
+    <insert id = "insertAppGroupBatch">
+        INSERT INTO dbo.tb_sys_record_appgroup
+        (
+            create_time,
+            modify_time,
+            code,
+            name,
+            type,
+            parent_id,
+            parent_ids
+        )
+        VALUES
+            <foreach collection="list" index="index" item="item" separator=",">
+            (
+                GETDATE(),
+                GETDATE(),
+                #{item.code},
+                #{item.name},
+                #{item.type},
+                #{item.parentId},
+                #{item.parentIdList}
+            )
+            </foreach>
+    </insert>
+
+
+    <insert id = "insertAppGroup" >
+        INSERT INTO dbo.tb_sys_record_appgroup
+        (
+        create_time,
+        modify_time,
+        code,
+        name,
+        type,
+        parent_id,
+        parent_ids
+        )
+        VALUES
+            (
+            GETDATE(),
+            GETDATE(),
+            #{entity.code},
+            #{entity.name},
+            #{entity.type},
+            #{entity.parentId},
+            #{entity.parentIdList}
+            )
+    </insert>
+
+
+    <resultMap id="appGroupMap" type="com.dpmall.db.bean.AppGroupEntity">
+        <id property="id" column="id" />
+        <result property="code" column="code" />
+        <result property="name" column="name" />
+        <result property="type" column="type" />
+        <result property="store" column="store" />
+        <result property="parentIdList" column="parentIdList" />
+        <result property="parentId" column="parentId" />
+    </resultMap>
+
+    <select id="getByCode" resultMap="appGroupMap">
+        SELECT
+            id,
+            code,
+            name,
+            type,
+            parent_id as parentId,
+            parent_ids as parentIdList
+        FROM dbo.tb_sys_record_appgroup
+        WHERE  1=1
+        AND code = #{code}
+
+    </select>
+
+    <resultMap id="appUsertMap" type="com.dpmall.db.bean.AppUser_NewEntity">
+        <id property="id" column="id"/>
+        <result property="userName" column="userName"/>
+        <result property="password" column="password"/>
+        <result property="cnName" column="cnName"/>
+        <result property="role" column="role"/>
+        <result property="orgId" column="orgId"/>
+        <result property="kehuId" column="kehuId"/>
+        <result property="role" column="role"/>
+    </resultMap>
+
+    <!--查看appuser-->
+    <select id="getAppUserByUserName" resultMap="appUsertMap">
+        SELECT
+            id as id,
+            user_name as userName,
+            cnName as cnName,
+            passwd as  password,
+            role as  role,
+            org_id as orgId,
+            keh_id as kehuId,
+            group_id as groupId
+        FROM dbo.tb_sys_record_appuser
+        WHERE  user_name = #{userName}
+    </select>
+
+
+    <insert id ="isnertAppUser">
+        INSERT INTO dbo.tb_sys_record_appuser
+        (
+            user_name,
+            cnName,
+            passwd,
+            role,
+            org_id,
+            keh_id,
+            group_id,
+            create_time,
+            modify_time
+        )
+        VALUES
+            (   #{po.userName},
+                #{po.cnName},
+                #{po.password},
+                #{po.role},
+                #{po.orgId},
+                #{po.kehuId},
+                #{po.groupId},
+                GETDATE(),
+                GETDATE()
+
+            )
+    </insert>
+
+    <update id = "updateAppuser">
+        UPDATE dbo.tb_sys_record_appuser
+        <set>
+            modify_time = GETDATE(),
+            <if test='po.userName != null and po.userName != "" '>
+                user_name = #{po.userName},
+            </if>
+            <if test='po.cnName != null and po.cnName != "" '>
+                cnName = #{po.cnName},
+            </if>
+            <if test='po.password != null and po.password != "" '>
+                passwd = #{po.password},
+            </if>
+            <if test='po.role != null and po.role != "" '>
+                role = #{po.role},
+            </if>
+            <if test='po.orgId != null and po.orgId != "" '>
+                org_id = #{po.orgId},
+            </if>
+            <if test='po.kehuId != null and po.kehuId != "" '>
+                keh_id = #{po.kehuId},
+            </if>
+            <if test='po.groupId != null and po.groupId != "" '>
+                group_id = #{po.groupId},
+            </if>
+        </set>
+        WHERE  id = #{id}
+
+    </update>
+
+
+    <resultMap id="KeHuMap" type="com.dpmall.db.bean.KeHuEntity">
+        <id property="id" column="id"/>
+        <result property="kehCode" column="kehCode"/>
+        <result property="kehName" column="kehName"/>
+        <result property="orgId" column="orgId"/>
+
+    </resultMap>
+
+
+    <!--查看Kehu表-->
+    <select id="getKeHu" resultMap="KeHuMap">
+        SELECT kehID as id,
+            kehCode as kehCode,
+            kehName as kehName,
+            yewOrgID as orgId
+        FROM
+            dbo.tb_sys_record_keh
+        WHERE
+            kehCode = #{kehCode}
+    </select>
+
+
+
+</mapper>
