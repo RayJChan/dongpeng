@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.SalesLeadsOrderDao">
+	<resultMap  id="SalesLeadsOrderResultMap" type="com.dpmall.db.bean.SalesLeadsOrderEntity">
+		<result property="id" column="id"/>
+		<result property="clientName" column="clientName"/>
+        <result property="nickName" column="nickName"/>
+        <result property="clientTel" column="clientTel"/>
+        <result property="salesLeadsOrderCode" column="salesLeadsOrderCode"/>
+        <result property="clientType" column="clientType"/>
+        <result property="clientTypeId" column="clientTypeId"/>
+        <result property="serverRegion" column="serverRegion"/>
+        <result property="serverCity" column="serverCity"/>
+        <result property="serverDistrict" column="serverDistrict"/>
+        <result property="serverAddress" column="serverAddress"/>
+        <result property="isAgency" column="isAgency"/>
+        <result property="status" column="status"/>
+        <result property="statusDescription" column="statusDescription"/>
+        <result property="lastStatus" column="lastStatus"/>
+        <result property="storeId" column="storeId"/>
+        <result property="agencyId" column="agencyId"/>
+        <result property="appStatusOfAgency" column="appStatusOfAgency"/>
+        <result property="appStatusOfStore" column="appStatusOfStore"/>
+        <result property="decorateSpace" column="decorateSpace"/>
+        <result property="fitmentTime" column="fitmentTime"/>
+        <result property="stylePreference" column="stylePreference"/>
+        <result property="budget" column="budget"/>
+        <result property="area" column="area"/>
+        <result property="village" column="village"/>
+        <result property="productPreference" column="productPreference"/>
+        <result property="custBenefit" column="custBenefit"/>
+        <result property="serviceRemark" column="serviceRemark"/>
+        <result property="agencyRemark" column="agencyRemark"/>
+        <result property="storeRemark" column="storeRemark"/>
+        <result property="source" column="source"/>
+        <result property="saleLeadsTime" column="saleLeadsTime"/>
+        <result property="saleLeadsId" column="saleLeadsId"/>
+
+        <result property="distributer" column="distributer"/>
+        <result property="agencyAccept" column="agencyAccept"/>
+        <result property="storeAccept" column="storeAccept"/>
+        <result property="orderGuide" column="orderGuide"/>
+        <result property="createdTime" column="createdTime"/>
+        <result property="ordersTime" column="ordersTime"/>
+        <result property="agencyAcceptTime" column="agencyAcceptTime"/>
+        <result property="storeAcceptTime" column="storeAcceptTime"/>
+        <result property="payPrice" column="payPrice"/>
+        <result property="pictureNames" column="pictureNames"/>
+        <result property="storeName" column="storeName"/>
+        <result property="agencyName" column="agencyName"/>
+        <result property="discountAmount" column="discountAmount"/>
+        <result property="listStatusOfAgency" column="listStatusOfAgency"/>
+        <result property="listStatusOfStore" column="listStatusOfStore"/>
+
+
+
+	</resultMap>
+
+
+
+
+    <!--查询列表-->
+	<select id="getList4AgencyOrStore" resultMap="SalesLeadsOrderResultMap">
+        SELECT *
+        FROM
+            (
+                SELECT *
+                FROM
+                    (
+                        SELECT
+                            ROWNUM AS RN,
+                            R0.*
+                        FROM
+                            (
+                                SELECT
+
+                                    so.pk as id,
+                                    SO.P_NAME as clientName,
+                                    SO.P_TELEPHONE as clientTel,
+                                    SO.P_ORDERCODE as salesLeadsOrderCode,
+                                    SO.P_CLIENTTYPE as clientType,
+                                    SO.P_CLIENTTYPEID as clientTypeId,
+                                    SO.P_SERVERREGION as serverRegion,
+                                    SO.P_SERVERCITY as  serverCity,
+                                    SO.P_NEWSERVERDISTRICT as serverDistrict,
+                                    <!--SO.P_SERVERREGION || SO.P_SERVERCITY || SO.P_NEWSERVERDISTRICT ||-->
+                                    SO.P_SERVERADDRESS AS serverAddress,
+                                    SO.P_ISAGENCY as isAgency,
+                                    SO.P_SALESLEADSORDERSTATUS as status,
+                                    SO.P_SALESLEADSORDERSTATUSNAME as  statusDescription,
+                                    SO.P_LASTSTATUS as lastStatus,
+                                    SO.P_SUGGESTSTORE AS storeId,
+                                    so.P_AGENCY as agencyId,
+                                    so.P_PAYPRICE as payPrice,
+                                    p.P_DISPLAYNAME as storeName,
+                                    a.P_NAME as agencyName,
+                                    SO.P_APPSTATUSOFAGENCY as listStatusOfAgency,
+                                    SO.P_APPSTATUSOFSTORE as listStatusOfStore
+
+                                FROM
+                                    SALESLEADSORDER so
+                                LEFT JOIN POINTOFSERVICE p ON p.pk = so.P_SUGGESTSTORE
+                                LEFT JOIN AGENCY a on a.pk = so.P_AGENCY
+                                WHERE
+                                    1 = 1
+                                    <include refid="isAgency"/>
+                                    <include refid="searchOfList"/>
+                                    <include refid="statusSearchOfList"/>
+
+                               and P_ISO2O = '1'
+                                ORDER BY
+                                    so.MODIFIEDTS DESC
+                            ) R0
+                    ) R1
+                WHERE
+                    R1.RN &lt; ${pageNum}*${pageSize}+1
+        ) R2
+        WHERE
+            R2.RN &gt; (${pageNum}-1)*${pageSize}
+	</select>
+
+   <!--列表数量-->
+    <select id="getListCount" resultType="java.lang.String">
+
+        SELECT
+          count(pk)
+        FROM
+          SALESLEADSORDER so
+        WHERE
+        1 = 1
+        and P_ISO2O = '1'
+          <include refid="isAgency"/>
+          <include refid="searchOfList"/>
+          <include refid="statusSearchOfList"/>
+    </select>
+
+
+    <!--是否经销商-->
+    <sql id="isAgency">
+        <if test='isAgency == "Y"'>
+            AND SO.P_AGENCY = #{agencyId}
+            AND SO.P_APPSTATUSOFAGENCY in <include refid="listStatus"/>
+        </if>
+        <if test='isAgency == "N"'>
+            AND SO.P_ISAGENCY = 'N'
+            AND SO.P_SUGGESTSTORE = #{storeId}
+            AND SO.P_APPSTATUSOFSTORE in <include refid="listStatus"/>
+        </if>
+    </sql>
+
+    <!--列表状态-->
+    <sql id="listStatus">
+        <if test='listStatus == "1"'>
+            ('WAITTING')
+        </if>
+        <if test='listStatus == "2"'>
+            ('FLLOWING')
+        </if>
+        <if test='listStatus == "3"'>
+            ('COMPLETED')
+        </if>
+    </sql>
+
+    <!--搜索-->
+    <sql id="searchOfList">
+        <if test="search!=null and search !='' ">
+            AND (
+            SO.P_SERVERDETAILADDRESS LIKE '%${search}%'
+            or SO.P_NAME LIKE '%${search}%'
+            or SO.P_TELEPHONE LIKE '%${search}%'
+            or SO.P_CUSDETAILADDRESS LIKE '%${search}%'
+            or so.P_ORDERCODE LIKE '%${search}%'
+            )
+        </if>
+    </sql>
+
+    <!--搜索-->
+    <sql id="statusSearchOfList">
+        <if test="statusSearch!=null and statusSearch !='' ">
+            AND   SO.P_SALESLEADSORDERSTATUS in('${statusSearch}')
+        </if>
+    </sql>
+
+
+    <!--详情-->
+    <select id="getDetails" resultMap="SalesLeadsOrderResultMap">
+        SELECT
+            SO.P_SALESLEADS                                           AS saleLeadsId,
+            SO.pk                                                     AS id,
+            SO.P_ORDERCODE                                            AS salesLeadsOrderCode,
+            SO.P_SALESLEADSORDERSTATUS                                AS status,
+            SO.P_SALESLEADSORDERSTATUSNAME                            AS statusDescription,
+            SO.P_APPSTATUSOFAGENCY                                    AS appStatusOfAgency,
+            SO.P_APPSTATUSOFSTORE                                     AS appStatusOfStore,
+            SO.P_NAME                                                 AS clientName,
+            SO.P_PETNAME                                              AS nickName,
+            SO.P_TELEPHONE                                            AS clientTel,
+            so.P_SERVERREGION                                         AS serverRegion,
+            SO.P_SERVERCITY                                           AS serverCity,
+            SO.P_NEWSERVERDISTRICT                                    AS serverDistrict,
+           <!-- SO.P_SERVERREGION || SO.P_SERVERCITY || SO.P_NEWSERVERDISTRICT ||-->
+            SO.P_SERVERADDRESS                                        AS serverAddress,
+            so.P_ISAGENCY                                             AS isAgency,
+            SO.P_CLIENTTYPE                                           AS clientType,
+            so.P_FITMENTTIME                                          AS fitmentTime,
+            so.P_DECORATESPACE                                        AS decorateSpace,
+            so.P_STYLEPREFERENCE                                      AS stylePreference,
+            SO.P_NEWBUDGET                                            AS budget,
+            SO.p_areaName                                             AS area,
+            SO.P_VILLAGE                                              AS village,
+            SO.p_productPreference                                    AS productPreference,
+            SO.p_custBenefit                                          AS custBenefit,
+            SO.P_SERVICEREMARK                                        AS serviceRemark,
+            SO.P_AGENCYREMARK                                         AS agencyRemark,
+            SO.P_STOREACCEPTORREMARK                                  AS storeRemark,
+            so.P_SOURCE                                               AS source,
+            "TO_CHAR"(s.P_SALESLEADSDATE, 'yyyy-MM-dd hh24:mi:ss')           AS saleLeadsTime,
+            so.P_DISTRIBUTER                                          AS distributer,
+            a1.P_CNNAME                                               AS agencyAccept,
+            p.P_DISPLAYNAME                                           AS storeAccept,
+            a2.P_CNNAME                                               AS orderGuide,
+            "TO_CHAR"(so.CREATEDTS, 'yyyy-MM-dd hh24:mi:ss')          AS createdTime,
+            "TO_CHAR"(so.P_ORDERSTIME, 'yyyy-MM-dd hh24:mi:ss')       AS ordersTime,
+            "TO_CHAR"(so.P_AGENCYACCEPTDATE, 'yyyy-MM-dd hh24:mi:ss') AS agencyAcceptTime,
+            "TO_CHAR"(so.P_ACCEPTDATE, 'yyyy-MM-dd hh24:mi:ss')       AS storeAcceptTime,
+            SO.P_LASTSTATUS                                           AS lastStatus,
+            so.P_DISCOUNTPRICE                                        AS discountAmount,
+            so.P_PICTURES                                             AS pictureNames,
+            so.P_PAYPRICE                                             as payPrice,
+            SO.P_APPSTATUSOFAGENCY                                    as listStatusOfAgency,
+            SO.P_APPSTATUSOFSTORE                                     as listStatusOfStore,
+            so.P_SOURCEPLATFORM                                       as sourcePlatform,
+            so.P_AMOUNT                                               AS amount
+
+        FROM
+            SALESLEADSORDER so
+            LEFT JOIN SALESLEADS s ON s.pk = SO.P_SALESLEADS
+            LEFT JOIN APPUSER a1 ON A1.pk = SO.P_AGENCYACCEPT
+            LEFT JOIN APPUSER a2 ON a2.pk = so.P_ORDERGUIDE
+            LEFT JOIN POINTOFSERVICE P ON P.pk = SO.P_SUGGESTSTORE
+        WHERE
+            1 = 1
+            AND
+            SO.pk = #{id}
+    </select>
+
+
+
+
+
+    <!--更新留资单-->
+    <update id="edit">
+        <if test="entity.id!=null and entity.id!='' ">
+            update salesleadsorder
+
+            <set>
+                MODIFIEDTS=sysdate,
+                <if test="entity.failType!=null and entity.failType!='' ">
+                    P_FAILTYPE=#{entity.failType},
+                </if>
+                <if test="entity.failReason!=null and entity.failReason!=''">
+                    P_FAILREASON=#{entity.failReason},
+                </if>
+
+                <if test="entity.refuseRemark!=null">
+                    P_REFUSEREMARK=#{entity.refuseRemark},
+                </if>
+                <if test="entity.refuseType!=null">
+                    P_REFUSETYPE=#{entity.refuseType},
+                </if>
+                <if test="entity.refuseTime!=null">
+                    P_REFUSEDATE=#{entity.refuseTime},
+                </if>
+                <if test="entity.saleLeadsOrderStatus!=null">
+                    P_SALESLEADSORDERSTATUS=#{entity.saleLeadsOrderStatus},
+                </if>
+                <if test="entity.saleLeadsOrderStatusName!=null">
+                    P_SALESLEADSORDERSTATUSNAME=#{entity.saleLeadsOrderStatusName},
+                </if>
+                <if test="entity.acceptTime!=null">
+                    P_ACCEPTDATE=#{entity.acceptTime},
+                </if>
+                <if test="entity.agencyAcceptTime!=null">
+                    P_AGENCYACCEPTDATE=#{entity.agencyAcceptTime},
+                </if>
+                <if test="entity.suggestStore!=null">
+                    P_SUGGESTSTORE=#{entity.suggestStore},
+                </if>
+                <if test="entity.isAgency!=null">
+                    P_ISAGENCY=#{entity.isAgency},
+                </if>
+                <if test="entity.appStatusofAgency!=null">
+                    P_APPSTATUSOFAGENCY=#{entity.appStatusofAgency},
+                </if>
+                <if test="entity.appStatusofStore!=null">
+                    P_APPSTATUSOFSTORE=#{entity.appStatusofStore},
+                </if>
+                <if test="entity.orderGuide!=null">
+                    P_ORDERGUIDE=#{entity.orderGuide},
+                </if>
+                <if test="entity.agencyAccept!=null">
+                    P_AGENCYACCEPT=#{entity.agencyAccept},
+                </if>
+                <if test="entity.storeAcceptRemark!=null and entity.storeAcceptRemark!=''">
+                    P_STOREACCEPTORREMARK=#{entity.storeAcceptRemark},
+                </if>
+                <if test="entity.agencyRemark!=null and entity.agencyRemark!=''">
+                    P_AGENCYREMARK=#{entity.agencyRemark},
+                </if>
+
+                <if test="entity.clientName!=null and entity.clientName!=''">
+                    P_NAME=#{entity.clientName},
+                </if>
+                <if test="entity.clientTel!=null and entity.clientTel!=''">
+                    P_TELEPHONE=#{entity.clientTel},
+                </if>
+                <if test="entity.serverRegion!=null and entity.serverRegion!=''">
+                    P_SERVERREGION=#{entity.serverRegion},
+                </if>
+                <if test="entity.serverCity!=null and entity.serverCity!=''">
+                    P_SERVERCITY=#{entity.serverCity},
+                </if>
+                <if test="entity.serverDistrict!=null and entity.serverDistrict!=''">
+                    P_NEWSERVERDISTRICT=#{entity.serverDistrict},
+                </if>
+                <if test="entity.serverAddress!=null and entity.serverAddress!=''">
+                    P_SERVERADDRESS=#{entity.serverAddress},
+                </if>
+                <if test="entity.clientType!=null and entity.clientType!=''">
+                    P_CLIENTTYPE=#{entity.clientType},
+                </if>
+                <if test="entity.decorateSpace!=null and entity.decorateSpace!=''">
+                    P_DECORATESPACE=#{entity.decorateSpace},
+                </if>
+                <if test="entity.fitmentTime!=null and entity.fitmentTime!=''">
+                    P_FITMENTTIME=#{entity.fitmentTime},
+                </if>
+                <if test="entity.stylePreference!=null and entity.stylePreference!=''">
+                    P_STYLEPREFERENCE=#{entity.stylePreference},
+                </if>
+                <if test="entity.budget!=null and entity.budget!=''">
+                    P_NEWBUDGET=#{entity.budget},
+                </if>
+                <if test="entity.area!=null and entity.area!=''">
+                    P_AREANAME=#{entity.area},
+                </if>
+                <if test="entity.village!=null and entity.village!=''">
+                    P_VILLAGE=#{entity.village},
+                </if>
+                <if test="entity.productPreference!=null and entity.productPreference!=''">
+                    P_PRODUCTPREFERENCE=#{entity.productPreference},
+                </if>
+
+                <if test="entity.custBenefit!=null and entity.custBenefit!=''">
+                    P_CUSTBENEFIT=#{entity.custBenefit},
+                </if>
+                <if test="entity.lastStatus!=null and entity.lastStatus!=''">
+                    P_LASTSTATUS=#{entity.lastStatus},
+                </if>
+
+                <if test="entity.pictureNames!=null and entity.pictureNames!=''">
+                    P_PICTURES  =#{entity.pictureNames},
+                </if>
+                <if test="entity.payPrice!=null and entity.payPrice!=''">
+                    P_PAYPRICE=#{entity.payPrice},
+                </if>
+                <if test="entity.discountAmount!=null and entity.discountAmount!=''">
+                    P_DISCOUNTPRICE=#{entity.discountAmount},
+                </if>
+
+                <if test="entity.finishedTime!=null">
+                    P_FINISHEDTIME=#{entity.finishedTime},
+                </if>
+
+
+
+            </set>
+
+
+                where PK=#{entity.id}
+        </if>
+
+    </update>
+
+    <!--留资订单是否全部已下派-->
+    <update id="editSaleLeads">
+        UPDATE SALESLEADS
+        <set>
+            MODIFIEDTS=sysdate,
+            <if test='entity.saleLeadsOrderStatus=="REJECTED"'>
+                P_ORDERDISTRIBUTEDFLAG = '0'
+            </if>
+        </set>
+        <if test="entity.id!=null">
+            WHERE
+            pk = (
+            SELECT
+            s.pk
+            FROM
+            SALESLEADS s
+            LEFT JOIN SALESLEADSORDER so ON SO.P_SALESLEADS = s.PK
+            WHERE
+            so.pk = #{entity.id}
+            )
+        </if>
+    </update>
+
+    <select id="getLastStatus" resultType="java.lang.String">
+        SELECT
+            P_SALESLEADSORDERSTATUS
+        FROM
+            SALESLEADSORDER
+        WHERE
+            PK = #{id}
+
+    </select>
+
+    <select id="getIsAgency" resultType="java.lang.String">
+        SELECT
+         P_ISAGENCY
+        FROM
+         SALESLEADSORDER
+        WHERE
+          PK = #{id}
+
+    </select>
+
+
+    <select id="getCountUnOperate" resultType="java.lang.Integer">
+        SELECT
+            count (1) as count
+        FROM
+            SALESLEADSORDER s
+        WHERE
+            1 = 1
+            AND "TO_CHAR" (SYSDATE - 3, 'yyyy-mm-dd') > "TO_CHAR" (s.MODIFIEDTS, 'yyyy-mm-dd')
+            AND s.P_APPSTATUSOFAGENCY IN ('WAITTING', 'FLLOWING')
+            AND s .P_AGENCY = #{agencyId}
+
+    </select>
+
+    <select id = "getStoreBySal" resultType="com.dpmall.db.bean.StoreOfSalEntity">
+        SELECT
+            P .P_DISPLAYNAME as storeName,
+            P .P_REGION || P .P_CITY || P .P_DISTRICT || P .P_FORMATADDRESS AS storeAddress,
+            P .P_PHONENUMBER as storePhone,
+            s.P_CUSTBENEFIT as  custbenefit,
+            s.P_TELEPHONE as customerPhone
+        FROM
+            SALESLEADSORDER s,
+            POINTOFSERVICE P
+        WHERE
+            s.P_SUGGESTSTORE = P .pk
+            AND s.pk = #{salPk}
+
+    </select>
+
+
+
+
+</mapper>

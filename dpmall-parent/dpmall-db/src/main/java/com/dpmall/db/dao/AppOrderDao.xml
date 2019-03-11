@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.AppOrderDao">
+
+	<resultMap id="AppOrderResultMap" type="com.dpmall.db.bean.OrderEntity">
+	    <id property="id" column="PK" />
+	    <result property="referencedCode" column="P_EXTERNALORDERCODE" />
+	    <result property="recommendStore" column="P_RECOMMENDSTORE" />
+	    <result property="consignment" column="P_CONSIGNMENT" />
+	    <result property="cusComment" column="P_CUSCOMMET"/>
+	    <result property="serverComment" column="P_SERVERCOMMENT"/>
+	    <result property="cusRefuseComment" column="P_CUSREFUSECOMMET"/>
+	    <result property="agencyComment" column="P_AGENCYCOMMENT"/>
+	    <result property="refuseType" column="P_REFUSETYPE"/>
+	    <result property="refuseComment" column="P_REFUSECOMMENT"/>
+	    <result property="acceptedRefuseComment" column="P_ACCEPTEDREFUSECOMMENT"/>
+	    <result property="deliverPic" column="P_DELIVERYPIC"/>
+	    <result property="signPic" column="P_SIGNPIC"/>
+	    <result property="status" column="P_STATUS"/>
+	    <result property="OrderStatus" column="OrderStatus"/>
+	    <result property="acceptedBy" column="P_ACCEPTEDBY"/>
+	    <result property="acceptedComment" column="P_ACCEPTEDCOMMENT"/>
+	    <result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+	    <result property="isDeliverySelf" column="P_ISDELIVERYSELF"/>
+	    <result property="waitShipments" column="waitShipments"/>
+	    <result property="deliveryTime" column="P_DELIVERYTIME"/>
+	    <result property="finishTime" column="P_FINISHTIME"/>
+	    <result property="deliveryPoint" column="deliveryPoint"/>
+	    <result property="deliveryPointOfServiceId" column="deliveryPointOfServiceId"/>
+	    <result property="deliveryMode" column="deliveryMode"/>
+	    <result property="orderCode" column="p_code"/>
+	    <result property="address" column="p_streetname"/>
+	    <result property="allocatCode" column="P_ALLOCATIONEMPLOYEECODE"/>
+	    <result property="shippingAddress" column="P_SHIPPINGADDRESS"/>
+	    <result property="buyerNick" column="P_BUYERNICK"/>
+	    <result property="firstName" column="P_FIRSTNAME"/>
+	    <result property="phone1" column="P_PHONE1"/>
+	    <result property="consignmentCode" column="P_CCODE"/>
+	    <result property="logisticsInfo" column="P_LOGISTICSINFO"/>
+	    <result property="logisticsCompany" column="P_LOGISTICSCOMPANY"/>
+	    <result property="trackingId" column="P_TRACKINGID"/>
+	    <result property="salesApplication" column="P_SALESAPPLICATION"/>
+	    <result property="returnStatus" column="P_RETURNSTATUS"/>
+	    <result property="deliveryMethods" column="P_DELIVERYMETHODS"/>
+	    <result property="name" column="P_NAME"/>	
+	    <result property="RegionName" column="RegionName"/>
+	    <result property="CityName" column="CityName"/>
+	    <result property="DistrictName" column="DistrictName"/>
+	    <result property="deliveryRemark" column="deliveryRemark"/>
+	     <result property="splitOrderType" column="splitOrderType"/>
+	     <result property="length" column="P_LENGTH"/>
+	     <result property="width" column="P_WIDTH"/>
+	     <result property="orderShipmentsDate" column="P_ORDERSHIPMENTSDATE" />
+	     <result property="appointmentDate" column="P_APPOINTMENTDATE" />
+	     <result property="storeO2OStatus" column="P_STOREO2OSTATUS" />
+		 <result property="agencyO2OStatus" column="P_AGENCYO2OSTATUS" />
+		 <result property="returnOderCode" column="returnOderCode"/>
+	     <result property="returnCheck" column="P_RETURNCHECK"/>
+	     <result property="returnOderCode" column="returnOderCode"/>
+	    <collection property="items" ofType="com.dpmall.db.bean.OrderItemEntity">
+	    	 <id property="id" column="itemsId"/>   	 
+		    <result property="returnOderCode" column="returnOderCode"/>
+		    <result property="splitOrderType" column="splitOrderType"/>
+			<result property="packQua" column="packQua"/>
+			<result property="code" column="code"/>
+			<result property="name" column="name"/>
+			<result property="returnMony" column="returnMony"/>
+			<result property="returnQuantity" column="returnQuantity"/>
+			<result property="description" column="description"/>
+			<result property="category" column="category"/>
+			<result property="unit" column="unit"/>
+			<result property="netWeight" column="netWeight"/>
+			<result property="volume" column="volume"/>
+			<result property="size" column="size"/>
+			<result property="quantity" column="quantity"/>
+			<result property="tmallQuantity" column="tmallQuantity"/>
+			<result property="basePrice" column="basePrice"/>
+			<result property="totalPrice" column="totalPrice"/>
+			<result property="deliveryCost" column="deliveryCost"/>
+			<result property="promotionTotalsaved" column="promotionTotalsaved"/>
+			<result property="payAmount" column="payAmount"/>
+			<result property="juntanPrice" column="juntanPrice"/>
+			<result property="serviceAmount" column="serviceAmount"/>
+			<result property="productCategory" column="productCategory"/>
+			<result property="productCode" column="productCode"/>
+			<result property="returnOderCode" column="returnOderCode"/>
+	    </collection>
+  		<collection property="historyItems" ofType="com.dpmall.db.bean.OrderHistoryItemEntity">
+	    	<id property="id" column="itemsId"/>
+		    <result property="deliveryTime" column="P_DELIVERYTIME"/>
+		    <result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+		    <result property="finishTime" column="P_FINISHTIME"/>
+		    <result property="acceptedBy" column="P_ACCEPTEDBY"/>
+		    <result property="recommendStore" column="P_RECOMMENDSTORE" />
+		    <result property="orderShipmentsDate" column="P_ORDERSHIPMENTSDATE" />
+		    <result property="appointmentDate" column="P_APPOINTMENTDATE" />
+		    <result property="storeO2OStatus" column="P_STOREO2OSTATUS" />
+		    <result property="agencyO2OStatus" column="P_AGENCYO2OSTATUS" />
+	    </collection>
+	     
+	</resultMap>
+	<select id="get2DistributeCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT (1)
+		FROM
+		(
+			SELECT
+				COUNT (c.pk)
+			FROM
+				CONSIGNMENTS c
+			LEFT JOIN O2OCONSIGNMENTITEMS o2o on c.PK = o2o.P_CONSIGNMENT
+			WHERE
+				c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+			<if test='distributorId != null'>
+				AND c.P_ALLOCATIONEMPLOYEECODE = #{distributorId}
+			</if>
+			<if test='status=="1"'>
+				AND o2o.P_AGENCYO2OSTATUS ='WAITFORRECEIVE'
+			</if>
+			<if test='status=="2"'>
+				AND o2o.P_AGENCYO2OSTATUS ='INPROGRESS'
+			</if>
+			<if test='status=="3"'>
+				AND o2o.P_AGENCYO2OSTATUS ='WAITFORREFUND' 
+			</if>
+			<if test='status=="4"'>
+				AND o2o.P_AGENCYO2OSTATUS ='COMPLETED'
+			</if>
+			GROUP BY
+				c.pk
+			HAVING
+				COUNT (c.pk) &lt; 2
+		)
+		
+	</select>
+	<select id="get2StoreCount" resultType="java.lang.Integer">
+			SELECT
+				COUNT (1)
+			FROM
+			(
+			SELECT 
+				COUNT (c.pk)
+			FROM CONSIGNMENTS c 
+			LEFT JOIN O2OCONSIGNMENTITEMS O ON o.P_CONSIGNMENT = c.PK	
+			WHERE 1=1
+			AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+			<if test="storeId != null">
+				AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+			</if>
+			
+			<if test='status!="1"'>
+				<if test="acceptorId!=null"  >
+						and o.P_ACCEPTEDBY=#{acceptorId}
+				</if>
+			</if>
+			<if test='status=="1"'>
+				AND O.P_STOREO2OSTATUS ='WAITFORRECEIVE'
+			</if>
+			<if test='status=="2"'>
+				AND O.P_STOREO2OSTATUS ='INPROGRESS'
+			</if>
+			<if test='status=="3"'>
+				AND O.P_STOREO2OSTATUS ='COMPLETED' 
+			</if>
+				GROUP BY
+					c.pk
+				HAVING
+					COUNT (c.pk) &lt; 2
+			)	
+	</select>
+	
+	<select id="get2AcceptCount" resultType="int">
+		select count(1) from O2OCONSIGNMENTITEMS where P_STATUS='10'
+		<if test="storeId != null">
+		    and P_RECOMMENDSTORE=${storeId}
+		</if>
+	</select>
+	
+	<!--经销商发单\下派   （consignment表） 更新货单状态用 -->
+	<update id="distribute4Consignment">
+	UPDATE CONSIGNMENTS
+	SET P_STATUS = (
+		SELECT
+			t2.pk
+		FROM
+			COMPOSEDTYPES t1,
+			ENUMERATIONVALUES t2
+		WHERE
+			t1.INTERNALCODe = 'ConsignmentStatus'
+		AND t2.TYPEPKSTRING = t1.PK
+		AND t2.code = 'STOREWAIT'
+	),
+	P_DELIVERYPOINTOFSERVICE=#{storeId}
+	WHERE
+		P_CODE = #{orderCode}
+	</update>
+	
+	<!--经销商发单\下派   （O2O表）  主要更新经销商备注 -->
+	<update id="distribute4O2o">
+		UPDATE O2OCONSIGNMENTITEMS
+		SET 
+		  P_AGENCYCOMMENT = #{remark}
+		WHERE
+			P_CONSIGNMENT = 
+		(
+				SELECT
+					pk
+				FROM
+					CONSIGNMENTS
+				WHERE
+					P_CODE = #{orderCode}
+			)
+	</update>
+	
+	
+	<resultMap type="com.dpmall.db.bean.OrderEntity" id="listResultMap">
+		<id property="id" column="pk"/>
+		<result property="referencedCode" column="P_EXTERNALORDERCODE"/>
+		<result property="consignmentCode" column="p_code"/>
+		<result property="status" column="P_STATUS"/>
+		<result property="clientName" column="P_FIRSTNAME"/>
+		<result property="clientTel" column="p_phone1"/>
+		<result property="address" column="P_STREETNAME"/>
+		<result property="webStatus" column="webStatus"/>
+		<result property="operateStatus" column="P_OPERATESTATUS"/>
+		<result property="deliveryPoint" column="P_DELIVERYPOINTOFSERVICE"/>
+		<result property="RegionName" column="RegionName"/>
+	    <result property="CityName" column="CityName"/>
+	    <result property="deliveryPointOfServiceId" column="deliveryPointOfServiceId"/>
+	    <result property="DistrictName" column="DistrictName"/>
+	    <result property="OrderStatus" column="OrderStatus"/>
+	    <result property="salesApplication" column="salesApplication"/>
+	    <result property="isDeliverySelf" column="P_ISDELIVERYSELF"/>
+	    <result property="returnStatus" column="P_RETURNSTATUS"/>
+		<result property="acceptedTime" column="P_ACCEPTEDTIME"/>
+		<result property="waitShipments" column="waitShipments"/>
+		<result property="returnOderCode" column="returnOderCode"/>
+		<result property="returnCheck" column="P_RETURNCHECK"/>
+			<collection property="items" ofType="com.dpmall.db.bean.OrderItemEntity">
+				<id property="id" column="itemsId"/>
+			    <result property="splitOrderType" column="splitOrderType"/>
+			    <result property="returnOderCode" column="returnOderCode"/>
+				<result property="packQua" column="packQua"/>
+				<result property="productCode" column="code"/>
+				<result property="name" column="name"/>
+				<result property="description" column="description"/>
+				<result property="category" column="category"/>
+				<result property="unit" column="unit"/>
+				<result property="netWeight" column="netWeight"/>
+				<result property="volume" column="volume"/>
+				<result property="size" column="size"/>
+				<result property="quantity" column="quantity"/>
+				<result property="tmallQuantity" column="tmallQuantity"/>
+				<result property="basePrice" column="basePrice"/>
+				<result property="totalPrice" column="totalPrice"/>
+				<result property="deliveryCost" column="deliveryCost"/>
+				<result property="promotionTotalsaved" column="promotionTotalsaved"/>
+				<result property="payAmount" column="payAmount"/>
+				<result property="juntanPrice" column="juntanPrice"/>
+				<result property="serviceAmount" column="serviceAmount"/>
+		    </collection>
+	</resultMap>
+	
+	<select id="getOnePage4Distribute" resultMap="listResultMap">
+		SELECT
+			c.MODIFIEDTS,
+			D.P_CATEGORY,
+			o.P_EXTERNALORDERCODE  ,
+			o2o.P_ISDELIVERYSELF,
+			o2o.P_RETURNCHECK,
+			R2.p_code as returnOderCode,
+			c.p_code,
+			c.pk,
+			O2O.P_SERVERCOMMENT,
+			O2O.P_ACCEPTEDTIME,
+			O2O.P_WAITSHIPMENTS as waitShipments,
+			E3.code AS webStatus,
+			E2.code AS salesapplication,
+			P .P_DISPLAYNAME AS P_DELIVERYPOINTOFSERVICE,
+			P .pk AS deliveryPointOfServiceId,
+			o2.P_DELIVERYCOST AS deliveryCost,
+			o.P_SFSTATUS AS OrderStatus,
+			O2O.P_RETURNSTATUS,
+			O2O.P_CUSCOMMET,
+			o2.P_SERVICEAMOUNT AS serviceAmount,
+			o2.p_payamount AS payAmount,
+			o2.P_JUNTANPRICE AS juntanPrice,
+			O2.P_QUANTITY AS quantity,
+			O2.P_TMALLQUANTITY AS tmallQuantity,
+			O.P_OPERATESTATUS AS P_OPERATESTATUS,
+			U .p_code AS unit,
+			E .code AS P_STATUS,
+			o2.pk AS itemsId,
+			r.p_name || ac.p_name || ad.p_name || A .P_STREETNAME AS P_STREETNAME,
+			D .p_code AS code,		
+			ROWNUM rn
+		FROM
+			CONSIGNMENTS c
+			 LEFT JOIN RETURNREQUEST R2 ON R2.P_CONSIGNMENT=C.PK
+
+		LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+		LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+		LEFT JOIN ORDERS O ON c.P_ORDER = O.PK
+		LEFT JOIN ORDERENTRIES o2 ON c2.P_ORDERENTRY = o2.pk
+		LEFT JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+		LEFT JOIN ENUMERATIONVALUES E ON E .pk = c.p_status
+		LEFT JOIN POINTOFSERVICE P ON c.P_DELIVERYPOINTOFSERVICE = P .PK
+		LEFT JOIN dpsizevarproduct D ON o2.P_PRODUCT = D .PK
+
+		LEFT JOIN UNITS U ON U .PK = D.P_UNIT
+
+		LEFT JOIN REGIONSLP r ON A .p_region = r.itempk
+		LEFT JOIN citieslp ac ON ac.itempk = A .p_city
+		LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+		LEFT JOIN languages l ON r.LANGPK = l.pk
+		LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+		LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+		LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+		LEFT JOIN ENUMERATIONVALUES E3 ON o.P_status = E3.PK
+
+		<!-- LEFT JOIN UNITS U ON U .PK = O2.P_UNIT -->
+
+		WHERE
+			1=1
+		and	NVL (l.p_ISOCODE, 'zh') = 'zh'
+		AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+		AND NVL (l3.p_ISOCODE, 'zh') = 'zh'		
+		AND D.P_CATEGORY != '套餐'
+		<if test="search != null">
+			<if test="search != ''">
+			AND (  
+				c.p_code like '%${search}%' 
+				or o.p_BUYERNICK like '%${search}%' 
+				or A.P_FIRSTNAME like '%${search}%' 
+				OR A .p_phone1 like '%${search}%' 
+				or P.P_DISPLAYNAME LIKE '%${search}%'
+				<!-- or R.p_name LIKE '%${search}%'
+				or A .p_streetname like '%${search}%' 
+				or CLP.p_name LIKE '%${search}%'
+				or DLP.p_name LIKE '%${search}%' -->
+				or o.P_EXTERNALORDERCODE LIKE '%${search}%'
+				)
+			</if>
+		</if>
+		
+		
+		AND c.PK IN (
+			SELECT
+				pk
+			FROM
+				(
+					SELECT
+						pk,
+						ROWNUM rn
+					FROM
+						(
+							SELECT
+								pk,
+								ROWNUM rn
+							FROM
+								(
+									SELECT
+										c.pk
+									FROM
+										CONSIGNMENTS c
+										LEFT JOIN O2OCONSIGNMENTITEMS o on c.PK=o.P_CONSIGNMENT
+										INNER JOIN ENUMERATIONVALUES E ON E .pk = c.p_status
+									WHERE
+										1=1
+									AND P_ALLOCATIONEMPLOYEECODE = #{distributorId}
+									AND c.P_SPLITORDERTYPE IN (
+										'A1',
+										'A2',
+										'B1',
+										'B2',
+										'C1',
+										'C2',
+										'D1',
+										'D2',
+										'E1',
+										'E2',
+										'F1',
+										'F2',
+										'O2'
+									)
+								<if test="statusSearch != null and statusSearch != '' ">
+									AND E .code = #{statusSearch}
+								</if>
+								
+								<if test='status=="1"'>
+									AND O.P_AGENCYO2OSTATUS ='WAITFORRECEIVE'
+								</if>
+								<if test='status=="2"'>
+									AND O.P_AGENCYO2OSTATUS ='INPROGRESS'
+								</if>
+								<if test='status=="3"'>
+									AND O.P_AGENCYO2OSTATUS ='WAITFORREFUND' 
+								</if>
+								<if test='status=="4"'>
+									AND O.P_AGENCYO2OSTATUS in ('COMPLETED','CLOSED')
+								</if>
+									ORDER BY
+										c.MODIFIEDTS DESC
+								)
+						) P1
+					WHERE
+					1=1
+					<if test="search == null or search == ''">
+						 AND p1.rn &lt; ${offset}+${pageSize}+1
+					</if>
+						
+				) p2
+			WHERE
+					1=1
+					<if test="search == null or search == ''">
+					 AND p2.rn &gt; ${offset}
+					</if>
+		)
+			ORDER BY
+				c.MODIFIEDTS DESC
+	</select>
+	<select id="getOnePage4StoreId" resultMap="listResultMap">
+		SELECT
+			c.p_code,
+			o.P_EXTERNALORDERCODE,
+			R2.p_code as returnOderCode,
+			c.pk,
+			E3.code AS webStatus,
+			O2O.P_ACCEPTEDTIME,
+			o2o.P_RETURNCHECK,
+			P .P_DISPLAYNAME AS P_DELIVERYPOINTOFSERVICE,
+			O2O.P_WAITSHIPMENTS as waitShipments,
+			O2O.P_RETURNSTATUS,
+			P .pk AS deliveryPointOfServiceId,
+			o2.P_DELIVERYCOST AS deliveryCost,
+			E2.code AS salesapplication,
+			o2.P_SERVICEAMOUNT AS serviceAmount,
+			o2.p_payamount AS payAmount,
+			o2.P_JUNTANPRICE AS juntanPrice,
+			O2O.P_SERVERCOMMENT,
+			 O2O.P_CUSCOMMET,
+			O2.P_QUANTITY AS quantity,
+			O2.P_TMALLQUANTITY AS tmallQuantity,
+			U .P_CODE AS unit,
+			O.P_OPERATESTATUS AS P_OPERATESTATUS,
+			o.P_SFSTATUS AS OrderStatus,
+			E .code AS P_STATUS,
+			o2.pk AS itemsId,
+			r.p_name || ac.p_name || ad.p_name || A .P_STREETNAME AS P_STREETNAME,
+			D .p_code AS code,
+			ROWNUM rn 
+			FROM
+			CONSIGNMENTS c
+			LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+			 LEFT JOIN RETURNREQUEST R2 ON R2.P_CONSIGNMENT=C.PK
+			LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+			LEFT JOIN ORDERS O ON c.P_ORDER = O.PK
+			LEFT JOIN ORDERENTRIES o2 ON c2.P_ORDERENTRY = o2.pk
+			 LEFT JOIN DPSIZEVARPRODUCT DPT ON o2.P_PRODUCT=DPT.PK
+   		   LEFT JOIN UNITS U ON DPT.P_UNIT = U .pk
+			LEFT JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+			LEFT JOIN ENUMERATIONVALUES E ON E .pk = c.p_status
+			LEFT JOIN POINTOFSERVICE P ON c.P_DELIVERYPOINTOFSERVICE = P .PK
+			LEFT JOIN dpsizevarproduct D ON o2.P_PRODUCT = D .PK
+			LEFT JOIN UNITS U ON U .PK = D.P_UNIT
+			LEFT JOIN REGIONSLP r ON A .p_region = r.itempk
+			LEFT JOIN citieslp ac ON ac.itempk = A .p_city
+			LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+			LEFT JOIN languages l ON r.LANGPK = l.pk
+			LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+			LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+			LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+			LEFT JOIN ENUMERATIONVALUES E3 ON o.P_status = E3.PK
+
+			<!-- LEFT JOIN UNITS U ON U .PK = O2.P_UNIT -->
+
+			WHERE
+				NVL (l.p_ISOCODE, 'zh') = 'zh'
+			AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+			AND NVL (l3.p_ISOCODE, 'zh') = 'zh'
+			AND D.P_CATEGORY != '套餐'
+			<if test="search != null">
+				<if test="search != ''">
+				AND (  
+				c.p_code like '%${search}%' 
+				or o.p_BUYERNICK like '%${search}%' 
+				or A.P_FIRSTNAME like '%${search}%' 
+				OR A .p_phone1 like '%${search}%' 
+				or P.P_DISPLAYNAME LIKE '%${search}%'
+				<!-- or R.p_name LIKE '%${search}%'
+				or A .p_streetname like '%${search}%' 
+				or CLP.p_name LIKE '%${search}%'
+				or DLP.p_name LIKE '%${search}%' -->
+				or o.P_EXTERNALORDERCODE LIKE '%${search}%'
+				)
+					
+				</if>
+			</if>
+
+		
+		
+			AND c.PK IN (
+			SELECT
+				pk
+			FROM
+				(
+				SELECT
+					pk,
+					ROWNUM rn
+				FROM
+					(
+						SELECT
+							pk,
+							ROWNUM rn
+						FROM
+							(
+								SELECT
+									c.pk
+								FROM
+									CONSIGNMENTS c
+								LEFT JOIN O2OCONSIGNMENTITEMS O ON o.P_CONSIGNMENT = c.PK	
+								INNER JOIN ENUMERATIONVALUES E ON E .pk = c.p_status			
+								
+								WHERE
+									1 = 1
+								
+								AND P_DELIVERYPOINTOFSERVICE =  #{storeId}						
+								AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+								
+								<if test="statusSearch != null and statusSearch != '' ">
+									AND E .code = #{statusSearch}
+								</if>
+								
+								<if test='status=="1"'>
+									AND O.P_STOREO2OSTATUS ='WAITFORRECEIVE'
+								</if>
+								<if test='status=="2"'>
+									AND O.P_STOREO2OSTATUS ='INPROGRESS'
+								</if>
+								<if test='status=="3"'>
+									AND O.P_STOREO2OSTATUS in ('COMPLETED','CLOSED') 
+								</if>
+
+								<if test='status!="1"'>
+									<if test="acceptorId!=null"  >
+										and o.P_ACCEPTEDBY=#{acceptorId}
+									</if>
+								</if>
+								ORDER BY
+									c.MODIFIEDTS DESC
+							)
+					) P1
+					WHERE
+					1=1
+					<if test="search == null or search == ''">
+						 AND p1.rn &lt; ${offset}+${pageSize}+1
+					</if>
+			) p2
+			WHERE
+				1=1
+				<if test="search == null or search == ''">
+					and p2.rn &gt; ${offset}
+				</if>
+			)
+			ORDER BY
+				c.MODIFIEDTS DESC
+	</select>
+	
+	
+	<select id="getOrderDetails"  resultMap="AppOrderResultMap">
+		select  DISTINCT
+		 ROWNUM rn,
+   		      <!-- O2O.P_RECOMMENDSTORE, -->
+   		      o.P_EXTERNALORDERCODE,
+   		      o2o.P_RETURNCHECK,
+			  O2O.P_ACCEPTEDTIME,
+			  O2O.P_DELIVERYTIME,
+		 	  O2O.P_FINISHTIME,
+			  O2O.P_ORDERSHIPMENTSDATE,
+			  O2O.P_APPOINTMENTDATE,
+			  O2O.P_STOREO2OSTATUS,
+			  O2O.P_AGENCYO2OSTATUS,
+   		      O2O.P_RETURNSTATUS,
+   		      C.PK,
+   		      C.P_CODE AS P_CCODE,
+   		      <!-- R2.p_code as returnOderCode, -->
+   		      o2o.P_ISDELIVERYSELF,
+   		      E2.code as P_SALESAPPLICATION,
+   		      OE.P_JUNTANPRICE as juntanPrice,
+  		      OE.P_PAYAMOUNT as payAmount,
+      		  OE.P_SERVICEAMOUNT as serviceAmount,
+      		  OE.P_DELIVERYCOST as deliveryCost,
+   		      U.p_code AS unit,
+   		      T2.code AS P_STATUS,
+   		      T3.code AS P_DELIVERYMETHODS,
+   		      O2O.P_WAITSHIPMENTS as waitShipments,
+   		      O2O.P_SIGNPIC,
+   		     <!--  O2O.P_ORDERSHIPMENTSDATE as P_DELIVERYTIME, -->
+   		      O.P_BUYERNICK,
+   		      A.P_PHONE1,
+   		      A.P_FIRSTNAME,
+   		      A.P_STREETNAME,
+   		      
+   		      OE.P_QUANTITY as quantity,
+   		      OE.P_TMALLQUANTITY as tmallQuantity,
+   		      
+   		      OE.P_BASEPRICE as basePrice,
+   		      OE.P_TOTALPRICE as totalPrice,
+   		     
+   		      <!-- O2O.P_CUSCOMMET,
+   		      O2O.P_SERVERCOMMENT, -->
+   		      O2O.P_AGENCYCOMMENT,
+   		      OE.P_QUANTITY as quantity,
+			  Oe.P_TMALLQUANTITY as tmallQuantity,
+   		      LI.P_NAME AS P_LOGISTICSCOMPANY,
+   		      
+   		      C.P_SHIPPINGADDRESS,
+   		      C.P_LOGISTICSINFO,
+   		      OE.P_PROMOTIONTOTALSAVED as promotionTotalsaved,
+   		      LI.P_SHIPMENTSMETHOD as deliveryMode,
+   		      C2.P_LOGISTICSNUMBER as P_TRACKINGID,
+      		  o.P_SFSTATUS as OrderStatus,
+   		      AU.P_CNNAME AS P_ACCEPTEDBY,
+		      O2O.P_ACCEPTEDCOMMENT,
+   		      O2O.P_DELIVERYPIC,
+   		      O2O.P_DELIVERYREMARK as deliveryRemark,
+   		      PS.P_DISPLAYNAME as deliveryPoint,
+   		      PS.PK AS deliveryPointOfServiceId,
+   		      C.P_CATEGORY as category,
+   		      R.P_NAME as RegionName,
+              CLP.P_NAME as CityName,
+              DLP.P_NAME as DistrictName,
+              DPT.P_CODE as productCode,
+              DPT.P_CATEGORY as productCategory,
+              c.P_SPLITORDERTYPE as splitOrderType,
+              DPT.P_LENGTH,
+			  DPT.P_WIDTH,
+              DP.P_NAME as name
+   		      from CONSIGNMENTS C
+   		<!--  LEFT JOIN RETURNREQUEST R2 ON R2.P_CONSIGNMENT=C.PK -->
+   		  LEFT JOIN ADDRESSES A ON C.P_SHIPPINGADDRESS=A.PK
+		  LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+   		  LEFT JOIN LOGISTICSINFO LI ON C.P_LOGISTICSINFO=LI.PK
+   		  LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+   		  LEFT JOIN ORDERS O ON C.P_ORDER=O.PK
+   		  LEFT JOIN ORDERENTRIES OE ON OE.pk =c2.P_ORDERENTRY
+          LEFT JOIN dpsizevarproductlp DP on OE.P_PRODUCT=DP.ITEMPK
+   		  LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT=DPT.PK
+
+   		  LEFT JOIN UNITS U ON U .PK = DPT.P_UNIT
+
+   		  LEFT JOIN POINTOFSERVICE PS ON C.P_DELIVERYPOINTOFSERVICE=PS.PK
+   		  LEFT JOIN APPUSER AU ON O2O.P_ACCEPTEDBY=AU.PK
+   		  LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2 .PK
+   		  LEFT JOIN REGIONSLP R ON A.P_REGION =R.itempk
+   		  LEFT JOIN citieslp CLP ON  CLP.itempk=A.P_CITY
+   		  LEFT JOIN districtslp DLP ON DLP.itempk=A.P_CITYDISTRICT
+		  LEFT JOIN languages L ON R.LANGPK = L.pk
+		  LEFT JOIN ENUMERATIONVALUES t2 ON t2.PK=C.P_STATUS
+		  LEFT JOIN ENUMERATIONVALUES t3 ON t3.PK= LI.P_DELIVERYMETHODS
+		  LEFT JOIN COMPOSEDTYPES t1 ON t2.TYPEPKSTRING = t1.PK
+		  LEFT JOIN languages L2  ON CLP.LANGPK = L2.pk
+		  LEFT JOIN languages L3 ON DLP.LANGPK = L3.pk
+
+         <!--  LEFT JOIN UNITS U ON U.PK=OE.P_UNIT -->
+
+          LEFT JOIN LANGUAGES L4 ON L4.pk = DP.LANGPK
+		  WHERE 1=1 
+		  	AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+			AND NVL(L.p_ISOCODE, 'zh') = 'zh'
+			AND NVL(L2.p_ISOCODE, 'zh') = 'zh'
+			AND NVL(L3.p_ISOCODE, 'zh') = 'zh'
+            AND L4.P_ISOCODE='zh'
+            and DPT.P_CATEGORY != '套餐'
+            AND t1.INTERNALCODe in( 'DeliveryMethods' ,'ConsignmentStatus')
+		<if test="consignmentId != null">
+		   AND C.P_CODE= #{consignmentId}
+		</if>
+		ORDER BY rn 
+	</select>
+	
+	<!-- 实物类获取退货单据明细 -->
+	<select id="getReturnRequestDetails"  resultMap="AppOrderResultMap">
+		select 
+   		      C.PK,
+   		      o.P_EXTERNALORDERCODE,
+   		      E2.code as P_SALESAPPLICATION,
+   		      T2.code AS P_STATUS,
+   		      C.P_CATEGORY as category,
+   		 	  RE.P_RETURNNUMBER  as quantity,
+   		      R.p_code as returnOderCode,
+   		      C.P_CODE AS P_CCODE,
+   		      R.P_RETURNPOLICY as deliveryMode,
+   		      R.P_RETURNTRACKINGNUMBER as P_TRACKINGID,
+   		      T3.code AS P_LOGISTICSINFO,
+   		      OE.P_BASEPRICE AS basePrice,
+   		      RE.P_RETURNMONEY AS payAmount,
+   		      R.P_REFUNDDELIVERYCOST as deliveryCost,
+   		      OE.P_SERVICEAMOUNT as serviceAmount,
+   		      A.P_FIRSTNAME,
+   		      A.P_PHONE1,
+   		      A.P_STREETNAME as p_streetname,
+   		      RE.P_RETURNEXPLAIN as P_CUSREFUSECOMMET,
+   		      R.P_CHECKOPINION as P_ACCEPTEDREFUSECOMMENT,
+   		      U.P_CODE AS unit,
+   		      PS.P_DISPLAYNAME as deliveryPoint,
+   		      AU.P_CNNAME AS P_ACCEPTEDBY,
+   		      DPT.P_CATEGORY as productCategory,
+   		      DPT.P_CODE as productCode,
+   		      DP.P_NAME as name,
+   		      O2O.P_RETURNSTATUS,
+		      O2O.P_ACCEPTEDCOMMENT,
+   		      O2O.P_DELIVERYPIC,
+   		      o2o.P_RETURNCHECK,
+   		      O2O.P_AGENCYCOMMENT,
+   		      O2O.P_ISDELIVERYSELF,
+   		      O2O.P_SIGNPIC,
+   		      RG.P_NAME as RegionName,
+              CLP.P_NAME as CityName,
+              DLP.P_NAME as DistrictName,
+              o.P_SFSTATUS as OrderStatus,
+   		      LI.P_NAME AS P_LOGISTICSCOMPANY,
+   		      LI.P_SHIPMENTSMETHOD as P_DELIVERYMETHODS,
+   		      ROWNUM RN
+   		  from RETURNENTRY RE  		 
+   		  LEFT JOIN RETURNREQUEST R ON RE.P_RETURNREQUEST=R.PK
+   		   LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+   		  LEFT JOIN CONSIGNMENTS C ON R.P_CONSIGNMENT=C.PK
+   		  LEFT JOIN ADDRESSES A ON C.P_SHIPPINGADDRESS=A.PK
+   		  LEFT JOIN LOGISTICSINFO LI ON C.P_LOGISTICSINFO=LI.PK
+   		  LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+   		  LEFT JOIN ORDERS O ON C.P_ORDER=O.PK
+   		  LEFT JOIN ORDERENTRIES OE ON RE.P_ORDERENTRY=OE.PK
+   		  
+   		  LEFT JOIN PRODUCTS P ON OE.P_PRODUCT=P.PK
+   		  LEFT JOIN POINTOFSERVICE PS ON C.P_DELIVERYPOINTOFSERVICE=PS.PK	  
+   		  LEFT JOIN dpsizevarproductlp DP on OE.P_PRODUCT=DP.ITEMPK
+   		  LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT=DPT.PK
+   		  LEFT JOIN UNITS U ON U .PK = DPT.P_UNIT
+
+		  LEFT JOIN APPUSER AU ON O2O.P_ACCEPTEDBY=AU.PK
+   		  LEFT JOIN REGIONSLP RG ON A.P_REGION =RG.itempk
+   		  LEFT JOIN citieslp CLP ON  CLP.itempk=A.P_CITY
+   		  LEFT JOIN districtslp DLP ON DLP.itempk=A.P_CITYDISTRICT
+		  LEFT JOIN languages L ON RG.LANGPK = L.pk
+		  LEFT JOIN languages L2 ON CLP.LANGPK = L2.pk
+		  LEFT JOIN languages L3 ON DLP.LANGPK = L3.pk
+          LEFT JOIN ENUMERATIONVALUES T2 ON T2.PK = C.P_STATUS
+          LEFT JOIN ENUMERATIONVALUES T3 ON T3.PK = LI.P_DELIVERYMETHODS
+          LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2 .PK
+          LEFT JOIN LANGUAGES L4 ON L4.pk = DP.LANGPK
+		  LEFT JOIN COMPOSEDTYPES T1 ON T2.TYPEPKSTRING = T1.PK	 
+   		  WHERE 1=1
+		  AND NVL (L.p_ISOCODE, 'zh') = 'zh'
+		  AND NVL (L2.p_ISOCODE, 'zh') = 'zh'
+		  AND NVL (L3.p_ISOCODE, 'zh') = 'zh'
+		  AND L4.P_ISOCODE='zh'
+   		  AND T1.INTERNALCODe in('DeliveryMethods','ConsignmentStatus')
+   		  AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		<if test="consignmentId != null">
+			AND C.P_CODE= #{consignmentId}
+		</if>
+	</select>
+	
+	<!-- 实物类导购员订单状态条数 -->
+	<select id="get2AcceptorCount" resultType="int">
+		SELECT
+			COUNT (1)
+		FROM
+			CONSIGNMENTS
+		WHERE
+		P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+		<if test="acceptorId != null">
+		AND PK IN (
+			SELECT
+				P_CONSIGNMENT
+			FROM
+				O2OCONSIGNMENTITEMS
+			WHERE
+				1 = 1
+			AND P_ACCEPTEDBY = #{acceptorId}
+		)
+		</if>
+		AND P_STATUS IN (
+			SELECT
+				t2.pk
+			FROM
+				COMPOSEDTYPES t1,
+				ENUMERATIONVALUES t2
+			WHERE
+				t1.INTERNALCODe = 'ConsignmentStatus'
+			AND t2.TYPEPKSTRING = t1.PK
+			<if test='status=="1"'>
+							AND code ='STOREWAIT'
+					</if>
+					<if test='status=="2"'>
+							AND code in ('ALLOCATED','BOOKED','SHIPPED','DPRECEIVE','ACCEPT')
+					</if>
+					<if test='status=="3"'>
+							AND code in ('COMPLETED','RECEIVE')
+					</if>
+		)
+	</select>
+	
+	<select id="getOnePage4AcceptorId" resultMap="listResultMap">
+		SELECT
+				*
+			FROM
+				(
+					SELECT
+						c.p_code,
+						o.P_EXTERNALORDERCODE,
+						c.pk,
+						OE.P_QUANTITY AS quantity,
+						OE.P_TMALLQUANTITY AS tmallQuantity,
+						OE.P_DELIVERYCOST AS deliveryCost,
+						OE.P_SERVICEAMOUNT AS serviceAmount,
+						OE.p_payamount AS payAmount,
+                        T2.code AS P_STATUS,
+						OE.pk AS itemsId,
+						OE.P_PAYAMOUNT,
+						OE.P_JUNTANPRICE as juntanPrice,
+						A .P_FIRSTNAME,
+						A .p_phone1,
+						A .P_STREETNAME,
+						U .P_CODE AS unit,
+						R.P_NAME as RegionName,
+                        CLP.P_NAME as CityName,
+                        DLP.P_NAME as DistrictName,
+                        PS.P_DISPLAYNAME as P_DELIVERYPOINTOFSERVICE,
+                        T3.code AS OrderStatus,
+						ROWNUM rn
+					FROM
+						CONSIGNMENTS c
+					LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+					LEFT JOIN CONSIGNMENTENTRIES CE ON CE.P_CONSIGNMENT = c.pk
+					LEFT JOIN ORDERENTRIES OE ON CE.P_ORDERENTRY = OE.pk
+					LEFT JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+
+					  LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT=DPT.PK
+   		 			 LEFT JOIN UNITS U ON U .PK = DPT.P_UNIT
+				<!-- 	LEFT JOIN UNITS U ON OE.P_UNIT = U .pk -->
+
+					LEFT JOIN ORDERS O ON C.P_ORDER=O.PK
+                    LEFT JOIN POINTOFSERVICE PS ON C.P_DELIVERYPOINTOFSERVICE=PS.PK
+					LEFT JOIN REGIONSLP R ON A.P_REGION =R.itempk
+   		            LEFT JOIN citieslp CLP ON  CLP.itempk=A.P_CITY
+   		            LEFT JOIN districtslp DLP ON DLP.itempk=A.P_CITYDISTRICT
+                    LEFT JOIN ENUMERATIONVALUES T2 ON T2.PK = C.P_STATUS
+                    LEFT JOIN ENUMERATIONVALUES T3 ON T3.PK = O.P_STATUS
+		            LEFT JOIN COMPOSEDTYPES T1 ON T2.TYPEPKSTRING = T1.PK
+		            LEFT JOIN languages l ON r.LANGPK = l.pk
+					LEFT JOIN languages l2 ON CLP.LANGPK = l2.pk
+					LEFT JOIN languages l3 ON  DLP.LANGPK = l3.pk
+					
+					WHERE
+					 1=1
+					and  NVL(l.p_ISOCODE, 'zh') = 'zh'
+					AND NVL(l2.p_ISOCODE, 'zh') = 'zh'
+					AND NVL(l3.p_ISOCODE, 'zh') = 'zh'
+					
+					AND c.PK IN (
+					 SELECT
+						pk
+					FROM
+						(
+							SELECT
+								c.pk,
+								ROWNUM rn
+							FROM
+								CONSIGNMENTS c
+							LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+							WHERE
+								1 = 1
+							AND O2O.P_ACCEPTEDBY = #{acceptorId}
+							and c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+							AND C.P_STATUS IN (
+								SELECT
+									t2.pk
+								FROM
+									COMPOSEDTYPES t1,
+									ENUMERATIONVALUES t2
+								WHERE
+								1=1
+									AND T1.INTERNALCODe in('ConsignmentStatus','OrderStatus')
+								AND t2.TYPEPKSTRING = t1.PK
+								<if test='status=="1"'>
+									AND t2.code ='STOREWAIT'
+								</if>
+								<if test='status=="2"'>
+										AND t2.code in ('ALLOCATED','BOOKED','SHIPPED','DPRECEIVE','ACCEPT')
+								</if>
+								<if test='status=="3"'>
+										AND t2.code in ('COMPLETED','RECEIVE')
+								</if>
+							)
+							AND ROWNUM &lt; ${startNum}+${pageSize}+1
+						) p1
+					WHERE
+						p1.rn &gt; ${startNum}
+					  )
+					  )
+	</select>
+	
+	<!-- 查询单位 -->
+	<select id="formatUnit" resultType="string">
+		SELECT
+			UL.P_NAME
+		FROM
+			UNITS U
+		LEFT JOIN UNITSLP ul ON U .PK = UL.ITEMPK
+		LEFT JOIN LANGUAGES l ON ul.LANGPK = l.pk
+		WHERE
+			1 = 1
+		AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+		AND U .P_CODE = #{unit}
+	</select>
+	<resultMap type="com.dpmall.db.bean.OrderEntity" id="listCommentsMap">
+		<id property="id" column="pk"/>
+		<result property="buyerMessage" column="buyerMessage"/>
+		<result property="sellerMessage" column="sellerMessage"/>
+		<result property="consignmentCode" column="consignmentCode"/>
+	</resultMap>
+	
+	<!-- 查询客服备注，客户备注 -->
+	<select id="getComments" resultMap="listCommentsMap">
+		SELECT
+			oe.P_BUYERMESSAGE as buyerMessage,
+			oe.P_SELLERMESSAGE as sellerMessage,
+			c.P_CODE as consignmentCode
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN ORDERS o ON o.pk = c.P_ORDER
+		LEFT JOIN ORDERENTRIES oe ON oe.P_ORDER = o.pk
+		WHERE
+			1 = 1
+		AND c.P_CODE = #{consignmentId}
+	</select>
+	<select id="distributedOrders" resultMap="listResultMap">
+		SELECT
+			c.pk,
+			O2O.P_ACCEPTEDTIME,
+			o2.P_DELIVERYCOST AS deliveryCost,
+			o2.P_SERVICEAMOUNT AS serviceAmount,
+			o2.p_payamount AS payAmount,
+			o2.P_JUNTANPRICE AS juntanPrice,
+			O2.P_QUANTITY AS quantity,
+			o2.pk AS itemsId
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+		LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+		LEFT JOIN ORDERS O ON c.P_ORDER = O.PK
+		LEFT JOIN ORDERENTRIES o2 ON c2.P_ORDERENTRY = o2.pk
+		LEFT JOIN POINTOFSERVICE P ON c.P_DELIVERYPOINTOFSERVICE = P .PK
+
+		WHERE P.PK IN 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+            #{item}  
+       </foreach>
+       and o2o.CREATEDTS between #{startdate,jdbcType=TIMESTAMP} and #{enddate,jdbcType=TIMESTAMP}
+		
+	</select>
+	
+	
+	<resultMap id="PartOfReturnDetailsMap" type="com.dpmall.db.bean.OrderReturnEntity">
+		<result property="returnOderCode" column="returnOderCode"/>
+		<result property="returnStatus" column="returnStatus"/>
+		
+		<collection property="returnDetailsList" ofType="com.dpmall.db.bean.OrderReturnDetailsEntity">
+			<result property="returnOderCode" column="returnOderCode"/>
+			<result property="productCode" column="productCode"/>
+			<result property="productName" column="productName"/>
+			<result property="returnPayAmount" column="returnPayAmount"/>
+			<result property="returnQuantity" column="returnQuantity"/>
+			<result property="category" column="category"/>
+			<result property="unit" column="unit"/>
+			<result property="returnStatus" column="returnStatus"/>
+			<result property="returnCheck" column="returnCheck"/>
+		</collection>
+		
+		
+	</resultMap>
+	
+	
+	<!-- 部分退货时，退货单明细 -->
+	<select id="getPartOfReturnDetails" resultMap="PartOfReturnDetailsMap">
+		SELECT DISTINCT
+			T1.code AS returnStatus, 
+			R.P_CODE as returnOderCode,
+			R2.P_RETURNNUMBER as returnQuantity,
+			R2.P_RETURNMONEY as returnPayAmount,
+			DPT.P_CODE AS productCode,
+			DPT.P_CATEGORY AS category,
+			DP.P_NAME AS productName,
+			U .p_code AS unit,
+			o2o.P_RETURNCHECK as returnCheck
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o on o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ORDERS O ON O.PK = C.P_ORDER
+		LEFT JOIN RETURNREQUEST R ON R.P_ORDER = O.PK
+		LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+		LEFT JOIN RETURNENTRY R2 ON R2.P_RETURNREQUEST = R.PK
+		INNER JOIN ORDERENTRIES OE ON OE.PK = R2.P_ORDERENTRY
+		LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT = DPT.PK
+		LEFT JOIN dpsizevarproductlp DP ON DPT.PK = DP.ITEMPK
+		LEFT JOIN LANGUAGES L4 ON L4.pk = DP.LANGPK
+		LEFT JOIN UNITS U ON U .PK = DPT.P_UNIT
+		WHERE
+			1 = 1
+		AND NVL (L4.p_ISOCODE, 'zh') = 'zh'
+		
+		AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+		AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		AND C.P_CODE = #{consignmentId}
+		AND R.P_CODE = #{returnOderCode}
+	
+	</select>
+	
+	<!-- 部分退货时，退货单单号 -->
+	<select id="getPartOfReturnCodes" resultType="String">
+		SELECT DISTINCT
+			R.P_CODE AS returnOderCode
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ORDERS O ON O.PK = C.P_ORDER
+		LEFT JOIN RETURNREQUEST R ON R.P_ORDER = O.PK
+		LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+		WHERE
+			1 = 1
+		AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		AND C.P_CODE = #{consignmentId}
+		GROUP BY
+			R.P_CODE
+	</select>
+	
+	<!-- 计算总的退货金额 -->
+	<select id="getReturnPriceSum" resultType="string">
+		SELECT DISTINCT
+			SUM (R2.P_RETURNMONEY) AS returnPriceSum
+		FROM
+			CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ORDERS O ON O.PK = C.P_ORDER
+		LEFT JOIN RETURNREQUEST R ON R.P_ORDER = O.PK
+		LEFT JOIN RETURNENTRY R2 ON R2.P_RETURNREQUEST = R.PK
+		LEFT JOIN ENUMERATIONVALUES T1 ON T1.PK = r.P_STATUS
+		WHERE
+			1 = 1
+		AND T1.code in ('PAYMENT_REVERSED','APPROVING','WAIT','IN_WAREHOUSE')
+		AND C.P_CODE = #{consignmentId}
+	</select>
+	
+	
+	
+	
+	
+	
+</mapper>

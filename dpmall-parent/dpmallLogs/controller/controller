@@ -1,0 +1,67 @@
+[2018-11-30 16:23:20,199] DEBUG [main] SpringJUnit4ClassRunner.<init>(106) | SpringJUnit4ClassRunner constructor called with [class com.dpamll.datasvr.HybrisServiceFacadeTest].
+[2018-11-30 16:23:20,229] DEBUG [main] AbstractDelegatingSmartContextLoader.delegateProcessing(90) | Delegating to GenericXmlContextLoader to process context configuration [ContextConfigurationAttributes@9f70c54 declaringClass = 'com.dpmall.common.SpringTestCase', classes = '{}', locations = '{classpath:applicationContext-test.xml}', inheritLocations = true, initializers = '{}', inheritInitializers = true, name = [null], contextLoaderClass = 'org.springframework.test.context.ContextLoader'].
+[2018-11-30 16:23:20,230] DEBUG [main] ContextLoaderUtils.resolveActiveProfiles(471) | Could not find an 'annotation declaring class' for annotation type [org.springframework.test.context.ActiveProfiles] and class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,237] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(68) | Retrieved @ProfileValueSourceConfiguration [null] for test class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,238] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(80) | Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,241] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(68) | Retrieved @ProfileValueSourceConfiguration [null] for test class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,242] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(80) | Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,242] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(68) | Retrieved @ProfileValueSourceConfiguration [null] for test class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,243] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(80) | Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,243] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(68) | Retrieved @ProfileValueSourceConfiguration [null] for test class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,243] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(80) | Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,245] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(68) | Retrieved @ProfileValueSourceConfiguration [null] for test class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,245] DEBUG [main] ProfileValueUtils.retrieveProfileValueSource(80) | Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.dpamll.datasvr.HybrisServiceFacadeTest]
+[2018-11-30 16:23:20,249] DEBUG [main] DependencyInjectionTestExecutionListener.prepareTestInstance(73) | Performing dependency injection for test context [[TestContext@51565ec2 testClass = HybrisServiceFacadeTest, testInstance = com.dpamll.datasvr.HybrisServiceFacadeTest@482f8f11, testMethod = [null], testException = [null], mergedContextConfiguration = [MergedContextConfiguration@1593948d testClass = HybrisServiceFacadeTest, locations = '{classpath:applicationContext-test.xml}', classes = '{}', contextInitializerClasses = '[]', activeProfiles = '{}', contextLoader = 'org.springframework.test.context.support.DelegatingSmartContextLoader', parent = [null]]]].
+[2018-11-30 16:23:20,249] DEBUG [main] AbstractDelegatingSmartContextLoader.delegateLoading(100) | Delegating to GenericXmlContextLoader to load context from [MergedContextConfiguration@1593948d testClass = HybrisServiceFacadeTest, locations = '{classpath:applicationContext-test.xml}', classes = '{}', contextInitializerClasses = '[]', activeProfiles = '{}', contextLoader = 'org.springframework.test.context.support.DelegatingSmartContextLoader', parent = [null]].
+[2018-11-30 16:23:20,250] DEBUG [main] AbstractGenericContextLoader.loadContext(104) | Loading ApplicationContext for merged context configuration [[MergedContextConfiguration@1593948d testClass = HybrisServiceFacadeTest, locations = '{classpath:applicationContext-test.xml}', classes = '{}', contextInitializerClasses = '[]', activeProfiles = '{}', contextLoader = 'org.springframework.test.context.support.DelegatingSmartContextLoader', parent = [null]]].
+[2018-11-30 16:23:20,308] DEBUG [main] MutablePropertySources.addLast(108) | Adding [systemProperties] PropertySource with lowest search precedence
+[2018-11-30 16:23:20,309] DEBUG [main] MutablePropertySources.addLast(108) | Adding [systemEnvironment] PropertySource with lowest search precedence
+[2018-11-30 16:23:20,310] DEBUG [main] AbstractEnvironment.<init>(127) | Initialized StandardEnvironment with PropertySources [systemProperties,systemEnvironment]
+[2018-11-30 16:23:20,320] INFO  [main] XmlBeanDefinitionReader.loadBeanDefinitions(316) | Loading XML bean definitions from class path resource [applicationContext-test.xml]
+[2018-11-30 16:23:20,321] ERROR [main] TestContextManager.prepareTestInstance(324) | Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener@42f93a98] to prepare test instance [com.dpamll.datasvr.HybrisServiceFacadeTest@482f8f11]
+java.lang.IllegalStateException: Failed to load ApplicationContext
+	at org.springframework.test.context.CacheAwareContextLoaderDelegate.loadContext(CacheAwareContextLoaderDelegate.java:103)
+	at org.springframework.test.context.TestContext.getApplicationContext(TestContext.java:122)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:109)
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:75)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:321)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.createTest(SpringJUnit4ClassRunner.java:211)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner$1.runReflectiveCall(SpringJUnit4ClassRunner.java:288)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.methodBlock(SpringJUnit4ClassRunner.java:284)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:231)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:88)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:231)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:60)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:229)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:50)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:222)
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:71)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:300)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:174)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:157)
+	at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:68)
+	at com.intellij.rt.execution.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:47)
+	at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:242)
+	at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:70)
+Caused by: org.springframework.beans.factory.BeanDefinitionStoreException: IOException parsing XML document from class path resource [applicationContext-test.xml]; nested exception is java.io.FileNotFoundException: class path resource [applicationContext-test.xml] cannot be opened because it does not exist
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:342)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:303)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:174)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:209)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:180)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:243)
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadBeanDefinitions(AbstractGenericContextLoader.java:233)
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:117)
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:60)
+	at org.springframework.test.context.support.AbstractDelegatingSmartContextLoader.delegateLoading(AbstractDelegatingSmartContextLoader.java:102)
+	at org.springframework.test.context.support.AbstractDelegatingSmartContextLoader.loadContext(AbstractDelegatingSmartContextLoader.java:246)
+	at org.springframework.test.context.CacheAwareContextLoaderDelegate.loadContextInternal(CacheAwareContextLoaderDelegate.java:69)
+	at org.springframework.test.context.CacheAwareContextLoaderDelegate.loadContext(CacheAwareContextLoaderDelegate.java:95)
+	... 24 more
+Caused by: java.io.FileNotFoundException: class path resource [applicationContext-test.xml] cannot be opened because it does not exist
+	at org.springframework.core.io.ClassPathResource.getInputStream(ClassPathResource.java:171)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:329)
+	... 36 more
+[2018-11-30 16:23:20,332] DEBUG [main] DirtiesContextTestExecutionListener.afterTestClass(138) | After test class: context [[TestContext@51565ec2 testClass = HybrisServiceFacadeTest, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [MergedContextConfiguration@1593948d testClass = HybrisServiceFacadeTest, locations = '{classpath:applicationContext-test.xml}', classes = '{}', contextInitializerClasses = '[]', activeProfiles = '{}', contextLoader = 'org.springframework.test.context.support.DelegatingSmartContextLoader', parent = [null]]]], dirtiesContext [false].

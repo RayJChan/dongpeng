@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.StoreDao">
+	<resultMap id="StoreResultMap" type="com.dpmall.db.bean.StoreEntity">
+	    <id property="storeId" column="PK" />
+	    <result property="storeName" column="P_DISPLAYNAME" />
+	    <result property="storeAddr" column="P_FORMATADDRESS" />
+	</resultMap>
+	
+	<select id="listDistributorStores" resultMap="StoreResultMap">
+		select 
+		P.PK,
+		P.P_DISPLAYNAME,
+		P.P_FORMATADDRESS 
+		from AGENCY a , 
+		POINTOFSERVICE p 
+		where
+		a.P_UID=p.P_CODEOFAGENCY
+		and	a.PK=${distributorId}
+		AND  a.P_ISSHOWSTORE = '1'
+		<if test="search != '' and search != null">
+		and P.P_DISPLAYNAME LIKE  '%${search}%'
+		</if>
+	</select>
+	
+</mapper>

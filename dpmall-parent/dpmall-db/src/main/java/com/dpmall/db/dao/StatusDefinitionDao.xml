@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.StatusDefinitionDao">
+
+	<resultMap id="statusDefinitionResultMap" type="com.dpmall.db.bean.StatusDefinitionEntity">
+	    <id property="id" column="PK" />
+	    <result property="name" column="P_NAME" />
+	    <result property="type" column="P_TYPE" />
+	    <result property="typeDescribe" column="P_TYPEDESCRIBE" />
+
+	</resultMap>
+	<select id="getInfoByType" resultMap="statusDefinitionResultMap">
+		SELECT
+			s.pk,
+			s.P_CODE,
+			s.P_NAME,
+			s.P_TYPE,
+			s.P_TYPEDESCRIBE
+		FROM
+			STATUSDEFINITION s
+		WHERE
+			1 = 1
+		AND P_TYPE = #{type}
+		ORDER BY
+			P_CODE ASC	
+	</select>
+</mapper>

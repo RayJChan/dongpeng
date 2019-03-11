@@ -1,0 +1,14 @@
+/*/.settings
+/*/*.classpath
+/*/*.project
+/dpmall-common/*.project
+/.project
+/dpmall-parent.iml
+/.idea/
+/.settings/
+*.classpath
+target/*
+*/target
+/target/
+
+*.iml

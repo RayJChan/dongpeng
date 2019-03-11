@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.TmallPrepayDao">
+	<select id="getList" resultMap="tmallPrepayMap">
+		SELECT
+			*
+		FROM
+			(
+			SELECT
+				r1.*
+			FROM
+				(
+				SELECT
+					r0.*, ROWNUM rn
+				FROM
+					(
+					SELECT
+						c.pk as prePayId,
+						O2o.P_ISDELIVERYSELF AS isAgency,
+						o.P_EXTERNALORDERCODE AS prePayCode,
+						dp.p_name AS prePayName,
+						P .P_DISPLAYNAME AS suggestStoreName,
+						TO_CHAR (O.CREATEDTS,'yyyy-mm-dd') AS effectiveTime,
+						R.p_name || ac.p_name || ad.p_name || A .p_streetname AS serviceAddress,
+						TO_CHAR (O2O.P_ACCEPTEDTIME,'yyyy-mm-dd HH24:mi:ss') AS acceptTime,
+						a.P_PHONE1 as phone,
+						O2O.P_STOREO2OSTATUS as storeStatus
+
+					FROM
+						CONSIGNMENTS c
+						LEFT JOIN AGENCY ag on ag.P_UID = c.P_ALLOCATIONEMPLOYEECODE
+						LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+						LEFT JOIN ORDERS o ON o.PK = c.P_ORDER
+						LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+						LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+						LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+						LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+						LEFT JOIN POINTOFSERVICE P ON P .PK = c.P_DELIVERYPOINTOFSERVICE
+						LEFT JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+						LEFT JOIN REGIONSLP r ON r.itempk = A .p_region
+						LEFT JOIN languages l ON r.LANGPK = l.pk
+						LEFT JOIN CITIESLP ac ON ac.itempk = A .p_city
+						LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+						LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+						LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+					WHERE
+					1 = 1
+					<include refid="isAgency"/>
+					AND c.P_SPLITORDERTYPE = 'M2'
+					AND E2.code = 'Tmall'
+					AND DP.P_NAME IS NOT NULL
+					AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+					AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+					AND NVL (l3.p_ISOCODE, 'zh') = 'zh'
+					AND C.P_STATUS IN (
+						SELECT
+							t2.pk
+						FROM
+							COMPOSEDTYPES t1,
+							ENUMERATIONVALUES t2
+						WHERE
+							t1.INTERNALCODe = 'ConsignmentStatus'
+						AND t2.TYPEPKSTRING = t1.PK
+					)
+					<if test="search !=null and search != ''">
+					AND (
+						c.p_code like '%${search}%'
+						or o.p_BUYERNICK like '%${search}%'
+						or A.P_FIRSTNAME like '%${search}%'
+						OR A .p_phone1 like '%${search}%'
+						or P.P_DISPLAYNAME LIKE '%${search}%'
+						or o.P_EXTERNALORDERCODE LIKE '%${search}%'
+					)
+                    </if>
+					ORDER BY
+					c.MODIFIEDTS DESC
+					) r0
+				) r1
+			WHERE
+				r1.rn &lt;=(${pageNum}*${pageSize})
+			) r2
+		WHERE
+			r2.rn &gt;= (${pageNum}-1)*${pageSize} + 1
+	</select>
+
+	<resultMap id="tmallPrepayMap" type="com.dpmall.db.bean.TmallPrePayEntity">
+		<id property="prePayId" column="prePayId" />
+		<result property="prePayCode" column="prePayCode" />
+		<result property="prePayName" column="prePayName" />
+		<result property="suggestStoreName" column="suggestStoreName" />
+		<result property="effectiveTime" column="effectiveTime" />
+		<result property="serviceAddress" column="serviceAddress" />
+		<result property="acceptTime" column="acceptTime" />
+		<result property="phone" column="phone" />
+		<result property="isAgency" column="isAgency" />
+		<result property="storeStatus" column="storeStatus" />
+
+
+
+	</resultMap>
+
+	<select id="getListCount" resultType="java.lang.String">
+		SELECT
+		count(*) as count
+		FROM
+		CONSIGNMENTS c
+		LEFT JOIN AGENCY ag ON ag.P_UID = c.P_ALLOCATIONEMPLOYEECODE
+		LEFT JOIN ORDERS o ON o.PK = c.P_ORDER
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+		LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+		LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+		LEFT JOIN POINTOFSERVICE P ON P .PK = c.P_DELIVERYPOINTOFSERVICE
+		LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+		WHERE
+		1 = 1
+		<include refid="isAgency"/>
+		AND c.P_SPLITORDERTYPE = 'M2'
+		AND E2.code = 'Tmall'
+		AND DP.P_NAME IS NOT NULL
+		AND C.P_STATUS IN (
+		SELECT
+		t2.pk
+		FROM
+		COMPOSEDTYPES t1,
+		ENUMERATIONVALUES t2
+		WHERE
+		t1.INTERNALCODe = 'ConsignmentStatus'
+		AND t2.TYPEPKSTRING = t1.PK
+		)
+	</select>
+
+	<sql id="isAgency">
+		<if test='isAgency == "Y"'>
+			AND AG.pk = #{agencyId}
+			<if test='listStatus == "1"'>
+				aND O2O.P_AGENCYO2OSTATUS = 'WAITFORRECEIVE'
+			</if>
+			<if test='listStatus == "2"'>
+				AND O2O.P_AGENCYO2OSTATUS in('INPROGRESS','COMPLETED')
+				and (PR.P_ISWRITEOFF = '0' or PR.P_ISWRITEOFF is null )
+				AND (o.p_sfstatus != 'TRADE_CLOSED' and o.p_sfstatus != 'TRADE_CANCELED' or o.p_sfstatus  is null)
+			</if>
+			<if test='listStatus == "3"'>
+				AND O2O.P_AGENCYO2OSTATUS in('INPROGRESS','COMPLETED')
+				AND (o.p_sfstatus != 'TRADE_CLOSED' and o.p_sfstatus != 'TRADE_CANCELED' or o.p_sfstatus  is null)
+				and PR.P_ISWRITEOFF = '1'
+			</if>
+			<if test='listStatus == "4"'>
+				AND (o.p_sfstatus = 'TRADE_CLOSED' or o.p_sfstatus = 'TRADE_CANCELED')
+			</if>
+		</if>
+
+		<if test='isAgency == "N"'>
+			and O2O.P_ISDELIVERYSELF = 'N'
+			AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+			<if test='listStatus == "1"'>
+				aND O2O.P_STOREO2OSTATUS = 'WAITFORRECEIVE'
+			</if>
+			<if test='listStatus == "2"'>
+				aND O2O.P_STOREO2OSTATUS in ('INPROGRESS','COMPLETED')
+				and (PR.P_ISWRITEOFF = '0' or PR.P_ISWRITEOFF is null )
+				AND (o.p_sfstatus != 'TRADE_CLOSED' and o.p_sfstatus != 'TRADE_CANCELED' or o.p_sfstatus  is null)
+			</if>
+			<if test='listStatus == "3"'>
+				aND O2O.P_STOREO2OSTATUS in ('INPROGRESS','COMPLETED')
+				AND (o.p_sfstatus != 'TRADE_CLOSED' and o.p_sfstatus != 'TRADE_CANCELED' or o.p_sfstatus  is null)
+				and PR.P_ISWRITEOFF = '1'
+			</if>
+			<if test='listStatus == "4"'>
+				AND (o.p_sfstatus = 'TRADE_CLOSED' or o.p_sfstatus = 'TRADE_CANCELED')
+			</if>
+
+		</if>
+	</sql>
+
+	<update id="editO2oConsignment">
+		<if test="po.prePayId!=null and po.prePayId!='' ">
+		UPDATE O2OCONSIGNMENTITEMS
+		<set>
+			MODIFIEDTS=sysdate,
+			<if test='po.agencyListStatus != null and po.agencyListStatus != "" '>
+				P_AGENCYO2OSTATUS = #{po.agencyListStatus},
+			</if>
+			<if test='po.storeListStatus != null and po.storeListStatus != "" '>
+				P_STOREO2OSTATUS = #{po.storeListStatus},
+			</if>
+			<if test='po.isDeliverySelf != null and po.isDeliverySelf != "" '>
+				P_ISDELIVERYSELF = #{po.isDeliverySelf},
+			</if>
+			<if test='po.storeRemark != null and po.storeRemark != "" '>
+				P_ACCEPTEDCOMMENT = #{po.storeRemark},
+			</if>
+			<if test='po.agencyRemark != null and po.agencyRemark != "" '>
+				P_AGENCYCOMMENT = #{po.agencyRemark},
+			</if>
+			<if test='po.tmallAcceptTime == "Y" '>
+				P_ACCEPTEDTIME = sysdate,
+				P_DISTRIBUTETIME = sysdate,
+			</if>
+			<if test='po.tmallAcceptTime == "N" '>
+				P_ACCEPTEDTIME =  to_date('','yyyy-mm-dd HH24:mi:ss'),
+				P_DISTRIBUTETIME =  to_date('','yyyy-mm-dd HH24:mi:ss'),
+			</if>
+
+		</set>
+		where P_CONSIGNMENT  = #{po.prePayId}
+		</if>
+	</update>
+
+	<update id="editConsignment">
+		<if test="po.prePayId!=null and po.prePayId!='' ">
+		UPDATE CONSIGNMENTS
+		<set>
+			MODIFIEDTS=sysdate,
+			<if test='po.prepayStatus != null and po.prepayStatus != "" '>
+				P_STATUS = #{po.prepayStatus},
+			</if>
+			<if test='po.suggestStore != null and po.suggestStore != "" '>
+				P_DELIVERYPOINTOFSERVICE = #{po.suggestStore},
+			</if>
+
+
+		</set>
+		where PK=#{po.prePayId}
+		</if>
+	</update>
+
+	<resultMap id="detailsMap" type="com.dpmall.db.bean.TmallPrePayDetailEntity">
+		<id property="prePayId" column="prePayId" />
+		<result property="prePayCode" column="prePayCode" />
+		<result property="prePayName" column="prePayName" />
+		<result property="discountPrice" column="discountPrice" />
+		<result property="condition" column="condition" />
+		<result property="customerName" column="customerName" />
+		<result property="phone" column="phone" />
+		<result property="serviceAddress" column="serviceAddress" />
+		<result property="effectiveTime" column="effectiveTime" />
+		<result property="customerName" column="customerName" />
+		<result property="suggestStoreName" column="suggestStoreName" />
+		<result property="agencyRemark" column="agencyRemark" />
+		<result property="storeRemark" column="storeRemark" />
+		<result property="prepayStatus" column="prepayStatus" />
+		<result property="acceptTime" column="acceptTime" />
+		<result property="writeoffCode" column="writeoffCode" />
+		<result property="isWriteOff" column="isWriteOff" />
+		<result property="listStatusOfAgency" column="listStatusOfAgency" />
+		<result property="listStatusOfStore" column="listStatusOfStore" />
+		<result property="isAgency" column="isAgency" />
+		<result property="agencyId" column="agencyId" />
+        <result property="sfStatus" column="sfStatus" />
+		<result property="serviceRemark" column="serviceRemark" />
+
+
+
+
+
+	</resultMap>
+
+	<!--获取详情-->
+	<select id="getDetails" resultMap="detailsMap">
+
+		SELECT * from (
+		SELECT
+		c.P_AGENCY AS agencyId,
+		O2o.P_ISDELIVERYSELF AS isAgency,
+		c.pk AS prePayId,
+		o.P_EXTERNALORDERCODE AS prePayCode,
+		dp.p_name AS prePayName,
+		TO_CHAR (O.CREATEDTS, 'yyyy-mm-dd') AS effectiveTime,
+		A .p_phone1 AS phone,
+		A .P_FIRSTNAME AS customerName,
+		R.p_name || ac.p_name || ad.p_name || A .p_streetname AS serviceAddress,
+		P .P_DISPLAYNAME AS suggestStoreName,
+		O2O.P_AGENCYCOMMENT AS agencyRemark,
+		O2O.P_ACCEPTEDCOMMENT AS storeRemark,
+		PR.P_DESCRIPTION AS condition,
+		O2O.P_ACCEPTEDTIME AS acceptTime,
+		t2.code AS prepayStatus,
+		PR.P_PRIDEPOSITCODE AS writeoffCode,
+		PR.P_ISWRITEOFF AS isWriteOff,
+		o2o.P_AGENCYO2OSTATUS AS listStatusOfAgency,
+		o2o.P_STOREO2OSTATUS AS listStatusOfStore,
+		o.P_SFSTATUS AS sfStatus,
+		oe.P_SELLERMESSAGE AS serviceRemark
+		FROM
+		CONSIGNMENTS C
+		LEFT JOIN ENUMERATIONVALUES t2 ON t2.PK = C.P_STATUS
+		LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+		LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+		LEFT JOIN POINTOFSERVICE P ON P .PK = C.P_DELIVERYPOINTOFSERVICE
+		LEFT JOIN ORDERS o ON o.PK = C.P_ORDER
+		LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = C.pk
+		LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+		LEFT JOIN APPUSER AU ON O2O.P_ACCEPTEDBY = AU.PK
+		LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+		LEFT JOIN ADDRESSES A ON C.P_SHIPPINGADDRESS = A .pk
+		LEFT JOIN REGIONSLP r ON r.itempk = A .p_region
+		LEFT JOIN languages l ON r.LANGPK = l.pk
+		LEFT JOIN CITIESLP ac ON ac.itempk = A .p_city
+		LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+		LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+		LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+		WHERE
+		1 = 1
+		AND c.pk =#{prePayId}
+		AND DP.P_NAME IS NOT NULL
+		AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+		AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+		AND NVL (l3.p_ISOCODE, 'zh') = 'zh'
+		)r1 where
+		ROWNUM &lt; 2
+	</select>
+
+
+        </mapper>

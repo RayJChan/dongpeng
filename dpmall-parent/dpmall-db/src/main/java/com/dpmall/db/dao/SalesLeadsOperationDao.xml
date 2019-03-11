@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.SalesLeadsOperationDao">
+	<resultMap id="SalesLeadsOperationResultMap" type="com.dpmall.db.bean.SalesLeadsOperationEntity">
+		<id property="operateId" column="operateId" />
+		<result property="operatorBy" column="operatorBy" />
+		<result property="operatorDate" column="operatorDate" />
+		<result property="operatorDesc" column="operatorDesc" />
+		<result property="salesLeadsOrder" column="salesLeadsOrder" />
+		<result property="operatorType" column="operatorType" />
+		<result property="operatorByName" column="operatorByName" />
+		<result property="operatorRemark" column="operatorRemark" />
+		<result property="operatorTime" column="operatorTime" />
+        <result property="agencyCode" column="agencyCode" />
+        <result property="storeName" column="storeName" />
+        <result property="salOrderCode" column="salOrderCode" />
+
+
+
+    </resultMap>
+	<resultMap  id="salOrderOperationDetailMap" type="com.dpmall.db.bean.SalOrderOperationDetailEntity">
+		<id property="operateId" column="PK" />
+		<result property="status" column="status"/>
+		<result property="time" column="time"/>
+        <result property="remark" column="remark"/>
+        <result property="salOrderCode" column="salOrderCode"/>
+
+
+
+	</resultMap>
+
+    <insert id="insert">
+        insert into SALESLEADSOPERATION(
+        pk,
+        P_OPERATORBY,
+        P_OPERATORDESC,
+        P_SALESLEADSORDER,
+        P_OPERATORTYPE,
+        P_AGENCYCODE,
+        <if test="template.operatorByName!=null and template.operatorByName != ''">
+        P_OPERATORBYNAME,
+        </if>
+        <if test="template.operatorRemark!=null and template.operatorRemark != ''">
+            P_OPERATORREMARK,
+        </if>
+        <if test="template.storeName!=null and template.storeName != ''">
+            P_ACCEPTEDCODE ,
+        </if>
+        P_OPERATORDATE
+        ) values (
+        #{template.operateId},
+        #{template.operatorBy},
+        #{template.operatorDesc},
+        #{template.salesLeadsOrder},
+        #{template.operatorType},
+        #{template.agencyCode},
+        <if test="template.operatorByName!=null and template.operatorByName != ''">
+        #{template.operatorByName},
+        </if>
+        <if test="template.operatorRemark!=null and template.operatorRemark != ''">
+            #{template.operatorRemark},
+        </if>
+        <if test="template.storeName!=null and template.storeName != ''">
+            #{template.storeName},
+        </if>
+        #{template.operatorTimeSave}
+        )
+    </insert>
+
+<!--查询状态与对应更新的时间-->
+	<select id="getTimeAndStatus" resultMap="salOrderOperationDetailMap">
+        SELECT
+            PK AS operationId,
+            "TO_CHAR" (P_OPERATORDATE, 'yyyy-MM-dd hh24:mi:ss') AS TIME,
+            P_OPERATORBY AS operatorBy,
+            P_OPERATORDESC AS status
+        FROM
+            SALESLEADSOPERATION
+        WHERE
+            1 = 1
+            AND P_SALESLEADSORDER = #{salesLeadsOrderId}
+            AND P_AGENCYCODE = (
+                SELECT DISTINCT
+                    A .p_uid
+                FROM
+                    AGENCY A
+                    INNER JOIN APPUSER ap ON AP.P_AGENCY = A .pk
+                    INNER JOIN SALESLEADSOPERATION so ON so.P_OPERATORBY = ap.pk
+                WHERE
+                    so.P_OPERATORBY = #{operatorById}
+            )
+            AND P_OPERATORTYPE = 'UpdateOrderProgress'
+        ORDER BY
+            P_OPERATORDATE ASC
+
+	</select>
+
+
+
+
+
+    <resultMap id="SalOperationRemarkMap" type="com.dpmall.db.bean.SalOperationRemarkEntity">
+        <id property="operateId" column="operateId" />
+        <result property="salesLeadsOrder" column="salesLeadsOrder" />
+        <result property="operatorRemark" column="operatorRemark" />
+        <result property="failReasons" column="failReasons" />
+        <result property="operationType" column="operationType" />
+    </resultMap>
+
+	<!--获取备注-->
+	<select id="getRemarkByOperationId" resultMap="SalOperationRemarkMap">
+        SELECT
+            so.pk as  operateId,
+            so.P_OPERATORREMARK as operatorRemark,
+            so.P_SALESLEADSORDER as salesLeadsOrder,
+            so.P_OPERATORDESC  as operationType,
+            ST.P_NAME as failReasons
+        FROM
+            SALESLEADSOPERATION so
+            LEFT JOIN SALESLEADSORDER s ON s.pk = SO.P_SALESLEADSORDER
+            LEFT JOIN STATUSDEFINITION st ON ST.pk = s.P_FAILTYPE
+        WHERE
+            so.pk = #{id}
+
+	</select>
+
+
+	<!--Oms获取历史操作记录-->
+    <select id="getHistory4Oms" resultMap="SalesLeadsOperationResultMap">
+        SELECT *
+        FROM
+        (
+        SELECT *
+        FROM
+        (
+        SELECT
+        ROWNUM AS RN,
+        R0.*
+        FROM
+                (
+                SELECT
+                    s.pk AS operateId,
+                    s.P_OPERATORBY AS operatorBy,
+                    "TO_CHAR" ( s.P_OPERATORDATE, 'yyyy-MM-dd hh24:mi:ss' ) AS operatorTime,
+                    s.P_OPERATORDESC AS operatorDesc,
+                    s.P_OPERATORBYNAME AS operatorByName,
+                    s.P_AGENCYCODE AS agencyCode,
+                    s.P_ACCEPTEDCODE AS storeName,
+                    sa.P_ORDERCODE AS salOrderCode
+                FROM
+                    SALESLEADSOPERATION s
+                LEFT JOIN SALESLEADSORDER sa ON sa.pk = s.P_SALESLEADSORDER
+                WHERE
+                1 = 1
+                    <if test="salOrderCode!=null and salOrderCode != '' ">
+                        AND sa.P_ORDERCODE like '%${salOrderCode}%'
+                    </if>
+                    <if test="agencyCode!=null and agencyCode != '' ">
+                        AND P_AGENCYCODE like '%${agencyCode}%'
+                    </if>
+                    <if test="startTime!=null and startTime != '' ">
+                        AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &gt;= #{startTime}
+                    </if>
+                    <if test="endTime!=null and endTime != '' ">
+                        AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &lt;= #{endTime}
+                    </if>
+                ORDER BY
+                    s.P_OPERATORDATE DESC,
+                    s.P_SALESLEADSORDER
+
+        ) R0
+        ) R1
+        WHERE
+        R1.RN &lt; ${pageNum} * ${pageSize} + 1
+        ) R2
+        WHERE
+        R2.RN &gt; (${pageNum} - 1) * ${pageSize}
+    </select>
+
+
+    <select id="getHistoryConut4Oms" resultType="java.lang.String">
+        SELECT
+        count(1) as conut
+        FROM
+        SALESLEADSOPERATION s
+        LEFT JOIN SALESLEADSORDER sa ON sa.pk = s.P_SALESLEADSORDER
+        WHERE
+        1 = 1
+        <if test="salOrderCode!=null and salOrderCode != '' ">
+            AND sa.P_ORDERCODE like '%${salOrderCode}%'
+        </if>
+        <if test="agencyCode!=null and agencyCode != '' ">
+            AND P_AGENCYCODE like '%${agencyCode}%'
+        </if>
+        <if test="startTime!=null and startTime != '' ">
+            AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime != '' ">
+            AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &lt;= #{endTime}
+        </if>
+    </select>
+
+
+<select id="exportHistory4Oms" resultMap="SalesLeadsOperationResultMap">
+
+    SELECT
+    s.pk AS operateId,
+    s.P_OPERATORBY AS operatorBy,
+    "TO_CHAR" ( s.P_OPERATORDATE, 'yyyy-MM-dd hh24:mi:ss' ) AS operatorTime,
+    s.P_OPERATORDESC AS operatorDesc,
+    s.P_OPERATORBYNAME AS operatorByName,
+    s.P_AGENCYCODE AS agencyCode,
+    s.P_ACCEPTEDCODE AS storeName,
+    sa.P_ORDERCODE AS salOrderCode
+    FROM
+    SALESLEADSOPERATION s
+    LEFT JOIN SALESLEADSORDER sa ON sa.pk = s.P_SALESLEADSORDER
+    WHERE
+    1 = 1
+    <if test="salOrderCode!=null and salOrderCode != '' ">
+        AND sa.P_ORDERCODE like '%${salOrderCode}%'
+    </if>
+    <if test="agencyCode!=null and agencyCode != '' ">
+        AND P_AGENCYCODE like '%${agencyCode}%'
+    </if>
+    <if test="startTime!=null and startTime != '' ">
+        AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &gt;= #{startTime}
+    </if>
+    <if test="endTime!=null and endTime != '' ">
+        AND "TO_CHAR" (s.P_OPERATORDATE,'yyyy-MM-dd' ) &lt;= #{endTime}
+    </if>
+    ORDER BY
+    s.P_OPERATORDATE DESC,
+    s.P_SALESLEADSORDER
+</select>
+
+
+    <select id="getOperateRemark" resultMap="salOrderOperationDetailMap">
+        SELECT
+            so.P_ORDERCODE AS salOrderCode,
+            "REPLACE" (
+        WMSYS.WM_CONCAT (
+            '状态:{' || OP.P_OPERATORDESC || '}--备注:{' || OP.P_OPERATORREMARK || '}'
+            ),
+            ',',
+            ';'
+            ) AS remark
+        FROM
+        SALESLEADSORDER so
+        LEFT JOIN SALESLEADSOPERATION op ON SO.pk = op.P_SALESLEADSORDER
+        WHERE
+        1 = 1
+        AND op.P_OPERATORREMARK IS NOT NULL
+        AND so.P_ORDERCODE IN
+            <foreach collection="orderCodeList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+
+        GROUP BY
+          so.P_ORDERCODE
+
+    </select>
+
+
+
+  </mapper>

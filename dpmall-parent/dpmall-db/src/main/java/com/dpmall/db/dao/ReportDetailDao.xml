@@ -1,0 +1,1331 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.ReportDetailDao">
+     <!-- 历史记录 -->
+     <resultMap id="reportDetailMap" type="com.dpmall.db.bean.ReportDetailEntity">
+		<result property="historyDate" column="historyDate"/>
+		<!-- <result property="historyResult" column="historyResult"/> -->
+		<result property="distributeCount" column="distributeCount"/>
+		<result property="acceptCount" column="acceptCount"/>
+		<result property="distributeAVG" column="distributeAVG"/>
+		<result property="acceptAVG" column="acceptAVG"/>
+		<result property="acceptRate" column="acceptRate"/>
+		<result property="deliverAVGTime" column="deliverAVGTime"/>
+		
+		<result property="writeOffCount" column="writeOffCount"/>
+		<result property="writeOffAVG" column="writeOffAVG"/>
+		<result property="writeOffRate" column="writeOffRate"/>
+		<result property="writeOffTime" column="writeOffTime"/>
+		
+		<result property="conversionCount" column="conversionCount"/>
+		<result property="conversionAVG" column="conversionAVG"/>
+		<result property="conversionRate" column="conversionRate"/>
+		<result property="conversionAVGTime" column="conversionAVGTime"/>
+		
+		<result property="groupName" column="groupName"/>
+		<result property="groupPk" column="groupPk"/>
+		<result property="rowNum" column="rn"/>
+		<result property="sortAVG" column="sortAVG"/>
+		<result property="sortResult" column="sortResult"/>
+	</resultMap>
+     
+ 		<!-- 实物历史记录，年度，季度，月度 -->
+     <select id="orderHistory" resultMap="reportDetailMap">
+	     SELECT
+				p2.*
+		FROM
+			(
+				SELECT
+					 p1.*
+				FROM
+					(
+						SELECT
+								p0.*,
+								ROWNUM AS rn
+						FROM
+							(
+							<if test="format == 'YYYY-MM'">
+								<include refid="orderHistoryOfMonth"/>
+							</if>
+							<if test="format == 'YYYY-q'">
+								<include refid="orderHistoryOfQuarter"/>
+							</if>
+							<if test="format == 'YYYY'">
+								<include refid="orderHistoryOfYear"/>
+							</if>
+							)p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}
+     </select>
+     
+     <!-- 实物 根据月度查询 -->
+     <sql id="orderHistoryOfMonth">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_PDQUANTITY) AS distributeCount,
+			SUM (HR.P_JDQUANTITY) AS acceptCount,
+			SUM (HR.P_PDAVERAGE) AS distributeAVG,
+			SUM (HR.P_JDAVERAGE) AS acceptAVG,
+			SUM (HR.P_JDTOTALPERCENT) AS acceptRate,
+			SUM (HR.P_FHAVERAGETIME) AS deliverAVGTime
+		FROM
+			HISTORICRECORDS hr
+		WHERE
+			HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+     <!-- 实物 根据季度查询 -->
+     <sql id="orderHistoryOfQuarter">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_PDQUANTITY) AS distributeCount,
+			SUM (HR.P_JDQUANTITY) AS acceptCount,
+			SUM (HR.P_PDAVERAGE) AS distributeAVG,
+			SUM (HR.P_JDAVERAGE) AS acceptAVG,
+			SUM (HR.P_JDTOTALPERCENT) AS acceptRate,
+			SUM (HR.P_FHAVERAGETIME) AS deliverAVGTime
+		FROM
+			SHISTORICRECORDS hr
+		WHERE
+			HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+     <!-- 实物 根据年度查询 -->
+      <sql id="orderHistoryOfYear">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_PDQUANTITY) AS distributeCount,
+			SUM (HR.P_JDQUANTITY) AS acceptCount,
+			SUM (HR.P_PDAVERAGE) AS distributeAVG,
+			SUM (HR.P_JDAVERAGE) AS acceptAVG,
+			SUM (HR.P_JDTOTALPERCENT) AS acceptRate,
+			SUM (HR.P_FHAVERAGETIME) AS deliverAVGTime
+			
+		FROM
+			YHISTORICRECORDS hr
+		WHERE
+			HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}
+			
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+     
+     	<!-- 特权订金历史记录，年度，季度，月度 -->
+    <select id="prePayHistory" resultMap="reportDetailMap">
+	     SELECT
+				p2.*
+		FROM
+			(
+				SELECT
+					 p1.*
+				FROM
+					(
+						SELECT
+								p0.*,
+								ROWNUM AS rn
+						FROM
+							(
+							<if test="format == 'YYYY-MM'">
+								<include refid="prePayHistoryOfMonth"/>
+							</if>
+							<if test="format == 'YYYY-q'">
+								<include refid="prePayHistoryOfQuarter"/>
+							</if>
+							<if test="format == 'YYYY'">
+								<include refid="prePayHistoryOfYear"/>
+							</if>
+							)p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}
+     </select>
+     
+      <!-- 特权  根据月度查询 -->
+     <sql id="prePayHistoryOfMonth">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			
+			SUM (HR.P_TQPDQUANTITY) AS distributeCount,
+			SUM (HR.P_TQHXQUANTITY) AS writeOffCount,
+			SUM (HR.P_TQHXAVERAGE) AS writeOffAVG,
+			SUM (HR.P_TQHXPERCENT) AS writeOffRate,
+			SUM (HR.P_TQHXTIME) AS writeOffTime
+		FROM
+			HISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test=' isStore == "N" '>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+		
+			
+			</if>
+			<if test=' isStore == "Y" '>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}	
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+       <!-- 特权  根据季度查询 -->
+     <sql id="prePayHistoryOfQuarter">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			
+			SUM (HR.P_TQPDQUANTITY) AS distributeCount,
+			SUM (HR.P_TQHXQUANTITY) AS writeOffCount,
+			SUM (HR.P_TQHXAVERAGE) AS writeOffAVG,
+			SUM (HR.P_TQHXPERCENT) AS writeOffRate,
+			SUM (HR.P_TQHXTIME) AS writeOffTime
+		FROM
+			SHISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test='isStore == "N"'>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+			</if>
+			<if test='isStore == "Y"'>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+       <!-- 特权  根据年度查询 -->
+     <sql id="prePayHistoryOfYear">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_TQPDQUANTITY) AS distributeCount,
+			SUM (HR.P_TQHXQUANTITY) AS writeOffCount,
+			SUM (HR.P_TQHXAVERAGE) AS writeOffAVG,
+			SUM (HR.P_TQHXPERCENT) AS writeOffRate,
+			SUM (HR.P_TQHXTIME) AS writeOffTime
+		FROM
+			YHISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test='isStore == "N"'>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+			</if>
+			<if test='isStore == "Y"'>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}	
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+
+
+ 	<!-- 留资 历史记录，年度，季度，月度 -->
+    <select id="saleHistory" resultMap="reportDetailMap">
+	     SELECT
+				p2.*
+		FROM
+			(
+				SELECT
+					 p1.*
+				FROM
+					(
+						SELECT
+								p0.*,
+								ROWNUM AS rn
+						FROM
+							(
+							<if test="format == 'YYYY-MM'">
+								<include refid="saleHistoryOfMonth"/>
+							</if>
+							<if test="format == 'YYYY-q'">
+								<include refid="saleHistoryOfQuarter"/>
+							</if>
+							<if test="format == 'YYYY'">
+								<include refid="saleHistoryOfYear"/>
+							</if>
+							)p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}
+     </select>
+    
+       <!-- 留资  根据月度查询 -->
+     <sql id="saleHistoryOfMonth">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_LZZHQUANTITY) AS conversionCount,
+			SUM (HR.P_LZZHAVERAGE) AS conversionAVG,
+			SUM (HR.P_LZZHPERCENT) AS conversionRate,
+			SUM (HR.P_LZZHTIME) AS conversionAVGTime
+		FROM
+			HISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test='isStore == "N"'>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+			</if>
+			<if test='isStore == "Y"'>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}	
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+       <!-- 留资  根据季度查询 -->
+     <sql id="saleHistoryOfQuarter">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_LZZHQUANTITY) AS conversionCount,
+			SUM (HR.P_LZZHAVERAGE) AS conversionAVG,
+			SUM (HR.P_LZZHPERCENT) AS conversionRate,
+			SUM (HR.P_LZZHTIME) AS conversionAVGTime
+		FROM
+			SHISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test='isStore == "N"'>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+			</if>
+			<if test='isStore == "Y"'>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}	
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+     
+       <!-- 留资  根据年度查询 -->
+     <sql id="saleHistoryOfYear">
+		SELECT
+			TO_CHAR (HR.P_TIME, '${format}') AS historyDate,
+			SUM (HR.P_LZZHQUANTITY) AS conversionCount,
+			SUM (HR.P_LZZHAVERAGE) AS conversionAVG,
+			SUM (HR.P_LZZHPERCENT) AS conversionRate,
+			SUM (HR.P_LZZHTIME) AS conversionAVGTime
+		FROM
+			YHISTORICRECORDS hr
+		WHERE
+			1=1
+			<if test='isStore == "N"'>
+			and HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+			</if>
+			<if test='isStore == "Y"'>
+				and HR.P_STORE = #{storeId}
+			</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM') &lt;= #{endTime}	
+		GROUP BY
+			TO_CHAR (P_TIME, '${format}')
+		ORDER BY
+			historyDate DESC
+     </sql>
+
+          
+     
+     
+     
+   <!-- ~~~~~~~~~~~~~~~~~~~~~~~下级排名~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  
+     
+     <!-- 获取下级的gropuPKs -->
+     <select id="getGroupPKs" resultType="java.lang.String">
+     	SELECT
+			pk
+		FROM
+			APPGROUP
+		WHERE
+			P_PARENT IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE 
+				P_CODE IN
+					<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+					 #{item}
+					</foreach>
+			)
+     </select>
+     
+       <!-- 获取下级的gropuCodes -->
+     <select id="getGroupCodes" resultType="java.lang.String">
+     	SELECT
+			P_CODE
+		FROM
+			APPGROUP
+		WHERE
+			P_PARENT IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE 
+				P_CODE IN
+					<foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+					 #{item}
+					</foreach>
+			)
+     </select>
+     
+      <!-- 获取下级的gropuPKs 仅适用于经销商级别-->
+     <select id="getGroupPKsOfAgency" resultType="java.lang.String">
+		SELECT
+			pk
+		FROM
+			APPGROUP
+		WHERE
+			1 = 1
+		AND (
+			P_CODE IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+      			<if test="bigList != null">
+			 <foreach collection="bigList" index="index" item="item2" >  
+	             or P_CODE IN 
+	             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+	            	#{item3}  
+	       		 </foreach>
+	       	 </foreach>
+	       	</if>
+		) 
+     </select>
+     
+       <!-- 获取门店StorePKs 仅适用于门店-->
+     <select id="getStorePKsOfStore" resultType="java.lang.String">
+		SELECT
+			pk
+		FROM
+			POINTOFSERVICE P
+		WHERE
+			1 = 1
+		AND (
+			P_CODEOFAGENCY IN
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+      			<if test="bigList != null">
+			 <foreach collection="bigList" index="index" item="item2" >  
+	             or P_CODEOFAGENCY IN 
+	             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+	            	#{item3}  
+	       		 </foreach>
+	       	 </foreach>
+	       	</if>
+		) 
+     </select>
+     
+     
+     
+     <!-- ~~~~~~~~~~~~~~~ 查询 具体信息~~~~~~~~~~~~~~ -->  
+     <!-- 排名信息 -->
+     <select id="sortInfo" resultMap="reportDetailMap">
+     	SELECT
+			P2.*
+		FROM
+			(
+				SELECT
+					P1.*
+				FROM
+					(
+						SELECT
+							P0.*, ROWNUM rn
+						FROM
+							(
+								<if test='isStore == "N"'>
+									<include refid="sortSqlOfNoStore"/>
+								</if>
+								<if test='isStore == "Y"'>
+									<include refid="sortSqlOfStore"/>
+								</if>
+								
+							) p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}	
+     
+     </select>
+     
+     <!-- 非门店  下级排名  查询-->
+     <sql id="sortSqlOfNoStore">
+     	SELECT
+			<include refid="baseSql"/>   AS sortResult,
+			P_APPGROUP AS groupPk,<!-- groupCode -->
+			AG.P_NAME AS groupName <!-- 组名称 -->
+		FROM
+			<include refid="dateFormatOfNoStore"/>
+		WHERE
+			1 = 1
+		<include refid="isNotNull"/>  	
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &gt;= #{startTime}
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &lt;= #{endTime}
+		GROUP BY
+			H .P_APPGROUP,
+			AG.P_NAME
+		HAVING
+		1=1
+		AND (H .P_APPGROUP IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+	       	<if test="bigList != null">
+				 <foreach collection="bigList" index="index" item="item2" >  
+		             or H .P_APPGROUP in
+		             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+		            	#{item3}  
+		       		 </foreach>
+		       	 </foreach>
+	       	</if>
+	       	)
+	       	<include refid="orderByBaseSql"/>
+     </sql>
+     
+      <!-- 门店  下级排名 查询 -->
+     <sql id="sortSqlOfStore">
+     	SELECT
+			<include refid="baseSql"/>   AS sortResult,
+			P_STORE AS groupPk,
+			p.P_NAME AS groupName
+		FROM
+			<include refid="dateFormatOfStore"/>
+		WHERE
+			1 = 1
+		<include refid="isNotNull"/>  	
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &gt;= #{startTime}
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &lt;= #{endTime}
+		GROUP BY
+			H .P_STORE,
+			p.P_NAME
+		HAVING
+			1 = 1
+		AND (
+			H .P_STORE IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+	       	<if test="bigList != null">
+				 <foreach collection="bigList" index="index" item="item2" >  
+		             or H .P_STORE in
+		             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+		            	#{item3}  
+		       		 </foreach>
+		       	 </foreach>
+	       	</if>
+			)
+			<include refid="orderByBaseSql"/>
+     </sql>
+     
+    
+     <sql id="orderByBaseSql">
+     	<!-- 实物 -->
+	     	<if test="sortType == 'PD' "><!-- 派单数 -->
+	     		 ORDER BY
+	     		 	SUM (H .P_PDQUANTITY)
+	     		 DESC
+	     	</if>
+	     	<if test="sortType == 'JD' "><!-- 接单数 -->
+	     		ORDER BY
+	     			 SUM (H .P_JDQUANTITY)  
+	     		DESC
+	     	</if>
+	     	<if test="sortType == 'PDAVG' "><!-- 派单平均值 -->
+	     		 ORDER BY
+	     			SUM (H .P_PDAVERAGE) 
+	     		DESC	
+	     	</if>
+	     	<if test="sortType == 'JDAVG' "><!-- 接单平均值 -->
+	     		 ORDER BY
+	     			SUM (H .P_JDAVERAGE) 
+	     		DESC
+	     	</if>
+	     	<if test="sortType == 'JDRATE' "><!-- 累计接单率 -->
+	     		 ORDER BY
+	     			SUM (H .P_JDTOTALPERCENT) 
+	     		DESC
+	     	</if>
+	     	<if test="sortType == 'FHAVGTIME' "><!-- 平均发货时长 -->
+	     		AND SUM (H .P_FHAVERAGETIME) &gt; 0
+	     		 ORDER BY
+	     			SUM (H .P_FHAVERAGETIME) 
+	     		ASC	
+	     	</if>
+	     	
+	     	<!-- 特权订金 -->
+	     	<if test="sortType == 'TQHXAVG' ">
+	     		 ORDER BY
+	     			SUM (H .P_TQHXAVERAGE)  <!-- 核销平均单值 -->
+	     		DESC	
+	     	</if>
+	     	<if test="sortType == 'TQHXRATE' ">
+	     		ORDER BY
+	     			SUM (H .P_TQHXPERCENT)  <!-- 核销率 -->
+	     		DESC
+	     	</if>
+	     	<if test="sortType == 'TQHXTIME' ">
+	     		AND SUM (H .P_TQHXTIME) &gt; 0
+	     		 ORDER BY
+	     			SUM (H .P_TQHXTIME)  <!-- 核销时长 -->
+	     		ASC	
+	     	</if>
+	     	
+	     	<!-- 留资 -->
+	     	<if test="sortType == 'LZZHAVG' ">
+	     		 ORDER BY
+	     			SUM (H .P_LZZHAVERAGE)  <!-- 转化平均单值 -->
+	     		DESC	
+	     	</if>
+	     	<if test="sortType == 'LZZHRATE' ">
+	     		 ORDER BY
+	     			SUM (H .P_LZZHPERCENT)  <!-- 转化率 -->
+	     		DESC	
+	     	</if>
+	     	 <if test="sortType == 'LZZHTIME' ">
+	     	 AND SUM (H .P_LZZHTIME) &gt; 0
+	     	 	 ORDER BY
+	     			SUM (H .P_LZZHTIME) <!--  转化时长 -->
+	     		ASC	
+	     	</if> 
+     </sql>
+    
+     <!--   基本查询 下级排名-->     
+     <sql id="baseSql">
+     		<!-- 实物 -->
+	     	<if test="sortType == 'PD' "><!-- 派单数 -->
+	     		 SUM (H .P_PDQUANTITY)
+	     	</if>
+	     	<if test="sortType == 'JD' "><!-- 接单数 -->
+	     		 SUM (H .P_JDQUANTITY)  
+	     	</if>
+	     	<if test="sortType == 'PDAVG' "><!-- 派单平均值 -->
+	     		SUM (H .P_PDAVERAGE) 
+	     	</if>
+	     	<if test="sortType == 'JDAVG' "><!-- 接单平均值 -->
+	     		SUM (H .P_JDAVERAGE) 
+	     	</if>
+	     	<if test="sortType == 'JDRATE' "><!-- 累计接单率 -->
+	     		SUM (H .P_JDTOTALPERCENT) 
+	     	</if>
+	     	<if test="sortType == 'FHAVGTIME' "><!-- 平均发货时长 -->
+	     		SUM (H .P_FHAVERAGETIME) 
+	     	</if>
+	     	
+	     	<!-- 特权订金 -->
+	     	<if test="sortType == 'TQHXAVG' ">
+	     		SUM (H .P_TQHXAVERAGE)  <!-- 核销平均单值 -->
+	     	</if>
+	     	<if test="sortType == 'TQHXRATE' ">
+	     		SUM (H .P_TQHXPERCENT)  <!-- 核销率 -->
+	     	</if>
+	     	<if test="sortType == 'TQHXTIME' ">
+	     		SUM (H .P_TQHXTIME)  <!-- 核销时长 -->
+	     	</if>
+	     	
+	     	<!-- 留资 -->
+	     	<if test="sortType == 'LZZHAVG' ">
+	     		SUM (H .P_LZZHAVERAGE)  <!-- 转化平均单值 -->
+	     	</if>
+	     	<if test="sortType == 'LZZHRATE' ">
+	     		SUM (H .P_LZZHPERCENT)  <!-- 转化率 -->
+	     	</if>
+	     	 <if test="sortType == 'LZZHTIME' ">
+	     		SUM (H .P_LZZHTIME) <!--  转化时长 -->
+	     	</if> 
+     	</sql>
+
+	<!-- 根据 年度，季度，月度，查询不同的表-->     
+	
+   
+     
+      <!-- 非空判断 下级排名 -->     
+     <sql id="isNotNull">
+	     	<if test="sortType == 'PD' ">
+	     		AND H .P_PDQUANTITY
+	     	</if>
+	     	<if test="sortType == 'JD' ">
+	     		AND H .P_JDQUANTITY
+	     	</if>
+	     	<if test="sortType == 'PDAVG' ">
+	     		AND H .P_PDAVERAGE 
+	     	</if>
+	   		<if test="sortType == 'JDAVG' ">
+	   			AND H .P_JDAVERAGE 
+	     	</if>
+	     	<if test="sortType == 'JDRATE' ">
+	     		AND H .P_JDTOTALPERCENT 
+	     	</if>
+	     	<if test="sortType == 'FHAVGTIME' ">
+	     		 AND H .P_FHAVERAGETIME  
+	     	</if>
+	     	
+	     	<!-- 特权订金 -->
+	     	<if test="sortType == 'TQHXAVG' ">
+	     		AND H .P_TQHXAVERAGE  
+	     	</if>
+	     	<if test="sortType == 'TQHXRATE' ">
+	     		AND H .P_TQHXPERCENT  
+	     	</if>
+	     	<if test="sortType == 'TQHXTIME' ">
+	     		AND H .P_TQHXTIME  
+	     	</if>
+	     	
+	     	<!-- 留资 -->
+	     	<if test="sortType == 'LZZHAVG' ">
+	     		AND H .P_LZZHAVERAGE 
+	     	</if>
+	     	<if test="sortType == 'LZZHRATE' ">
+	     		AND H .P_LZZHPERCENT 
+	     	</if>
+	     	 <if test="sortType == 'LZZHTIME' ">
+	     	 	AND H .P_LZZHTIME 
+	     	</if> 
+     	
+     	IS NOT NULL  
+     </sql>
+     
+     
+     <!--非门店:根据 年度，季度，月度，查询不同的表-->   
+     <sql id="dateFormatOfNoStore">
+		<if test="dateFormat == 'MONTH'">
+		    HISTORICRECORDS H
+			INNER JOIN APPGROUP ag ON AG.pk = H .P_APPGROUP
+     	</if>
+     	<if test="dateFormat == 'QUARTER'">
+		  	SHISTORICRECORDS H
+			INNER JOIN APPGROUP ag ON AG.pk = H .P_APPGROUP
+     	</if>
+     	<if test="dateFormat == 'YEAR'">
+		    YHISTORICRECORDS H
+			INNER JOIN APPGROUP ag ON AG.pk = H .P_APPGROUP
+     	</if>
+     </sql>
+     
+     <!--门店:根据 年度，季度，月度，查询不同的表-->   
+     <sql id="dateFormatOfStore">
+     	<if test="dateFormat == 'MONTH'">
+		    HISTORICRECORDS H
+			INNER JOIN POINTOFSERVICE p ON p.PK = H .P_STORE
+     	</if>
+     	<if test="dateFormat == 'QUARTER'">
+		    SHISTORICRECORDS H
+			INNER JOIN POINTOFSERVICE p ON p.PK = H .P_STORE
+     	</if>
+     	<if test="dateFormat == 'YEAR'">
+		    YHISTORICRECORDS H
+			INNER JOIN POINTOFSERVICE p ON p.PK = H .P_STORE
+     	</if>
+     </sql>
+     
+     
+      <!-- 排序中的平均值  -->
+     <select id="getSortAVG" resultMap="reportDetailMap">
+	    SELECT
+		    <include refid="selectByType"/>  AS sortAVG
+		FROM
+			<if test="dateFormat == 'MONTH'">
+			    HISTORICRECORDS H
+	     	</if>
+	     	<if test="dateFormat == 'QUARTER'">
+			    SHISTORICRECORDS H
+	     	</if>
+	     	<if test="dateFormat == 'YEAR'">
+			    YHISTORICRECORDS H
+	     	</if>
+		WHERE
+			1 = 1
+	    
+		<include refid="selectByTypeAndTime"/>
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &gt;= #{startTime}
+		AND TO_CHAR (H .P_TIME, 'YYYY-MM-DD') &lt;= #{endTime}
+		<if test='isStore == "N"'>
+			AND (H .P_APPGROUP IN 
+				<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+		            #{item}  
+		       	</foreach>
+		       	<if test="bigList != null">
+					 <foreach collection="bigList" index="index" item="item2" >  
+			             or H .P_APPGROUP in
+			             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+			            	#{item3}  
+			       		 </foreach>
+			       	 </foreach>
+		       	</if>)
+		 </if>
+		 <if test='isStore == "Y"'>
+		 	AND (
+			H .P_STORE IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+	       	<if test="bigList != null">
+				 <foreach collection="bigList" index="index" item="item2" >  
+		             or H .P_STORE in
+		             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+		            	#{item3}  
+		       		 </foreach>
+		       	 </foreach>
+	       	</if>
+			)
+		 </if>
+		 
+     </select>
+     
+     <!-- 平均值  下级排名-->     
+     <sql id="selectByType">
+		
+	     	<!-- 实物 -->
+	     	<if test="sortType == 'PD' ">
+	     		round((AVG (H .P_PDQUANTITY)), 2) 
+	     	</if>
+	     	<if test="sortType == 'JD' ">
+	     		round((AVG (H .P_JDQUANTITY)), 2)  
+	     	</if>
+	     	<if test="sortType == 'PDAVG' ">
+	     		round((AVG (H .P_PDAVERAGE)), 2)  
+	     	</if>
+	     	<if test="sortType == 'JDAVG' ">
+	     		round((AVG (H .P_JDAVERAGE)), 2)  
+	     	</if>
+	     	<if test="sortType == 'JDRATE' ">
+	     		round((AVG (H .P_JDTOTALPERCENT)), 2)  
+	     	</if>
+	     	<if test="sortType == 'FHAVGTIME' ">
+	     		round((AVG (H .P_FHAVERAGETIME)), 2)  
+	     	</if>
+	     	
+	     	<!-- 特权订金 -->
+	     	<if test="sortType == 'TQHXAVG' ">
+	     		round((AVG (H .P_TQHXAVERAGE)), 2) 
+	     	</if>
+	     	<if test="sortType == 'TQHXRATE' ">
+	     		round((AVG (H .P_TQHXPERCENT)), 2) 
+	     	</if>
+	     	<if test="sortType == 'TQHXTIME' ">
+	     		round((AVG (H .P_TQHXTIME)), 2) 
+	     	</if>
+	     	
+	     	<!-- 留资 -->
+	     	<if test="sortType == 'LZZHAVG' ">
+	     		round((AVG (H .P_LZZHAVERAGE)), 2)
+	     	</if>
+	     	<if test="sortType == 'LZZHRATE' ">
+	     		round((AVG (H .P_LZZHPERCENT)), 2)
+	     	</if>
+	     	<if test="sortType == 'LZZHTIME' ">
+	     	 	round((AVG (H .P_LZZHTIME)), 2)
+	     	</if>
+	     	
+     </sql>
+     
+     <!-- 与时间相关的平均值 条件 -->
+     <sql id="selectByTypeAndTime">
+     	<if test="sortType == 'FHAVGTIME' ">
+	     and   H .P_FHAVERAGETIME &gt; 0
+	    </if>
+	    <if test="sortType == 'TQHXTIME' ">
+	     and   H .P_TQHXTIME &gt; 0
+	    </if>
+	    <if test="sortType == 'LZZHTIME' ">
+	     and   H .P_LZZHTIME &gt; 0
+	    </if>
+     
+     
+     </sql>
+   
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~区域分布~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+     <resultMap id="regionMap" type="com.dpmall.db.bean.ReportDetailEntity">
+		<result property="regionResultName" column="regionResultName"/>
+		<result property="regionDistributionResult" column="COUNT"/>
+		<result property="rowNum" column="rn"/>
+	</resultMap>
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~实物~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->   
+      <!--实物、派单/接单  区域分布   省-->
+     <select id="orderRegion" resultMap="regionMap">
+     	SELECT
+			*
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							p0.*, ROWNUM rn
+						FROM
+							(
+								SELECT
+									<include refid="orderRegionBaseSql"/> AS regionResultName,
+									COUNT (c.pk) AS COUNT
+								FROM
+									CONSIGNMENTS c
+								INNER JOIN O2OCONSIGNMENTITEMS O2O ON C.PK = O2O.P_CONSIGNMENT
+								INNER JOIN ADDRESSES A ON c.P_SHIPPINGADDRESS = A .pk
+								inner JOIN REGIONSLP r ON A .p_region = r.itempk
+								LEFT JOIN citieslp ac ON ac.itempk = A .p_city
+								LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+								inner JOIN languages l ON r.LANGPK = l.pk
+								LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+								LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+								WHERE
+									1 = 1
+								AND c.P_SPLITORDERTYPE IN ('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+								AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+								AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+								AND NVL (l3.p_ISOCODE, 'zh') = 'zh'
+								
+		 						AND TO_CHAR(O2O.CREATEDTS,'yyyy-MM-dd') &gt;= #{startTime}
+								AND TO_CHAR(O2O.CREATEDTS,'yyyy-MM-dd') &lt;= #{endTime}
+								
+								<if test='isStore == "N"'>
+									<include refid="orderByAgencys"/>
+								</if>
+								<if test='isStore == "Y"'>
+									<include refid="ordeByStoreId"/>
+								</if>
+								<if test='isCity == "Y"'>
+									AND R.P_NAME = #{provinceName}
+								</if>
+								GROUP BY
+									<include refid="orderRegionBaseSql"/>
+								ORDER BY
+									COUNT DESC
+							) p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}	
+     
+     </select>
+     
+     
+  	<!-- 实物、非门店查询 -->
+     <sql id="orderByAgencys">
+	  	 <if test='JdOrPd == "PD"'>
+			AND o2o.P_AGENCYO2OSTATUS IS NOT NULL
+		 </if>
+		
+		 <if test='JdOrPd == "JD"'>
+			AND o2o.P_AGENCYO2OSTATUS IN ('INPROGRESS','WAITFORREFUND','COMPLETED','CLOSED')
+		 </if>     	
+    	
+    	AND (
+			c.P_ALLOCATIONEMPLOYEECODE IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+	       	<if test="bigList != null">
+				 <foreach collection="bigList" index="index" item="item2" >  
+		             or c.P_ALLOCATIONEMPLOYEECODE in
+		             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+		            	#{item3}  
+		       		 </foreach>
+		       	 </foreach>
+	       	</if>
+		)
+     </sql>
+     
+     <!-- 实物、门店查询 -->
+     <sql id="ordeByStoreId">
+     	 <if test='JdOrPd == "PD"'>
+			AND o2o.P_STOREO2OSTATUS IS NOT NULL
+		 </if>
+		
+		 <if test='JdOrPd == "JD"'>
+			AND o2o.P_STOREO2OSTATUS IN ('INPROGRESS','WAITFORREFUND','COMPLETED','CLOSED')
+		 </if> 
+		 
+     	 AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+     </sql>
+    
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~特权~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->       
+    <!--特权、派单 区域分布   --><!-- 特权的区域分布是根据经销商账号 -->
+     <select id="prePayRegion" resultMap="regionMap">
+     	SELECT
+			*
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							p0.*, ROWNUM rn
+						FROM
+							(
+								SELECT
+									<include refid="orderRegionBaseSql"/> AS regionResultName,
+									COUNT (c.pk) AS COUNT
+								FROM
+									CONSIGNMENTS c
+							INNER JOIN AGENCY ag ON AG.P_UID = c.P_ALLOCATIONEMPLOYEECODE
+							INNER JOIN O2OCONSIGNMENTITEMS O2O ON C.PK = O2O.P_CONSIGNMENT
+							INNER JOIN ADDRESSES A ON A .OWNERPKSTRING = Ag.pk
+							INNER JOIN REGIONSLP r ON A .p_region = r.itempk
+							LEFT JOIN citieslp ac ON ac.itempk = A .p_city
+							LEFT JOIN districtslp ad ON ad.itempk = A .p_citydistrict
+							INNER JOIN languages l ON r.LANGPK = l.pk
+							LEFT JOIN languages l2 ON ac.LANGPK = l2.pk
+							LEFT JOIN languages l3 ON ad.LANGPK = l3.pk
+								WHERE
+									1 = 1
+								AND c.P_SPLITORDERTYPE IN ('M2')
+								
+								AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+								AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+								AND NVL (l3.p_ISOCODE, 'zh') = 'zh'
+								
+		 						AND TO_CHAR(O2O.CREATEDTS,'yyyy-MM-dd') &gt;= #{startTime}
+								AND TO_CHAR(O2O.CREATEDTS,'yyyy-MM-dd') &lt;= #{endTime}
+								
+								<if test='isStore == "N"'>
+									<include refid="prePayByAgencys"/>
+								</if>
+								<if test='isStore == "Y"'>
+									<include refid="prePayByStoreId"/>
+								</if>
+								<if test='isCity == "Y"'>
+									AND R.P_NAME = #{provinceName}
+								</if>
+								GROUP BY
+									<include refid="orderRegionBaseSql"/>
+								ORDER BY
+									COUNT DESC
+							) p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}	
+     
+     </select>
+     
+    <!-- 特权、非门店查询 -->
+     <sql id="prePayByAgencys">
+		AND o2o.P_AGENCYO2OSTATUS IS NOT NULL
+    	AND (
+			c.P_ALLOCATIONEMPLOYEECODE IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       	</foreach>
+	       	<if test="bigList != null">
+				 <foreach collection="bigList" index="index" item="item2" >  
+		             or c.P_ALLOCATIONEMPLOYEECODE in
+		             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+		            	#{item3}  
+		       		 </foreach>
+		       	 </foreach>
+	       	</if>
+		)
+     </sql>
+     
+     <!-- 特权、门店查询 -->
+     <sql id="prePayByStoreId">
+		AND o2o.P_STOREO2OSTATUS IS NOT NULL
+     	AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+     </sql>
+    
+   
+    
+     
+     <!-- 查询省或市 -->
+     <sql id="orderRegionBaseSql">
+     	<if test='isCity == "N"'>
+     		r.p_name
+     	</if>
+     	<if test='isCity == "Y"'>
+     		ac.p_name
+     	</if>
+     </sql>
+	
+	 
+   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~留资~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->        
+    <!--留资、派单 区域分布  -->
+     <select id="saleRegion" resultMap="regionMap">
+     	SELECT
+			*
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							p0.*, ROWNUM rn
+						FROM
+							(
+								SELECT DISTINCT
+									<include refid="orderRegionBaseSql"/> AS regionResultName,
+									COUNT (s.pk) AS COUNT
+								FROM
+									SALESLEADSORDER s
+								INNER JOIN AGENCY ag ON AG.pk = S.P_AGENCY
+								INNER JOIN DISTRICTS D ON s.p_serverDistrict = D .pk
+								LEFT JOIN CITIES c ON D .p_city = c.pk
+								LEFT JOIN CITIESLP ac ON c.pk = ac.itempk
+								INNER JOIN REGIONS re ON c.p_region = re.pk
+								INNER JOIN REGIONSLP r ON re.pk = r.itempk
+								INNER JOIN languages l ON r.LANGPK = l.pk
+								INNER JOIN languages l2 ON ac.LANGPK = l2.pk
+								WHERE
+									1 = 1
+								AND NVL (l.p_ISOCODE, 'zh') = 'zh'
+								AND NVL (l2.p_ISOCODE, 'zh') = 'zh'
+								
+								AND TO_CHAR(s.CREATEDTS,'yyyy-MM-dd') &gt;= #{startTime}
+								AND TO_CHAR(s.CREATEDTS,'yyyy-MM-dd') &lt;= #{endTime}
+								
+								<if test='isStore == "N"'>
+									<include refid="saleByAgencys"/>
+								</if>
+								<if test='isStore == "Y"'>
+									<include refid="saleByStoreId"/>
+								</if>
+								
+								
+								<if test='isCity == "Y"'>
+									AND R.P_NAME = #{provinceName}
+								</if>
+								
+								
+								GROUP BY
+									<include refid="orderRegionBaseSql"/> 
+								ORDER BY
+									COUNT DESC	
+							) p0
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1 
+			) p2
+		WHERE
+			P2.rn &gt; ${offset}	
+     
+     </select>
+    
+     <!-- 留资、非门店查询 -->
+     <sql id="saleByAgencys">
+		AND S.P_DISTRIBUTEDATE IS NOT NULL
+    	AND (AG.P_UID IN 
+			<foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+	            #{item}  
+	       </foreach>
+       	<if test="bigList != null">
+			 <foreach collection="bigList" index="index" item="item2" >  
+	             or AG.P_UID in
+	             <foreach collection="item2" index="index" item="item3" open="(" separator="," close=")" >  
+	            	#{item3}  
+	       		 </foreach>
+	       	 </foreach>
+       	</if>)
+     </sql>
+     
+     <!-- 留资、门店查询 -->
+     <sql id="saleByStoreId">
+	   and S.P_ACCEPTSTORE=#{storeId} 
+	   and S.P_SALESLEADSORDERSTATUS in ('10','15','20','23','25','30')  
+     </sql>
+     
+      <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~品类销售~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+     <resultMap id="categoryMap" type="com.dpmall.db.bean.ReportDetailEntity">
+		<result property="productName" column="productName"/>
+		<result property="productCount" column="COUNT"/>
+		<result property="productModelNumber" column="productModelNumber"/>
+		<result property="rowNum" column="rn"/>
+	</resultMap>
+	
+	<!-- 品类销售top5 各产品数量 -->
+	<select id="getCategoryTop5" resultMap="categoryMap">
+     	SELECT
+			*
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							p0.*, ROWNUM rn
+						FROM
+							(
+								SELECT DISTINCT
+									DP.P_NAME AS productName,
+									DPT.P_CODE AS productModelNumber,
+									COUNT (C2.pk) AS COUNT
+								FROM
+									CONSIGNMENTS C
+								LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+								LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK = O2O.P_CONSIGNMENT 
+								LEFT JOIN ORDERENTRIES OE ON OE.pk = c2.P_ORDERENTRY
+								LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+								LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT = DPT.PK
+								LEFT JOIN LANGUAGES L4 ON L4.pk = DP.LANGPK
+								WHERE
+									1 = 1
+								AND c.P_SPLITORDERTYPE IN ('A1', 'A2')
+								AND L4.P_ISOCODE = 'zh'
+								AND DPT.P_CATEGORY != '套餐'
+								AND DP.P_NAME IS NOT NULL 
+								
+								
+								
+								<if test='isStore == "N"'>
+									<include refid="orderByAgencys"/>
+								</if>
+								<if test='isStore == "Y"'>
+									<include refid="ordeByStoreId"/>
+								</if>
+								
+								AND TO_CHAR(o2o.CREATEDTS,'yyyy-MM-dd') &gt;= #{startTime}
+								AND TO_CHAR(o2o.CREATEDTS,'yyyy-MM-dd') &lt;= #{endTime}
+								
+								GROUP BY
+									DP.P_NAME,
+									DPT.P_CODE
+								ORDER BY
+									COUNT DESC	
+							) p0
+					) p1
+				WHERE
+					P1.rn &lt; 12
+			) p2
+		WHERE
+			P2.rn &gt; 0	<!-- 只获取12条 -->
+     
+     </select>
+	
+	<!-- 总数 -->
+     <select id="categoryTop5Count" resultType="java.lang.Long">
+     	
+		SELECT DISTINCT
+			COUNT (C2.pk) AS COUNT
+		FROM
+			CONSIGNMENTS C
+		LEFT JOIN CONSIGNMENTENTRIES c2 ON c2.P_CONSIGNMENT = c.pk
+		LEFT JOIN O2OCONSIGNMENTITEMS O2O ON C.PK = O2O.P_CONSIGNMENT 
+		LEFT JOIN ORDERENTRIES OE ON OE.pk = c2.P_ORDERENTRY
+		LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+		LEFT JOIN DPSIZEVARPRODUCT DPT ON OE.P_PRODUCT = DPT.PK
+		LEFT JOIN LANGUAGES L4 ON L4.pk = DP.LANGPK
+		WHERE
+			1 = 1
+		AND c.P_SPLITORDERTYPE IN ('A1', 'A2')
+		AND L4.P_ISOCODE = 'zh'
+		AND DPT.P_CATEGORY != '套餐'
+		AND DP.P_NAME IS NOT NULL 
+		
+		<if test='isStore == "N"'>
+			<include refid="orderByAgencys"/>
+		</if>
+		<if test='isStore == "Y"'>
+			<include refid="ordeByStoreId"/>
+		</if>
+		
+		AND TO_CHAR(o2o.CREATEDTS,'yyyy-MM-dd') &gt;= #{startTime}
+		AND TO_CHAR(o2o.CREATEDTS,'yyyy-MM-dd') &lt;= #{endTime}
+		
+     </select>
+     
+     
+     
+     
+	
+	
+</mapper>

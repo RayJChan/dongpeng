@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.SalesLeadsOrderItemDao">
+	<resultMap id="SalesLeadsOrderItemResultMap" type="com.dpmall.db.bean.SalesLeadsOrderItemEntity">
+		<id property="id" column="id"/>
+		<result property="orderId" column="orderId"/>
+		<result property="productCode" column="productCode"/>
+		<result property="quantity" column="quantity"/>
+		<result property="price" column="price"/>
+		<result property="productName" column="productName"/>
+		<result property="productCatetory" column="productCatetory"/>
+		<result property="unit" column="unit"/>
+	</resultMap>
+	
+
+
+	<select id="getItemByOrderId" resultMap="SalesLeadsOrderItemResultMap">
+		SELECT
+			si.pk                as id,
+			si.P_SALESLEADSORDER as orderId,
+			si.P_PRODUCTCODE     as productCode,
+			si.P_PRODUCTCATETORY as productCatetory,
+			si.P_QUANTITY        as quantity,
+			si.P_UNIT            as unit,
+			si.P_AMOUNT          as price,
+			si.P_PRODUCTDESCRIBE as productName,
+			si.P_UNITPRICE       as unitPrice
+		FROM
+			SALESLEADSORDERITEM si
+		WHERE 1 = 1
+			  AND si.P_SALESLEADSORDER = #{orderId}
+			  and si.P_ISDELETE = '0'
+
+	</select>
+
+
+	<select id="getItemIdByOrderId" resultType="java.lang.String">
+		SELECT
+		si.pk
+		FROM
+		SALESLEADSORDERITEM si
+		WHERE 1 = 1
+		AND si.P_SALESLEADSORDER = #{orderId}
+		and si.P_ISDELETE = '0'
+	</select>
+
+	<update id="edit">
+		<if test="entity.orderItemId !=null and entity.orderItemId !=''">
+		UPDATE  SALESLEADSORDERITEM
+		<set>
+			MODIFIEDTS=sysdate,
+			<if test="entity.productCode!=null and entity.productCode!=''">
+				P_PRODUCTCODE=#{entity.productCode},
+			</if>
+			<if test="entity.productName!=null and entity.productName!=''">
+				P_PRODUCTDESCRIBE=#{entity.productName},
+			</if>
+			<if test="entity.category!=null and entity.category!=''">
+				P_PRODUCTCATETORY=#{entity.category},
+			</if>
+			<if test="entity.unit!=null and entity.unit!=''">
+				P_UNIT=#{entity.unit},
+			</if>
+			<if test="entity.quantity!=null and entity.quantity!=''">
+				P_QUANTITY=#{entity.quantity},
+			</if>
+			<if test="entity.amount!=null and entity.amount!=''">
+				P_AMOUNT=#{entity.amount},
+			</if>
+			<if test="entity.isDelete!=null and entity.isDelete!=''">
+				P_ISDELETE=#{entity.isDelete},
+			</if>
+			<if test="entity.unitPrice!=null and entity.unitPrice!=''">
+				P_UNITPRICE=#{entity.unitPrice},
+			</if>
+
+		</set>
+			where PK=#{entity.orderItemId}
+		</if>
+
+	</update>
+
+	<insert id="insert">
+		INSERT INTO SALESLEADSORDERITEM (
+			CREATEDTS,
+			MODIFIEDTS,
+			pk,
+			P_SALESLEADSORDER,
+			<if test="entity.productCode!=null and entity.productCode !=''">
+				P_PRODUCTCODE,
+			</if>
+			<if test="entity.productName!=null and entity.productName !=''">
+				P_PRODUCTDESCRIBE,
+			</if>
+			<if test="entity.category!=null and entity.category !=''">
+				P_PRODUCTCATETORY,
+			</if>
+			<if test="entity.unit!=null and entity.unit !=''">
+				P_UNIT,
+			</if>
+			<if test="entity.quantity!=null and entity.quantity !=''">
+				P_QUANTITY,
+			</if>
+			<if test="entity.amount!=null and entity.amount !=''">
+				P_AMOUNT,
+			</if>
+			<if test="entity.unitPrice!=null and entity.unitPrice !=''">
+				P_UNITPRICE,
+			</if>
+
+			P_ISDELETE
+		) VALUES (
+			sysdate,
+			sysdate,
+			#{entity.orderItemId},
+			#{entity.salesLeadsOrderId},
+			<if test="entity.productCode!=null and entity.productCode !=''">
+				#{entity.productCode},
+			</if>
+			<if test="entity.productName!=null and entity.productName !=''">
+				#{entity.productName},
+			</if>
+			<if test="entity.category!=null and entity.category !=''">
+				#{entity.category},
+			</if>
+			<if test="entity.unit!=null and entity.unit !=''">
+				#{entity.unit},
+			</if>
+			<if test="entity.quantity!=null and entity.quantity !=''">
+				#{entity.quantity},
+			</if>
+			<if test="entity.amount!=null and entity.amount !=''">
+				#{entity.amount},
+			</if>
+			<if test="entity.unitPrice!=null and entity.unitPrice !=''">
+				#{entity.unitPrice},
+			</if>
+			'0'
+		)
+	</insert>
+
+	<update id="delete">
+			UPDATE SALESLEADSORDERITEM
+			<set>
+				MODIFIEDTS=sysdate,
+				P_ISDELETE='1'
+			</set>
+			where PK IN
+			<foreach collection="entity" index="index" item="item" open="(" separator="," close=")">
+				${item}
+			</foreach>
+	</update>
+
+
+
+	<resultMap id="omsResultMap" type="com.dpmall.db.bean.SalOrderItem4OmsEntity">
+		<id property="id" column="id"/>
+		<result property="productCode" column="productCode"/>
+		<result property="productName" column="productName"/>
+		<result property="productCategory" column="productCategory"/>
+		<result property="quantity" column="quantity"/>
+		<result property="price" column="price"/>
+		<result property="unitPrice" column="unitPrice"/>
+		<result property="unit" column="unit"/>
+	</resultMap>
+	<select id="getSalOrderItem4Oms" resultMap="omsResultMap">
+		SELECT
+			si.pk                as id,
+			si.P_PRODUCTCODE     as productCode,
+			si.P_PRODUCTCATETORY as productCategory,
+			si.P_QUANTITY        as quantity,
+			si.P_UNIT            as unit,
+			si.P_AMOUNT          as price,
+			si.P_PRODUCTDESCRIBE as productName,
+			si.P_UNITPRICE       as unitPrice
+		FROM
+			SALESLEADSORDERITEM si
+		WHERE 1 = 1
+			  AND si.P_SALESLEADSORDER = #{salesLeadsOrderId}
+			  and si.P_ISDELETE = '0'
+        ORDER BY
+            P_CREATETIME DESC
+
+	</select>
+
+
+
+
+	
+	
+</mapper>

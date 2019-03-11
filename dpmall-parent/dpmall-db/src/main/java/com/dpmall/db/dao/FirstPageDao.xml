@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.FirstPageDao">
+
+	<resultMap id="FirstPageResultMap" type="com.dpmall.db.bean.FirstPageEntity">
+		<id property="id" column="PK" />
+		<result property="referencedCode" column="P_EXTERNALORDERCODE" />
+	</resultMap>
+
+
+	<!-- 留资线索数 经销商 -->
+	<select id="salesLeadsCount" resultType="java.math.BigDecimal">
+		SELECT
+		COUNT (*)
+		FROM
+		SALESLEADSORDER so
+		Inner JOIN AGENCY ag ON AG.pk =
+		SO.P_AGENCY
+		WHERE
+		1=1
+		<if test='isStore=="N"'>
+			AND (AG.P_UID IN
+			<foreach collection="list" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+			<if test="bigList != null">
+				<foreach collection="bigList" index="index" item="item2">
+					or AG.P_UID in
+					<foreach collection="item2" index="index" item="item3" open="("
+						separator="," close=")">
+						#{item3}
+					</foreach>
+				</foreach>
+			</if>)
+
+			<if test='status=="1"'>
+				and so.P_APPSTATUSOFAGENCY ='WAITTING'
+			</if>
+			<if test='status=="2"'>
+				and so.P_APPSTATUSOFAGENCY = 'FLLOWING'
+			</if>
+			<if test='status=="3"'>
+				and SO.P_APPSTATUSOFAGENCY ='COMPLETED'
+			</if>
+			<if test='status=="JD"'>
+				and SO.P_APPSTATUSOFAGENCY in
+				('FLLOWING','COMPLETED')
+			</if>
+
+		</if>
+		<if test='isStore=="Y"'>
+			and So.P_ACCEPTSTORE=#{storeId}
+			<if test='status=="1"'>
+				and so.P_APPSTATUSOFSTORE ='WAITTING'
+			</if>
+			<if test='status=="2"'>
+				and so.P_APPSTATUSOFSTORE = 'FLLOWING'
+			</if>
+			<if test='status=="3"'>
+				and SO.P_APPSTATUSOFSTORE ='COMPLETED'
+			</if>
+			<if test='status=="JD"'>
+				and SO.P_APPSTATUSOFSTORE in
+				('FLLOWING','COMPLETED')
+			</if>
+		</if>
+
+		
+		AND SO.P_DISTRIBUTEDATE IS NOT NULL
+		AND TO_CHAR (So.CREATEDTS,
+		'YYYY-MM-DD') &gt;= #{startdate}
+		AND TO_CHAR (So.CREATEDTS,
+		'YYYY-MM-DD') &lt;= #{enddate}
+
+
+
+
+	</select>
+
+
+	<!-- 实物订单 经销商 -->
+
+	<select id="orderCountOfAgency" resultType="java.math.BigDecimal">
+
+		SELECT
+		COUNT (c.pk)
+		FROM
+		CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o
+		on c.PK = o2o.P_CONSIGNMENT
+		WHERE
+		c.P_SPLITORDERTYPE IN
+		('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+
+		<if test='status=="1"'>
+			AND o2o.P_AGENCYO2OSTATUS ='WAITFORRECEIVE'
+		</if>
+		<if test='status=="2"'>
+			AND o2o.P_AGENCYO2OSTATUS ='INPROGRESS'
+		</if>
+		<if test='status=="3"'>
+			AND o2o.P_AGENCYO2OSTATUS ='WAITFORREFUND'
+		</if>
+		<if test='status=="4"'>
+			AND o2o.P_AGENCYO2OSTATUS ='COMPLETED'
+		</if>
+		AND (c.P_ALLOCATIONEMPLOYEECODE IN
+		<foreach collection="list" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		<if test="bigList != null">
+			<foreach collection="bigList" index="index" item="item2">
+				or c.P_ALLOCATIONEMPLOYEECODE in
+				<foreach collection="item2" index="index" item="item3" open="("
+					separator="," close=")">
+					#{item3}
+				</foreach>
+			</foreach>
+		</if>)
+		
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND
+		TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+
+	</select>
+	
+	<!-- 实物订单 门店-->
+	<select id="orderCountOfStore" resultType="java.math.BigDecimal">
+
+		SELECT
+		COUNT (c.pk)
+		FROM
+		CONSIGNMENTS c
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o
+		on c.PK = o2o.P_CONSIGNMENT
+		WHERE
+		c.P_SPLITORDERTYPE IN
+		('A1','A2','B1','B2','C1','C2','D1','D2','E1','E2','F1','F2','O2') 
+
+		<if test='status=="1"'>
+				AND O2O.P_STOREO2OSTATUS ='WAITFORRECEIVE'
+			</if>
+			<if test='status=="2"'>
+				AND O2O.P_STOREO2OSTATUS ='INPROGRESS'
+			</if>
+			<if test='status=="3"'>
+				AND O2O.P_STOREO2OSTATUS ='COMPLETED' 
+			</if>
+		
+		AND c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+		
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND
+		TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+
+	</select>
+	<!-- 天猫特权订金 经销商 -->
+	<select id="tmallPrepayCountOfAgency" resultType="java.math.BigDecimal">
+		SELECT
+			COUNT (*) AS COUNT
+		FROM
+			CONSIGNMENTS c
+			LEFT JOIN AGENCY ag ON ag.P_UID = c.P_ALLOCATIONEMPLOYEECODE
+			LEFT JOIN ORDERS o ON o.PK = c.P_ORDER
+			LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+			LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+			LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+			LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+			LEFT JOIN POINTOFSERVICE P ON P .PK = c.P_DELIVERYPOINTOFSERVICE
+			LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+		WHERE
+			1 = 1
+		AND ( c.P_ALLOCATIONEMPLOYEECODE IN
+		<foreach collection="list" index="index" item="item" open="("
+				 separator="," close=")">
+			#{item}
+		</foreach>
+		<if test="bigList != null">
+			<foreach collection="bigList" index="index" item="item2">
+				or c.P_ALLOCATIONEMPLOYEECODE in
+				<foreach collection="item2" index="index" item="item3" open="("
+						 separator="," close=")">
+					#{item3}
+				</foreach>
+			</foreach>
+		</if>)
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+		<if test='status=="1"'>
+			AND O2O.P_AGENCYO2OSTATUS ='WAITFORRECEIVE'
+		</if>
+		<if test='status=="2"'>
+		AND O2O.P_AGENCYO2OSTATUS IN ('INPROGRESS', 'COMPLETED')
+		</if>
+		AND c.P_SPLITORDERTYPE = 'M2'
+		AND E2.code = 'Tmall'
+		AND DP.P_NAME IS NOT NULL
+		AND C.P_STATUS IN (
+			SELECT
+				t2.pk
+			FROM
+				COMPOSEDTYPES t1,
+				ENUMERATIONVALUES t2
+			WHERE
+				t1.INTERNALCODe = 'ConsignmentStatus'
+				AND t2.TYPEPKSTRING = t1.PK
+		)
+	</select>
+
+	<!-- 天猫特权订金 门店 -->
+	<select id="tmallPrepayCountOfStore" resultType="java.math.BigDecimal">
+		SELECT
+		COUNT (*) AS COUNT
+		FROM
+		CONSIGNMENTS c
+		LEFT JOIN AGENCY ag ON ag.P_UID = c.P_ALLOCATIONEMPLOYEECODE
+		LEFT JOIN ORDERS o ON o.PK = c.P_ORDER
+		LEFT JOIN O2OCONSIGNMENTITEMS o2o ON o2o.P_CONSIGNMENT = c.pk
+		LEFT JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+		LEFT JOIN ORDERENTRIES OE ON OE.P_ORDER = O.PK
+		LEFT JOIN dpsizevarproductlp DP ON OE.P_PRODUCT = DP.ITEMPK
+		LEFT JOIN POINTOFSERVICE P ON P .PK = c.P_DELIVERYPOINTOFSERVICE
+		LEFT JOIN PRIDEPOSITINFO PR ON PR.P_CONSIGNMENTCODE = C.P_CODE
+		WHERE
+		1 = 1
+		and c.P_DELIVERYPOINTOFSERVICE = #{storeId}
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+		<if test='status=="1"'>
+			AND O2O.P_STOREO2OSTATUS = 'WAITFORRECEIVE'
+		</if>
+		<if test='status=="2"'>
+			AND O2O.P_STOREO2OSTATUS IN ('INPROGRESS', 'COMPLETED')
+			and PR.P_ISWRITEOFF = '1'
+		</if>
+		AND O2O.P_ISDELIVERYSELF = 'N'
+		AND c.P_SPLITORDERTYPE = 'M2'
+		AND E2.code = 'Tmall'
+		AND DP.P_NAME IS NOT NULL
+		AND C.P_STATUS IN (
+		SELECT
+		t2.pk
+		FROM
+		COMPOSEDTYPES t1,
+		ENUMERATIONVALUES t2
+		WHERE
+		t1.INTERNALCODe = 'ConsignmentStatus'
+		AND t2.TYPEPKSTRING = t1.PK
+		)
+	</select>
+
+
+
+	<!-- 其他特权订金 经销商 -->
+	<select id="othersPrepayCountOfAgency" resultType="java.math.BigDecimal">
+		SELECT
+		count(*)
+		FROM
+		CONSIGNMENTS c
+		INNER JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+		inner JOIN ORDERS o ON o.PK = c.P_ORDER
+		inner JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+		WHERE
+		1=1
+		AND E2.code != 'Tmall'
+		AND ( c.P_ALLOCATIONEMPLOYEECODE IN
+		<foreach collection="list" index="index" item="item" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		<if test="bigList != null">
+			<foreach collection="bigList" index="index" item="item2">
+				or c.P_ALLOCATIONEMPLOYEECODE in
+				<foreach collection="item2" index="index" item="item3" open="("
+					separator="," close=")">
+					#{item3}
+				</foreach>
+			</foreach>
+		</if>)
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+ 		AND c.P_SPLITORDERTYPE = 'M2'
+		<if test='status=="1"'>
+			AND O2O.P_AGENCYO2OSTATUS ='WAITFORRECEIVE'
+		</if>
+		<if test='status=="2"'>
+			AND O2O.P_AGENCYO2OSTATUS ='INPROGRESS'
+		</if>
+		<if test='status=="3"'>
+			AND O2O.P_AGENCYO2OSTATUS ='COMPLETED'
+		</if>
+		
+
+	</select>
+	
+	<!-- 其他特权订金 门店 -->
+	<select id="othersPrepayCountOfStore" resultType="java.math.BigDecimal">
+		SELECT
+		count(*)
+		FROM
+		CONSIGNMENTS c
+		INNER JOIN O2OCONSIGNMENTITEMS O2O ON C.PK=O2O.P_CONSIGNMENT
+		inner JOIN ORDERS o ON o.PK = c.P_ORDER
+		inner JOIN ENUMERATIONVALUES E2 ON o.P_SALESAPPLICATION = E2.PK
+		WHERE
+		1=1
+		AND E2.code != 'Tmall'
+		AND TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &gt;= #{startdate}
+		AND	TO_CHAR (o2o.CREATEDTS, 'YYYY-MM-DD') &lt;= #{enddate}
+		AND	c.P_SPLITORDERTYPE = 'M2'
+		AND C.P_STATUS IN (
+			SELECT
+				t2.pk
+			FROM
+				COMPOSEDTYPES t1,
+				ENUMERATIONVALUES t2
+			WHERE
+				t1.INTERNALCODe ='ConsignmentStatus'
+			AND t2.TYPEPKSTRING = t1.PK
+				<if test='status=="1"'>
+					AND t2.code ='STOREWAIT'
+				</if>
+				<if test='status=="2"'>
+					AND t2.code IN ('TOSTORE','ALLOCATED','BOOKED','SHIPPED','DPRECEIVE','ACCEPT')
+				</if>
+				<if test='status=="3"'>
+					AND t2.code  in ('COMPLETED','RECEIVE','NOTTRADED')
+				</if>
+		)
+		and P_DELIVERYPOINTOFSERVICE = #{storeId}
+
+	</select>
+
+
+	<resultMap id="historylMap" type="com.dpmall.db.bean.FirstPageEntity">
+		<result property="lastConversionRate" column="lastConversionRate" />
+		<result property="lastAcceptRate" column="lastAcceptRate" />
+		<result property="lastWriteOffRate" column="lastWriteOffRate" />
+	</resultMap>
+	
+	<select id="getHistory" resultMap="historylMap">
+		SELECT
+			HR.P_JDTOTALPERCENT AS lastAcceptRate,
+			HR.P_TQHXPERCENT AS lastWriteOffRate,
+			HR.P_LZZHPERCENT AS lastConversionRate
+		FROM
+			HISTORICRECORDS hr
+		WHERE
+		1=1
+		<if test='isStore=="N"'>
+		and	HR.P_APPGROUP IN (
+				SELECT
+					pk
+				FROM
+					APPGROUP
+				WHERE
+					P_CODE = #{code}
+			)
+		</if>
+		<if test='isStore=="Y"'>
+			and HR.P_STORE = #{storeId}
+		</if>
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM-dd')  &gt;= #{startdate}
+		AND TO_CHAR (HR.P_TIME, 'YYYY-MM-dd') &lt;= #{enddate}
+
+
+	</select>
+
+
+
+</mapper>

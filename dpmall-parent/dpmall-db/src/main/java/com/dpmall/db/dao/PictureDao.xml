@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.PictureDao">
+
+	<resultMap id="PictureMap" type="com.dpmall.db.bean.PictureEntity">
+	    <id property="id" column="PK" />
+	    <result property="title" column="title" />
+	    <result property="content" column="content" />
+	    <result property="name" column="name" />
+	    <result property="pictureType" column="pictureType" />
+	    
+	     
+	</resultMap>
+	<select id="getPicture" resultMap="PictureMap">
+		SELECT
+			*
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							R1.*, ROWNUM rn
+						FROM
+							(
+								SELECT
+									pk,
+									P_TITLE AS title,
+									P_CONTENT AS CONTENT,
+									P_NAME AS NAME
+								FROM
+									PICTUREOFDPMALL P
+								WHERE 1=1 
+								AND P_PICTURETYPE = #{pictureType}
+								ORDER BY
+									P .createdts ASC
+							) r1
+					) p1
+				WHERE
+					P1.rn &lt; ${offset}+${pageSize}+1
+			) p2
+		WHERE
+			p2.rn &gt; ${offset}
+		
+	</select>
+	
+	
+	<insert id="uploadPicture">
+		INSERT INTO PICTUREOFDPMALL P (
+			HJMPTS,
+			CREATEDTS,
+			MODIFIEDTS,
+			TYPEPKSTRING,
+			pk,
+			P_ID,
+			<if test="entity.title != null">
+			P_TITLE,
+			</if>
+			<if test="entity.content != null">
+			P_CONTENT,
+			</if>
+			P_NAME,
+			P_PICTURETYPE
+		)
+		VALUES
+			(
+				'0',
+				SYSDATE,
+				SYSDATE,
+				'8796135915602',
+				#{entity.id},
+				#{entity.id},
+				<if test="entity.title != null">
+				#{entity.title},
+				</if>
+				<if test="entity.content != null">
+				#{entity.content},
+				</if>
+				#{entity.name},
+				#{entity.pictureType}
+			)
+	</insert>
+	
+	<!-- 查看首页照片 -->
+	<select id="getHomePagePicture" resultMap="PictureMap">
+		SELECT
+			pk,
+			P_TITLE AS title,
+			P_CONTENT AS CONTENT,
+			P_NAME AS NAME,
+			P_PICTURETYPE AS pictureType
+		FROM
+			PICTUREOFDPMALL
+		WHERE
+			1 = 1
+		AND P_PICTURETYPE IN ('A-1','A-2','A-3')
+		ORDER BY
+			P_PICTURETYPE,
+			CREATEDTS DESC
+		
+	</select>
+	
+	
+	
+	
+</mapper>

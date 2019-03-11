@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dpmall.db.dao.UtilsDao">
+    <resultMap  id="OperatorRole" type="com.dpmall.db.bean.OperatorRoleEntity">
+        <id property="role" column="role" />
+        <result property="storeName" column="storeName"/>
+        <result property="agencyCode" column="agencyCode"/>
+        <result property="userName" column="userName"/>
+
+    </resultMap>
+    <!--查询操作的角色-->
+
+      <select id="getOperatorByRole" resultMap="OperatorRole" >
+          SELECT DISTINCT
+              AR.P_ROLECODE as role,
+              P .P_DISPLAYNAME as storeName,
+              AG.p_uid as agencyCode,
+              ap.P_CNNAME as userName
+          FROM
+              appuser ap
+              LEFT JOIN APPROLE ar ON Ar.pk = ap.P_ROLE
+              LEFT JOIN POINTOFSERVICE P ON P .pk = ap.P_STORE
+              LEFT JOIN AGENCY ag ON ag.pk = ap.P_AGENCY
+          WHERE
+              1 = 1
+              AND AR.P_ROLECODE IN ('clerk', 'manager', 'agency')
+              AND AP.P_AGENCY IS NOT NULL
+          AND  ap.pk  = #{OperatorById}
+
+
+      </select>
+
+
+
+
+  </mapper>
