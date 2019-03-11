@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.MenuDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+
+    <sql id="menuColumns">
+        a.id AS "id",
+        a.menu_code AS "menuCode",
+        a.meun_icon,
+        a.meun_type,
+        a.menu_name AS "menuName",
+        a.menu_link,
+        a.menu_folder,
+        a.meun_sequence,
+
+        a.parent_id,
+        a.parent_name,
+        a.parent_ids,
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="menuJoins">
+    </sql>
+
+    <!-- 根据id获得菜单 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据菜单编码获得菜单 -->
+    <select id="getByMenuCode" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.menu_code = #{menuCode}
+    </select>
+
+    <!-- 根据上级id获得菜单 -->
+    <select id="getByUp" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.parent_id = #{parentId}
+    </select>
+
+    <!-- 根据菜单名称获得菜单 -->
+    <select id="getByMenuName" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.menu_name = #{menuName}
+    </select>
+
+
+    <!-- 分页查询菜单信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+
+        <if test="menuCode != null and menuCode != ''">
+            AND a.menu_code like CONCAT('%', #{menuCode}, '%')
+        </if>
+        <if test="menuName != null and menuName != ''">
+            AND a.menu_name like CONCAT('%', #{menuName}, '%')
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="parentIds != null and parentIds != ''">
+            AND a.parent_ids LIKE CONCAT('%',#{parentIds},'%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.meun_sequence
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部菜单 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        <include refid="menuJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.meun_sequence
+    </select>
+
+    <!-- 插入菜单 -->
+    <insert id="insert">
+		INSERT INTO sys_menu(
+			id,
+            menu_code,
+            meun_icon,
+            meun_type,
+            menu_name,
+            menu_link,
+            menu_folder,
+            meun_sequence,
+
+            parent_id,
+            parent_name,
+            parent_ids,
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{menuCode},
+            #{meunIcon},
+            #{meunType},
+            #{menuName},
+            #{menuLink},
+            #{menuFolder},
+            #{meunSequence},
+            #{parentId},
+            #{parentName},
+
+            #{parentIds},
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入菜单 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_menu(
+        id,
+        menu_code,
+        meun_icon,
+        meun_type,
+        menu_name,
+        menu_link,
+        menu_folder,
+        meun_sequence,
+
+        parent_id,
+        parent_name,
+        parent_ids,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.menuCode},
+            #{item.meunIcon},
+            #{item.meunType},
+            #{item.menuName},
+            #{item.menuLink},
+            #{item.menuFolder},
+            #{item.meunSequence},
+
+            #{item.parentId},
+            #{item.parentName},
+            #{item.parentIds},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新菜单 -->
+    <update id="update">
+		UPDATE sys_menu SET
+			menu_code=#{menuCode},
+			meun_icon=#{meunIcon},
+			meun_type=#{meunType},
+			menu_name=#{menuName},
+			menu_link=#{menuLink},
+			menu_folder=#{menuFolder},
+			meun_sequence=#{meunSequence},
+			parent_id=#{parentId},
+			parent_name=#{parentName},
+
+            parent_ids=#{parentIds},
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+    <!-- 更新子节点parentids -->
+    <update id="updateParentids">
+		UPDATE sys_menu SET
+            parent_ids=concat(#{parentId},',',#{id},SUBSTRING(parent_ids, INSTR(parent_ids, #{id})+LENGTH(#{id})) ),
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+
+
+    <!-- 物理删除菜单 -->
+    <update id="delete">
+		DELETE FROM sys_menu
+		WHERE id = #{id} OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 逻辑 删除/启用 菜单 -->
+    <update id="deleteToggle">
+		UPDATE sys_menu SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}  OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Menu" statementType="STATEMENT">
+		select * from sys_menu where ${propertyName} = '${value}'
+	</select>
+
+    <!-- ########## 角色权限 相关dao ################ -->
+    <!-- 根据角色id查找菜单信息 -->
+    <select id="findListByRoleId" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        JOIN sys_role_menu rm ON rm.menu_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.dictionary_id = #{dictionaryId}
+        ORDER BY a.meun_sequence
+    </select>
+
+    <!-- 删除角色所有菜单 -->
+    <delete id="deleteRoleMenu">
+		DELETE FROM sys_role_menu WHERE dictionary_id = #{roleId}
+	</delete>
+
+    <!-- 插入角色菜单 -->
+    <insert id="insertRoleMenu">
+        INSERT INTO sys_role_menu(
+        id,
+        dictionary_id,
+        menu_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="roleMenuList" item="roleMenu" separator=" union all ">
+            SELECT
+            #{roleMenu.id},
+            #{roleMenu.dictionaryId},
+            #{roleMenu.menuId},
+
+            #{roleMenu.createrId},
+            #{roleMenu.createrName},
+            #{roleMenu.createTime},
+            #{roleMenu.modifierId},
+            #{roleMenu.modifierName},
+            #{roleMenu.modifyTime},
+            #{roleMenu.deleteFlag},
+            #{roleMenu.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- ########## 用户权限 相关dao ################ -->
+    <!-- 根据用户id查找菜单信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Menu">
+        SELECT
+        <include refid="menuColumns"/>
+        FROM sys_menu a
+        JOIN sys_user_menu rm ON rm.menu_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.user_id = #{userId}
+        ORDER BY a.meun_sequence
+    </select>
+
+    <!-- 删除用户菜单 -->
+    <delete id="deleteUserMenu">
+		DELETE FROM sys_user_menu WHERE 1=1
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="dictionaryId != null">
+            AND dictionary_id =#{dictionaryId}
+        </if>
+	</delete>
+
+    <!-- 插入用户菜单 -->
+    <insert id="insertUserMenu">
+        INSERT INTO sys_user_menu(
+        id,
+        user_id,
+        user_name,
+        menu_id,
+        dictionary_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userMenuList" item="userMenu" separator=" union all ">
+            SELECT
+            #{userMenu.id},
+            #{userMenu.userId},
+            #{userMenu.userName},
+            #{userMenu.menuId},
+            #{userMenu.dictionaryId},
+
+            #{userMenu.createrId},
+            #{userMenu.createrName},
+            #{userMenu.createTime},
+            #{userMenu.modifierId},
+            #{userMenu.modifierName},
+            #{userMenu.modifyTime},
+            #{userMenu.deleteFlag},
+            #{userMenu.version}
+            FROM dual
+        </foreach>
+    </insert>
+</mapper>

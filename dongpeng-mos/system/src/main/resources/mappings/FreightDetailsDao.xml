@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.FreightDetailsDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="freightDetailsColumns">
+        a.*
+    </sql>
+
+    <sql id="freightDetailsJoins">
+    </sql>
+
+    <!-- 根据id获得运费价格明细 -->
+    <select id="get" resultType="com.dongpeng.entity.system.FreightDetails">
+        SELECT
+        <include refid="freightDetailsColumns"/>
+        FROM sys_freight_details a
+        <include refid="freightDetailsJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页查询运费价格明细信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.FreightDetails">
+        SELECT
+        <include refid="freightDetailsColumns"/>
+        FROM sys_freight_details a
+        <include refid="freightDetailsJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        <if test="projectId != null">
+            AND a.project_id = #{projectId}
+        </if>
+        <if test="areaId != null">
+            AND a.area_id = #{areaId}
+        </if>
+        <if test="province != null and province != ''">
+            AND a.province like CONCAT('%', #{province}, '%')
+        </if>
+        <if test="city != null and city != ''">
+            AND a.city like CONCAT('%', #{city}, '%')
+        </if>
+        <if test="district != null and district != ''">
+            AND a.district like CONCAT('%', #{district}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部运费价格明细 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.FreightDetails">
+        SELECT
+        <include refid="freightDetailsColumns"/>
+        FROM sys_freight_details a
+        <include refid="freightDetailsJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入运费价格明细 -->
+    <insert id="insert">
+		INSERT INTO sys_freight_details(
+			id,
+            project_id,
+            area_id,
+            province,
+            city,
+            district,
+            volume_price,
+            weight_price,
+            continuew_price,
+            piece_price,
+            delivery_price,
+            upstairs_price,
+            arrival_time,
+            assess_time,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{projectId},
+            #{areaId},
+            #{province},
+            #{city},
+            #{district},
+            #{volumePrice},
+            #{weightPrice},
+            #{continuewPrice},
+            #{piecePrice},
+            #{deliveryPrice},
+            #{upstairsPrice},
+            #{arrivalTime},
+            #{assessTime},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入运费价格明细 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_freight_details(
+        id,
+        project_id,
+        area_id,
+        province,
+        city,
+        district,
+        volume_price,
+        weight_price,
+        continuew_price,
+        piece_price,
+        delivery_price,
+        upstairs_price,
+        arrival_time,
+        assess_time,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{projectId},
+            #{areaId},
+            #{province},
+            #{city},
+            #{district},
+            #{volumePrice},
+            #{weightPrice},
+            #{continuewPrice},
+            #{piecePrice},
+            #{deliveryPrice},
+            #{upstairsPrice},
+            #{arrivalTime},
+            #{assessTime},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新运费价格明细 -->
+    <update id="update">
+		UPDATE sys_freight_details SET
+			project_id=#{projectId},
+			area_id=#{areaId},
+			province=#{province},
+			city=#{city},
+			district=#{district},
+			volume_price=#{volumePrice},
+			weight_price=#{weightPrice},
+			continuew_price=#{continuewPrice},
+			piece_price=#{piecePrice},
+			delivery_price=#{deliveryPrice},
+			upstairs_price=#{upstairsPrice},
+			arrival_time=#{arrivalTime},
+			assess_time=#{assessTime},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除运费价格明细 -->
+    <!--<update id="delete">
+		DELETE FROM sys_freight_details
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 运费价格明细 -->
+    <update id="deleteToggle">
+		UPDATE sys_freight_details SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.FreightDetails" statementType="STATEMENT">
+		select * from sys_freight_details where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

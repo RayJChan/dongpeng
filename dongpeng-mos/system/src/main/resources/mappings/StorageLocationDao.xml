@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.StorageLocationDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="storageLocationColumns">
+        a.*
+    </sql>
+
+    <sql id="storageLocationJoins">
+    </sql>
+
+    <!-- 根据id获得库位 -->
+    <select id="get" resultType="com.dongpeng.entity.system.StorageLocation">
+        SELECT
+        <include refid="storageLocationColumns"/>
+        FROM sys_storage_location a
+        <include refid="storageLocationJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+    <!-- 分页查询库位信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.StorageLocation">
+        SELECT
+        <include refid="storageLocationColumns"/>
+        FROM sys_storage_location a
+        <include refid="storageLocationJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="warehouseId != null">
+            AND a.warehouse_id = #{warehouseId}
+        </if>
+        <if test="storagelocationName != null and storagelocationName != ''">
+            AND a.storagelocation_name like CONCAT('%', #{storagelocationName}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部库位 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.StorageLocation">
+        SELECT
+        <include refid="storageLocationColumns"/>
+        FROM sys_storage_location a
+        <include refid="storageLocationJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入库位 -->
+    <insert id="insert">
+		INSERT INTO sys_storage_location(
+			id,
+            storagelocation_name,
+            warehouse_id,
+            warehouse_name,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{storagelocationName},
+            #{warehouseId},
+            #{warehouseName},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入库位 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_storage_location(
+        id,
+        storagelocation_name,
+        warehouse_id,
+        warehouse_name,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.storagelocationName},
+            #{item.warehouseId},
+            #{item.warehouseName},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新库位 -->
+    <update id="update">
+		UPDATE sys_storage_location SET
+			storagelocation_name=#{storagelocationName},
+			warehouse_id=#{warehouseId},
+			warehouse_name=#{warehouseName},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除库位 -->
+    <!--<update id="delete">
+		DELETE FROM sys_storage_location
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 库位 -->
+    <update id="deleteToggle">
+		UPDATE sys_storage_location SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.StorageLocation" statementType="STATEMENT">
+		select * from sys_storage_location where ${propertyName} = '${value}'
+	</select>
+
+</mapper>

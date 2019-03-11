@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.CategoryDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+ <!--   <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>-->
+
+
+
+
+    <sql id="Base_Column_List">
+        id, category_code,first_category_name, secod_category_name, third_category_name, delete_flag, creater_id,
+        creater_name, create_time, modifier_id, modifier_name, modify_time, version
+    </sql>
+    <sql id="categoryJoins">
+    </sql>
+
+    <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.Category">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="category_code" jdbcType="VARCHAR" property="categoryCode" />
+        <result column="first_category_name" jdbcType="VARCHAR" property="firstCategoryName" />
+        <result column="secod_category_name" jdbcType="VARCHAR" property="secodCategoryName" />
+        <result column="third_category_name" jdbcType="VARCHAR" property="thirdCategoryName" />
+        <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+        <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+        <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+        <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+        <result column="version" jdbcType="INTEGER" property="version" />
+    </resultMap>
+
+
+
+
+    <select id="get"  resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from sys_category
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!--分页查询-->
+    <select id = "findList" resultMap="BaseResultMap">
+      SELECT
+        <include refid="Base_Column_List"/>
+      FROM
+        sys_category a
+        <include refid="categoryJoins"/>
+      WHERE
+        1=1
+        <if test="categoryCode !=null and categoryCode != ''">
+            AND category_code LIKE '%${categoryCode}%'
+        </if>
+        <if test="firstCategoryName !=null and firstCategoryName != ''">
+            AND first_category_name LIKE '%${firstCategoryName}%'
+        </if>
+        <if test="secodCategoryName !=null and secodCategoryName != ''">
+            AND secod_category_name LIKE '%${secodCategoryName}%'
+        </if>
+        <if test="thirdCategoryName !=null and thirdCategoryName != ''">
+            AND third_category_name LIKE '%${thirdCategoryName}%'
+        </if>
+        <if test="deleteFlag != null ">
+            AND  a.delete_flag = #{deleteFlag}
+        </if>
+      ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy !=''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--查询全部-->
+    <select id="findAllList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_category a
+        <include refid="categoryJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+
+    <insert id="insert" parameterType="com.dongpeng.entity.system.Category">
+        insert into sys_category (id, category_code,first_category_name, secod_category_name,
+                                  third_category_name, delete_flag, creater_id,
+                                  creater_name, create_time, modifier_id,
+                                  modifier_name, modify_time, version
+        )
+        values (#{id,jdbcType=BIGINT}, #{categoryCode,jdbcType=VARCHAR},#{firstCategoryName,jdbcType=VARCHAR}, #{secodCategoryName,jdbcType=VARCHAR},
+                                       #{thirdCategoryName,jdbcType=VARCHAR}, #{deleteFlag,jdbcType=BIT}, #{createrId,jdbcType=BIGINT},
+                                       #{createrName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT},
+                                       #{modifierName,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{version,jdbcType=INTEGER}
+        )
+    </insert>
+
+
+    <update id="update" parameterType="com.dongpeng.entity.system.Category">
+        update sys_category
+        <set>
+            <if test="categoryCode != null">
+                category_code = #{categoryCode,jdbcType=VARCHAR},
+            </if>
+            <if test="firstCategoryName != null">
+                first_category_name = #{firstCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="secodCategoryName != null">
+                secod_category_name = #{secodCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="thirdCategoryName != null">
+                third_category_name = #{thirdCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="deleteFlag != null">
+                delete_flag = #{deleteFlag,jdbcType=BIT},
+            </if>
+            <if test="createrId != null">
+                creater_id = #{createrId,jdbcType=BIGINT},
+            </if>
+            <if test="createrName != null">
+                creater_name = #{createrName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifierId != null">
+                modifier_id = #{modifierId,jdbcType=BIGINT},
+            </if>
+            <if test="modifierName != null">
+                modifier_name = #{modifierName,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+                version = version+1
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+        and version = #{version}
+    </update>
+
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Breed" statementType="STATEMENT">
+		select * from sys_category where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

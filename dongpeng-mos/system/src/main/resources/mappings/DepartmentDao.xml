@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.DepartmentDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="departmentColumns">
+        a.id AS "id",
+        a.department_code AS "departmentCode",
+        a.department_name AS "departmentName",
+        /*a.updepartment_id AS "updepartmentId",*/
+        a.company_id AS "companyId",
+        a.company_name AS "companyName",
+        a.o2o_flag AS "o2oFlag",
+        a.shop_name AS "shopName",
+        a.single_letters AS "singleLetters",
+        a.dock_custNo AS "dockCustNo",
+        a.dock_system AS "dockSystem",
+        a.leader AS "leader",
+        a.phone AS "phone",
+        a.departmentType_name AS "departmentTypeName",
+        a.parent_ids,
+        a.parent_id,
+        a.parent_name,
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <resultMap id="DepartmentWarehouseResultMap" type="com.dongpeng.common.pojo.DepartmentWarehousePoJo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <id column="warehouseId" jdbcType="BIGINT" property="warehouseId"/>
+        <result column="warehouseName" jdbcType="VARCHAR" property="warehouseName"/>
+        <result column="warehouseSystem" jdbcType="VARCHAR" property="warehouseSystem"/>
+
+    </resultMap>
+
+    <sql id="departmentJoins">
+    </sql>
+
+    <!-- 根据id获得部门 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        <include refid="departmentJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getCountBy" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1) from sys_department where  single_letters = #{singleLetters} or department_name = #{departmentName}
+    </select>
+
+    <!-- 根据部门编码获得部门 -->
+    <select id="getByDepartmentCode" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        <include refid="departmentJoins"/>
+        WHERE a.department_code = #{departmentCode}
+    </select>
+
+    <!-- 根据上级id获得部门 -->
+    <select id="getByUp" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        <include refid="departmentJoins"/>
+        WHERE a.parent_id = #{parentId}
+    </select>
+
+    <!-- 分页查询部门信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        <include refid="departmentJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="departmentCode != null and departmentCode != ''">
+            AND a.department_code like CONCAT('%', #{departmentCode}, '%')
+        </if>
+        <if test="departmentName != null and departmentName != ''">
+            AND a.department_name like CONCAT('%', #{departmentName}, '%')
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="parentIds != null and parentIds != ''">
+            AND a.parent_ids LIKE CONCAT('%',#{parentIds},'%')
+        </if>
+        <if test="companyId != null">
+            AND a.company_id = #{companyId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部部门 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        <include refid="departmentJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <select id="getLastDeparment" resultType="java.lang.String">
+        SELECT department_code FROM sys_department WHERE LENGTH(department_code) = #{num} ORDER BY create_time DESC LIMIT 1;
+    </select>
+
+
+    <!-- 插入部门 -->
+    <insert id="insert">
+		INSERT INTO sys_department(
+			id,
+            department_code,
+            department_name,
+            company_id,
+            company_name,
+            o2o_flag,
+            shop_name,
+            single_letters,
+            dock_system,
+            dock_custNo,
+            leader,
+            phone,
+            departmentType_name,
+
+            parent_id,
+            parent_name,
+            parent_ids,
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{departmentCode},
+            #{departmentName},
+            #{companyId},
+            #{companyName},
+            #{o2oFlag},
+            #{shopName},
+            #{singleLetters},
+            #{dockSystem},
+            #{dockCustNo},
+            #{leader},
+            #{phone},
+            #{departmentTypeName},
+
+            #{parentId},
+            #{parentName},
+            #{parentIds},
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入部门 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_department(
+        id,
+        department_code,
+        department_name,
+        company_id,
+        company_name,
+        o2o_flag,
+        shop_name,
+        single_letters,
+        dock_system,
+        dock_custNo,
+        leader,
+        phone,
+        departmentType_name,
+
+        parent_id,
+        parent_name,
+        parent_ids,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.departmentCode},
+            #{item.departmentName},
+            #{item.companyId},
+            #{item.companyName},
+            #{item.o2oFlag},
+            #{item.shopName},
+            #{item.singleLetters},
+            #{item.dockSystem},
+            #{item.dockCustNo},
+            #{item.leader},
+            #{item.phone},
+            #{item.departmentTypeName},
+
+            #{item.parentId},
+            #{item.parentName},
+            #{item.parentIds},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新部门 -->
+    <update id="update">
+		UPDATE sys_department SET
+			department_code=#{departmentCode},
+			department_name=#{departmentName},
+			company_id=#{companyId},
+			company_name=#{companyName},
+			o2o_flag=#{o2oFlag},
+			shop_name=#{shopName},
+			single_letters=#{singleLetters},
+			dock_system=#{dockSystem},
+			dock_custNo=#{dockCustNo},
+			leader=#{leader},
+			phone=#{phone},
+			departmentType_name=#{departmentTypeName},
+
+            parent_id=#{parentId},
+            parent_name=#{parentName},
+            parent_ids=#{parentIds},
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除部门 -->
+    <!--<update id="delete">
+		DELETE FROM sys_department
+		WHERE id = #{id} OR parent_ids LIKE concat('%',#{id},'%')
+	</update>-->
+
+    <!-- 逻辑 删除/启用 部门 -->
+    <update id="deleteToggle">
+		UPDATE sys_department SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}  OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Department" statementType="STATEMENT">
+		select * from sys_department where ${propertyName} = '${value}'
+	</select>
+
+    <!-- ########## 用户部门权限 相关dao ################ -->
+    <!-- 根据用户id查找部门信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        JOIN sys_user_department rm ON rm.department_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.user_id = #{userId}
+        <if test="departmentId != null">
+            AND rm.department_id =#{departmentId}
+        </if>
+        ORDER BY a.id
+    </select>
+
+    <!-- 根据用户id查找该用户未有的部门信息 -->
+    <select id="findListNotInUserId" resultType="com.dongpeng.entity.system.Department">
+        SELECT
+        <include refid="departmentColumns"/>
+        FROM sys_department a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.id NOT IN (select b.department_id from sys_user_department AS b where b.user_id = #{userId})
+        ORDER BY a.id
+    </select>
+
+    <!-- 删除用户部门 -->
+    <delete id="deleteUserDepartment">
+        DELETE FROM sys_user_department WHERE 1=1
+        <if test="id != null">
+            AND id =#{id}
+        </if>
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="departmentId != null">
+            AND department_id =#{departmentId}
+        </if>
+    </delete>
+
+    <!-- 插入用户部门 -->
+    <insert id="insertUserDepartment">
+        INSERT INTO sys_user_department(
+        id,
+        user_id,
+        department_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userDepartmentList" item="userDepartment" separator=" union all ">
+            SELECT
+            #{userDepartment.id},
+            #{userDepartment.userId},
+            #{userDepartment.departmentId},
+
+            #{userDepartment.createrId},
+            #{userDepartment.createrName},
+            #{userDepartment.createTime},
+            #{userDepartment.modifierId},
+            #{userDepartment.modifierName},
+            #{userDepartment.modifyTime},
+            #{userDepartment.deleteFlag},
+            #{userDepartment.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!--根据部门编号查询已有销售库区-->
+    <select id="getWarehouseById" resultMap="DepartmentWarehouseResultMap">
+        select dw.id as "id", w.id as "warehouseId",w.warehouse_name as "warehouseName",w.warehouse_system as  "warehouseSystem" from sys_warehouse w
+         left join  sys_department_warehouse dw on w.id = dw.warehouse_id
+         where w.delete_flag = 0 and dw.delete_flag = 0 and  dw.department_id = #{departmentId}
+    </select>
+
+    <!--根据部门编号和仓库编号查条数-->
+    <select id="getCountByDoubleId" resultType="java.lang.Integer">
+        select count(0) from sys_department_warehouse where  department_id = #{departmentId} and  warehouse_id = #{warehouseId}
+     </select>
+
+    <!--批量添加部门与仓库关联信息-->
+    <insert id="insertDepartmentWarehouse">
+         insert into sys_department_warehouse (
+          id,
+          department_id,
+          warehouse_id,
+          creater_id,
+          creater_name,
+          create_time,
+          modifier_id,
+          modifier_name,
+          modify_time,
+          version)
+        values (#{id,jdbcType=BIGINT}, #{departmentId,jdbcType=BIGINT}, #{warehouseId,jdbcType=BIGINT},
+          #{createrId,jdbcType=BIGINT}, #{createrName,jdbcType=VARCHAR},
+          #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT}, #{modifierName,jdbcType=VARCHAR},
+          #{modifyTime,jdbcType=TIMESTAMP}, #{version,jdbcType=INTEGER})
+    </insert>
+
+    <update id="deleteDepartmentWarehouse">
+        update sys_department_warehouse set delete_flag = 1 where  id = #{id}
+    </update>
+
+</mapper>

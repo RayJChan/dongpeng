@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.RegionDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="regionColumns">
+        a.id as "id",
+        a.level as "level",
+        a.hot_degreet as "hotDegreet",
+        a.name as "name",
+        a.pinyin as "pinyin",
+        a.delete_flag as "deleteFlag",
+        a.creater_id as "createrId",
+        a.creater_name as "createrName",
+        a.create_time as "createTime",
+        a.modifier_id as "modifierId",
+        a.modifier_name as "modifierName",
+        a.modify_time as "modifyTime",
+        a.version as "version",
+        a.parent_id as "parentId",
+        a.parent_name as "parentName",
+        a.parent_ids as "parentIds"
+    </sql>
+    <sql id="regionJoins">
+    </sql>
+
+    <!-- 根据id获得区域 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据名称查找唯一区域 -->
+    <select id="getByName" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.name = #{name}
+    </select>
+
+    <!-- 根据名称查找ID -->
+    <select id="getIdByName" resultType="String">
+        SELECT
+         a.id
+        FROM sys_region a
+        WHERE a.name like CONCAT('%', #{regionName}, '%')
+    </select>
+
+    <!-- 根据上级id获得菜单 -->
+    <select id="getByUp" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionColumns"/>
+        WHERE a.parent_id = #{parentId}
+    </select>
+
+    <!--分页模糊查询省市区信息-->
+    <select id="findAll" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+        <if test="region != null and region != ''">
+            AND a.name like CONCAT('%', #{name}, '%')
+        </if>
+    </select>
+
+    <!-- 分页查询区域信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+        <if test="name != null and name != ''">
+            AND a.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="parentIds != null and parentIds != ''">
+            AND a.parent_ids LIKE CONCAT('%',#{parentIds},'%')
+        </if>
+        <if test="level != null">
+            AND a.level = #{level}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.parent_id desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部区域 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 查询全部省和市 -->
+    <update id="update">
+        UPDATE sys_region SET
+        name=#{name},
+        pinyin=#{pinyin},
+        level=#{level},
+        hot_degreet=#{hotDegreet},
+
+        parent_id=#{parentId},
+        parent_name=#{parentName},
+        parent_ids=#{parentIds},
+        modifier_id = #{modifierId},
+        modifier_name = #{modifierName},
+        modify_time = #{modifyTime},
+        version=version + 1
+        WHERE id = #{id}
+        <if test="version != null">
+            and version=#{version}
+        </if>
+
+
+    </update>
+
+    <!-- 插入区域 -->
+    <select id="findAllProvinceAndCity" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.level &lt; 3
+        ${dataScope}
+        ORDER BY a.level
+    </select>
+
+    <!-- 批量插入区域 -->
+    <insert id="insert">
+		INSERT INTO sys_region(
+			id,
+            name,
+            level,
+            hot_degreet,
+            pinyin,
+
+            parent_id,
+            parent_name,
+            parent_ids,
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{name},
+            #{level},
+            #{hotDegreet},
+            #{pinyin},
+
+            #{parentId},
+            #{parentName},
+            #{parentIds},
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 更新区域 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_region(
+        id,
+        name,
+        level,
+        hot_degreet,
+        pinyin,
+
+        parent_id,
+        parent_name,
+        parent_ids,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.name},
+            #{item.level},
+            #{item.hotDegreet},
+            #{item.pinyin},
+
+            #{item.parentId},
+            #{item.parentName},
+            #{item.parentIds},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新子节点parentids -->
+    <update id="updateParentids">
+		UPDATE sys_region SET
+            parent_ids=concat(#{parentId},',',#{id},SUBSTRING(parent_ids, INSTR(parent_ids, #{id})+LENGTH(#{id})) ),
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+
+    <!-- 物理删除区域 -->
+    <!--<update id="delete">
+		DELETE FROM sys_region
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 区域 -->
+    <update id="deleteToggle">
+		UPDATE sys_region SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id} OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Region" statementType="STATEMENT">
+		select * from sys_region where ${propertyName} = '${value}'
+	</select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.dongpeng.entity.system.Region">
+        update sys_region
+        <set>
+            <if test="hotDegreet != null">
+                hot_degreet = #{hotDegreet,jdbcType=INTEGER},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="pinyin != null">
+                pinyin = #{pinyin,jdbcType=VARCHAR},
+            </if>
+            <if test="deleteFlag != null">
+                delete_flag = #{deleteFlag,jdbcType=TINYINT},
+            </if>
+            <if test="createrId != null">
+                creater_id = #{createrId,jdbcType=BIGINT},
+            </if>
+            <if test="createrName != null">
+                creater_name = #{createrName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifierId != null">
+                modifier_id = #{modifierId,jdbcType=BIGINT},
+            </if>
+            <if test="modifierName != null">
+                modifier_name = #{modifierName,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="version != null">
+                version = #{version,jdbcType=INTEGER} +1,
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId,jdbcType=BIGINT},
+            </if>
+            <if test="parentName != null">
+                parent_name = #{parentName,jdbcType=VARCHAR},
+            </if>
+            <if test="parentIds != null">
+                parent_ids = #{parentIds,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据ID查找父级名称 -->
+    <select id="getParentNameById" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+         a.parent_name,
+         a.parent_id
+        FROM sys_region a
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页模糊查询省市区信息-->
+    <select id="findDistrictList" resultType="com.dongpeng.entity.system.Region">
+        SELECT
+        <include refid="regionColumns"/>
+        FROM sys_region a
+        <include refid="regionJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+        <if test="name != null and name != ''">
+            AND a.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="parentName != null and parentName != ''">
+            AND a.parent_name like CONCAT('%', #{parentName}, '%')
+        </if>
+        <if test="parentIds != null and parentIds != ''">
+            AND a.parent_ids LIKE CONCAT('%',#{parentIds},'%')
+        </if>
+        <if test="level != null">
+            AND a.level = #{level}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.parent_id desc
+            </otherwise>
+        </choose>
+    </select>
+
+
+</mapper>

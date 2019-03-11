@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.LogisticsDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="logisticsColumns">
+        a.*
+    </sql>
+
+    <sql id="logisticsJoins">
+    </sql>
+
+    <!-- 根据id获得物流档案 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        <include refid="logisticsJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!--根据物流名称获取物流-->
+    <select id="getLogisticsName" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        <include refid="logisticsJoins"/>
+        WHERE a.logistics_name = #{logisticsName}
+    </select>
+
+    <!-- 分页查询物流档案信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        <include refid="logisticsJoins"/>
+        WHERE a.delete_flag = #{deleteFlag}
+
+        <if test="logisticsCode != null">
+            AND a.logistics_code like CONCAT('%', #{logisticsCode}, '%')
+        </if>
+        <if test="logisticsName != null and logisticsName != ''">
+            AND a.logistics_name like CONCAT('%', #{logisticsName}, '%')
+        </if>
+        <if test="orderReceiving != null">
+            AND a.order_receiving = #{orderReceiving}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部物流档案 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        <include refid="logisticsJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入物流档案 -->
+    <insert id="insert">
+		INSERT INTO sys_logistics(
+			id,
+            logistics_name,
+            logistics_code,
+            tax_invoice,
+            tm_code,
+            sn_code,
+            jd_code,
+            order_receiving,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{logisticsName},
+            #{logisticsCode},
+            #{taxInvoice},
+            #{tmCode},
+            #{snCode},
+            #{jdCode},
+            #{orderReceiving},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入物流档案 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_logistics(
+        id,
+        logistics_name,
+        logistics_code,
+        tax_invoice,
+        tm_code,
+        sn_code,
+        jd_code,
+        order_receiving,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.logisticsName},
+            #{item.logisticsCode},
+            #{item.taxInvoice},
+            #{item.tmCode},
+            #{item.snCode},
+            #{item.jdCode},
+            #{item.orderReceiving},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新物流档案 -->
+    <update id="update">
+		UPDATE sys_logistics SET
+			logistics_name=#{logisticsName},
+			logistics_code=#{logisticsCode},
+			tax_invoice=#{taxInvoice},
+			tm_code=#{tmCode},
+			sn_code=#{snCode},
+			jd_code=#{jdCode},
+			order_receiving=#{orderReceiving},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除物流档案 -->
+    <!--<update id="delete">
+		DELETE FROM sys_logistics
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 物流档案 -->
+    <update id="deleteToggle">
+		UPDATE sys_logistics SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Logistics" statementType="STATEMENT">
+		select * from sys_logistics where ${propertyName} = '${value}'
+	</select>
+
+    <!-- ########## 用户物流权限 相关dao ################ -->
+    <!-- 根据用户id查找物流信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        JOIN sys_user_logistics rm ON rm.logistics_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.user_id = #{userId}
+        <if test="logisticsId != null">
+            AND rm.logistics_id =#{logisticsId}
+        </if>
+        ORDER BY a.id
+    </select>
+
+    <!-- 根据用户id查找该用户未有的物流信息 -->
+    <select id="findListNotInUserId" resultType="com.dongpeng.entity.system.Logistics">
+        SELECT
+        <include refid="logisticsColumns"/>
+        FROM sys_logistics a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.id NOT IN (select b.logistics_id from sys_user_logistics AS b where b.user_id = #{userId})
+        ORDER BY a.id
+    </select>
+
+    <!-- 删除用户物流 -->
+    <delete id="deleteUserLogistics">
+        DELETE FROM sys_user_logistics WHERE 1=1
+        <if test="id != null">
+            AND id =#{id}
+        </if>
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="logisticsId != null">
+            AND logistics_id =#{logisticsId}
+        </if>
+    </delete>
+
+    <!-- 插入用户物流 -->
+    <insert id="insertUserLogistics">
+        INSERT INTO sys_user_logistics(
+        id,
+        user_id,
+        logistics_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userLogisticsList" item="userLogistics" separator=" union all ">
+            SELECT
+            #{userLogistics.id},
+            #{userLogistics.userId},
+            #{userLogistics.logisticsId},
+
+            #{userLogistics.createrId},
+            #{userLogistics.createrName},
+            #{userLogistics.createTime},
+            #{userLogistics.modifierId},
+            #{userLogistics.modifierName},
+            #{userLogistics.modifyTime},
+            #{userLogistics.deleteFlag},
+            #{userLogistics.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+</mapper>

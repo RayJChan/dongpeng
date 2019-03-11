@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.MmSupplierDao">
+  <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+  <resultMap id="BaseResultMap" type="com.dongpeng.system.dao.MmSupplierDao">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
+    <result column="supplier_name" jdbcType="VARCHAR" property="supplierName" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+    <result column="linkman" jdbcType="VARCHAR" property="linkman" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="deposit_bank" jdbcType="VARCHAR" property="depositBank" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount" />
+    <result column="province_id" jdbcType="BIGINT" property="provinceId" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city_id" jdbcType="BIGINT" property="cityId" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="district_id" jdbcType="BIGINT" property="districtId" />
+    <result column="district" jdbcType="VARCHAR" property="district" />
+    <result column="delete_flag" jdbcType="TINYINT" property="deleteFlag" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+  <sql id="mmSupplierColumns">
+    sms.id, sms.supplier_code, sms.supplier_name, sms.company_id, sms.company_name, sms.linkman, sms.phone, sms.deposit_bank,
+    sms.bank_account, sms.province_id, sms.province, sms.city_id, sms.city, sms.district_id, sms.district, sms.delete_flag, sms.creater_id, sms.creater_name, sms.create_time,
+    sms.modifier_id, sms.modifier_name, sms.modify_time,sms.version
+  </sql>
+
+<!--根据ID查询数据-->
+  <select id="get" parameterType="java.lang.Long" resultType="com.dongpeng.entity.system.MmSupplier">
+    select 
+    <include refid="mmSupplierColumns" />
+    from sys_mm_supplier sms
+    where sms.id = #{id}
+    and sms.delete_flag = 0
+  </select>
+
+  <!--插入-->
+  <insert id="insert" parameterType="com.dongpeng.entity.system.MmSupplier">
+    insert into sys_mm_supplier (id, supplier_code, supplier_name, 
+      company_id, company_name, linkman, 
+      phone, deposit_bank, bank_account, 
+      province_id,province, city_id,city,
+      district_id,district,
+      delete_flag, creater_id, creater_name, 
+      create_time, modifier_id, modifier_name, 
+      modify_time,version)
+    values (#{id,jdbcType=BIGINT}, #{supplierCode,jdbcType=VARCHAR}, #{supplierName,jdbcType=VARCHAR}, 
+      #{companyId,jdbcType=BIGINT}, #{companyName,jdbcType=VARCHAR}, #{linkman,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR}, #{depositBank,jdbcType=VARCHAR}, #{bankAccount,jdbcType=VARCHAR},
+      #{provinceId,jdbcType=BIGINT},#{province,jdbcType=VARCHAR},#{cityId,jdbcType=BIGINT},
+      #{city,jdbcType=VARCHAR}, #{districtId,jdbcType=BIGINT},#{district,jdbcType=VARCHAR},
+      #{deleteFlag,jdbcType=TINYINT}, #{createrId,jdbcType=BIGINT}, #{createrName,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT}, #{modifierName,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP},#{version,jdbcType=INTEGER})
+  </insert>
+
+  <!--选择更新-->
+  <update id="update" parameterType="com.dongpeng.entity.system.MmSupplier">
+    update sys_mm_supplier
+    <set>
+      <if test="supplierCode != null">
+        supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      </if>
+      <if test="supplierName != null">
+        supplier_name = #{supplierName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyId != null">
+        company_id = #{companyId,jdbcType=BIGINT},
+      </if>
+      <if test="companyName != null">
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="linkman != null">
+        linkman = #{linkman,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="depositBank != null">
+        deposit_bank = #{depositBank,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null">
+        bank_account = #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null">
+        province_id = #{provinceId,jdbcType=BIGINT},
+      </if>
+      <if test="province != null">
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null">
+        city_id = #{cityId,jdbcType=BIGINT},
+      </if>
+      <if test="city != null">
+        city = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="districtId != null">
+        district_id = #{districtId,jdbcType=BIGINT},
+      </if>
+      <if test="district != null">
+        district = #{district,jdbcType=VARCHAR},
+      </if>
+      <if test="deleteFlag != null">
+        delete_flag = #{deleteFlag,jdbcType=TINYINT},
+      </if>
+      <if test="createrId != null">
+        creater_id = #{createrId,jdbcType=BIGINT},
+      </if>
+      <if test="createrName != null">
+        creater_name = #{createrName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifierId != null">
+        modifier_id = #{modifierId,jdbcType=BIGINT},
+      </if>
+      <if test="modifierName != null">
+        modifier_name = #{modifierName,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="version != null">
+        version = #{version,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <!--所有更新-->
+  <update id="updateByPrimaryKey" parameterType="com.dongpeng.entity.system.MmSupplier">
+    update sys_mm_supplier
+    set supplier_code = #{supplierCode,jdbcType=VARCHAR},
+      supplier_name = #{supplierName,jdbcType=VARCHAR},
+      company_id = #{companyId,jdbcType=BIGINT},
+      company_name = #{companyName,jdbcType=VARCHAR},
+      linkman = #{linkman,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      deposit_bank = #{depositBank,jdbcType=VARCHAR},
+      bank_account = #{bankAccount,jdbcType=VARCHAR},
+      province_id = #{provinceId,jdbcType=BIGINT},
+      province = #{province,jdbcType=VARCHAR},
+      city_id = #{cityId,jdbcType=BIGINT},
+      city = #{city,jdbcType=VARCHAR},
+      district_id = #{districtId,jdbcType=BIGINT},
+      district = #{district,jdbcType=VARCHAR},
+      delete_flag = #{deleteFlag,jdbcType=TINYINT},
+      creater_id = #{createrId,jdbcType=BIGINT},
+      creater_name = #{createrName,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier_id = #{modifierId,jdbcType=BIGINT},
+      modifier_name = #{modifierName,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      modify_time = #{version,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <!-- 分页查询区域信息 -->
+  <select id="findList" resultType="com.dongpeng.entity.system.MmSupplier">
+    SELECT
+    <include refid="mmSupplierColumns"/>
+    FROM sys_mm_supplier sms
+    WHERE 1 = 1
+    <if test="supplierCode != null and supplierCode != ''">
+      AND sms.supplier_code like CONCAT('%', #{supplierCode}, '%')
+    </if>
+    <if test="supplierName != null and supplierName != ''">
+      AND sms.supplier_name LIKE CONCAT('%',#{supplierName},'%')
+    </if>
+    <if test="companyName != null and companyName != ''">
+      AND sms.company_name LIKE CONCAT('%',#{companyName},'%')
+    </if>
+    <if test="deleteFlag != null">
+      AND sms.delete_flag = #{deleteFlag}
+    </if>
+    ${dataScope}
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+      <otherwise>
+        ORDER BY sms.create_time desc
+      </otherwise>
+    </choose>
+  </select>
+
+</mapper>

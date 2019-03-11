@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.CompanyDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="companyColumns">
+        a.id AS "id",
+        a.company_code AS "companyCode",
+        a.company_name AS "companyName",
+        a.company_duty AS "companyDuty",
+        a.ele_invoice AS "eleInvoice",
+        a.company_type AS "companyType",
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="companyJoins">
+    </sql>
+
+    <!-- 根据id获得公司 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        <include refid="companyJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据公司编码查询公司 -->
+    <select id="getByCompanyCode" resultType="com.dongpeng.entity.system.Company" >
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        <include refid="companyJoins"/>
+        WHERE a.company_code = #{companyCode}
+    </select>
+
+    <!-- 根据公司名称查询公司 -->
+    <select id="getByCompanyName" resultType="com.dongpeng.entity.system.Company" >
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        <include refid="companyJoins"/>
+        WHERE 1=1
+
+        <if test="companyName != ''and companyName !=null ">
+            AND a.company_name like '%${companyName}%'
+
+        </if>
+    </select>
+
+
+    <!-- 分页查询公司信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        <include refid="companyJoins"/>
+        WHERE
+        1=1
+
+        <if test="deleteFlag != null ">
+            AND  a.delete_flag = #{deleteFlag}
+        </if>
+
+        <if test="companyCode != null and companyCode != ''">
+            AND a.company_code like CONCAT('%', #{companyCode}, '%')
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND a.company_name like CONCAT('%', #{companyName}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部公司 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        <include refid="companyJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入公司 -->
+    <insert id="insert">
+		INSERT INTO sys_company(
+			id,
+            company_code,
+            company_name,
+            company_duty,
+            ele_invoice,
+            company_type,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{companyCode},
+            #{companyName},
+            #{companyDuty},
+            #{eleInvoice},
+            #{companyType},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入公司 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_company(
+        id,
+        company_code,
+        company_name,
+        company_duty,
+        ele_invoice,
+        company_type,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.companyCode},
+            #{item.companyName},
+            #{item.companyDuty},
+            #{item.eleInvoice},
+            #{item.companyType},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新公司 -->
+    <update id="update">
+		UPDATE sys_company SET
+			company_code=#{companyCode},
+			company_name=#{companyName},
+			company_duty=#{companyDuty},
+			ele_invoice=#{eleInvoice},
+			company_type=#{companyType},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除公司 -->
+    <!--<update id="delete">
+		DELETE FROM sys_company
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 公司 -->
+    <update id="deleteToggle">
+		UPDATE sys_company SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Company" statementType="STATEMENT">
+		select * from sys_company where ${propertyName} = '${value}'
+	</select>
+
+    <!-- ########## 用户公司权限 相关dao ################ -->
+    <!-- 根据用户id查找公司信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        JOIN sys_user_company rm ON rm.company_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.user_id = #{userId}
+        <if test="companyId != null">
+            AND rm.company_id =#{companyId}
+        </if>
+        ORDER BY a.id
+    </select>
+
+    <!-- 根据用户id查找该用户未有的公司信息 -->
+    <select id="findListNotInUserId" resultType="com.dongpeng.entity.system.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM sys_company a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.id NOT IN (select b.company_id from sys_user_company AS b where b.user_id = #{userId})
+        ORDER BY a.id
+    </select>
+
+    <!-- 删除用户公司 -->
+    <delete id="deleteUserCompany">
+        DELETE FROM sys_user_company WHERE 1=1
+        <if test="id != null">
+            AND id =#{id}
+        </if>
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="companyId != null">
+            AND company_id =#{companyId}
+        </if>
+    </delete>
+
+    <!-- 插入用户公司 -->
+    <insert id="insertUserCompany">
+        INSERT INTO sys_user_company(
+        id,
+        user_id,
+        company_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userCompanyList" item="userCompany" separator=" union all ">
+            SELECT
+            #{userCompany.id},
+            #{userCompany.userId},
+            #{userCompany.companyId},
+
+            #{userCompany.createrId},
+            #{userCompany.createrName},
+            #{userCompany.createTime},
+            #{userCompany.modifierId},
+            #{userCompany.modifierName},
+            #{userCompany.modifyTime},
+            #{userCompany.deleteFlag},
+            #{userCompany.version}
+            FROM dual
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.UserDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="userColumns">
+        a.id AS "id",
+        a.user_code AS "userCode",
+        a.user_name AS "userName",
+        a.password AS "password",
+        a.department_id AS "departmentId",
+        a.department_name AS "departmentName",
+        a.role_id AS "roleId",
+        a.role_name AS "roleName",
+        a.phone AS "phone",
+        a.user_type AS "userType",
+        a.user_typename AS "userTypename",
+        a.user_binding AS "userBinding",
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="userJoins"><!--
+		LEFT JOIN sys_user_role ur ON ur.user_id = a.id
+        LEFT JOIN sys_role r ON r.id = ur.role_id -->
+    </sql>
+
+    <!-- 根据id获得用户 -->
+    <select id="get" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据工号查询用户 -->
+    <select id="getByUserCode" resultType="com.dongpeng.entity.system.User" >
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE  a.delete_flag = #{DEL_FLAG_NORMAL} AND a.user_code = #{userCode}
+    </select>
+
+    <!-- 分页查询用户信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="userCode != null and userCode != ''">
+            AND a.user_code like CONCAT('%', #{userCode}, '%')
+        </if>
+        <if test="userName != null and userName != ''">
+            AND a.user_name like CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="departmentId != null">
+            AND a.department_id = #{departmentId}
+        </if>
+        <if test="roleId != null">
+            AND a.role_id = #{roleId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部用户 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ORDER BY a.id
+    </select>
+
+    <!-- 查询全部用户数目 -->
+    <!--<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM sys_user a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>-->
+
+    <!-- 插入用户 -->
+    <insert id="insert">
+		INSERT INTO sys_user(
+			id,
+            user_code,
+            user_name,
+            password,
+            department_id,
+            department_name,
+            role_id,
+            role_name,
+            phone,
+            user_type,
+            user_typename,
+            user_binding,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{userCode},
+            #{userName},
+            #{password},
+            #{departmentId},
+            #{departmentName},
+            #{roleId},
+            #{roleName},
+            #{phone},
+            #{userType},
+            #{userTypename},
+            #{userBinding},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入用户 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_user(
+        id,
+        user_code,
+        user_name,
+        password,
+        department_id,
+        department_name,
+        role_id,
+        role_name,
+        phone,
+        user_type,
+        user_typename,
+        user_binding,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.userCode},
+            #{item.userName},
+            #{item.password},
+            #{item.departmentId},
+            #{item.departmentName},
+            #{item.roleId},
+            #{item.roleName},
+            #{item.phone},
+            #{item.userType},
+            #{item.userTypename},
+            #{item.userBinding},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新用户 -->
+    <update id="update">
+		UPDATE sys_user SET
+			user_code=#{userCode},
+			user_name=#{userName},
+			password=#{password},
+			department_id=#{departmentId},
+			department_name=#{departmentName},
+			role_id=#{roleId},
+			role_name=#{roleName},
+			phone=#{phone},
+			user_type=#{userType},
+			user_typename=#{userTypename},
+			user_binding=#{userBinding},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除用户 -->
+    <!--<update id="delete">
+		DELETE FROM sys_user
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 用户 -->
+    <update id="deleteToggle">
+		UPDATE sys_user SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.User" statementType="STATEMENT">
+		select * from sys_user where ${propertyName} = '${value}'
+	</select>
+</mapper>

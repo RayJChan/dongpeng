@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.O2OFunctionDao">
+  <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.O2OFunction">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="client_automatic_distribute" jdbcType="VARCHAR" property="clientAutomaticDistribute" />
+    <result column="material_automatic_distribute" jdbcType="VARCHAR" property="materialAutomaticDistribute" />
+    <result column="privilege_automatic_distribute" jdbcType="VARCHAR" property="privilegeAutomaticDistribute" />
+    <result column="client_distribute_charge" jdbcType="VARCHAR" property="clientDistributeCharge" />
+    <result column="privilege_automatic_charge" jdbcType="VARCHAR" property="privilegeAutomaticCharge" />
+    <result column="client_not_time" jdbcType="VARCHAR" property="clientNotTime" />
+    <result column="privilege_not_time" jdbcType="VARCHAR" property="privilegeNotTime" />
+    <result column="material_not_time" jdbcType="VARCHAR" property="materialNotTime" />
+    <result column="client_revoke_time" jdbcType="VARCHAR" property="clientRevokeTime" />
+    <result column="privilege_revoke_time" jdbcType="VARCHAR" property="privilegeRevokeTime" />
+    <result column="material_revoke_time" jdbcType="VARCHAR" property="materialRevokeTime" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+  <sql id="Base_O2OFunction_List">
+    id, client_automatic_distribute, material_automatic_distribute, privilege_automatic_distribute, 
+    client_distribute_charge, privilege_automatic_charge, client_not_time, privilege_not_time, 
+    material_not_time, client_revoke_time, privilege_revoke_time, material_revoke_time, 
+    delete_flag, creater_id, creater_name, create_time, modifier_id, modifier_name, modify_time
+  </sql>
+
+  <!--添加一条数据-->
+  <insert id="insert">
+  insert into sys_o2o_function (
+  <include refid="Base_O2OFunction_List" />
+  )values (
+    #{id,jdbcType=BIGINT},
+    #{clientAutomaticDistribute,jdbcType=VARCHAR},
+    #{materialAutomaticDistribute,jdbcType=VARCHAR},
+    #{privilegeAutomaticDistribute,jdbcType=VARCHAR},
+    #{clientDistributeCharge,jdbcType=VARCHAR},
+    #{privilegeAutomaticCharge,jdbcType=VARCHAR},
+    #{clientNotTime,jdbcType=VARCHAR},
+    #{privilegeNotTime,jdbcType=VARCHAR},
+    #{materialNotTime,jdbcType=VARCHAR},
+    #{clientRevokeTime,jdbcType=VARCHAR},
+    #{privilegeRevokeTime,jdbcType=VARCHAR},
+    #{materialRevokeTime,jdbcType=VARCHAR},
+    #{deleteFlag,jdbcType=BIT},
+    #{createrId,jdbcType=BIGINT},
+    #{createrName,jdbcType=VARCHAR},
+    #{createTime,jdbcType=TIMESTAMP},
+    #{modifierId,jdbcType=BIGINT},
+    #{modifierName,jdbcType=VARCHAR},
+    #{modifyTime,jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+</mapper>

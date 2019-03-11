@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    config:
+      #uri: http://localhost:12000 # 配置中心的具体地址，即 config-server
+      name: ${spring.application.name},rabbitmq,zipkin,common # 对应 {application} 部分
+      profile: dev # 对应 {profile} 部分
+      label: master # 对应 {label} 部分，即 Git 的分支。如果配置中心使用的是本地存储，则该参数无用
+      discovery:
+        enabled: true #开启 Config 服务发现支持
+        service-id: config-server #指定 配置中心server 端的 name
+      username: lancer
+      password: 111111
+  boot:
+    admin:
+      client:
+        url: "http://localhost:8888"
+eureka:
+  client:
+    service-url:
+     defaultZone: http://lancer:123456@eureka-server:7000/eureka
+ #启用账号密码验证时，格式 http://账号:密码@hostname:端口号/eureka
+#      defaultZone: http://localhost:7000/eureka/  #没有启用账号密码验证时
+
+
+
+
+
+
+

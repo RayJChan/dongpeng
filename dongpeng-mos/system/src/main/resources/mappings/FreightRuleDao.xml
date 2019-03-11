@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.FreightRuleDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="freightRuleColumns">
+        a.id AS "id",
+        a.item_id,
+        a.item_name,
+        a.section_one,
+        a.section_value,
+        a.section_two,
+        a.min_value,
+        a.max_value,
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="freightRuleJoins">
+    </sql>
+
+    <!-- 根据id获得运费计算规则 -->
+    <select id="get" resultType="com.dongpeng.entity.system.FreightRule">
+        SELECT
+        <include refid="freightRuleColumns"/>
+        FROM sys_freight_rule a
+        <include refid="freightRuleJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页查询运费计算规则信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.FreightRule">
+        SELECT
+        <include refid="freightRuleColumns"/>
+        FROM sys_freight_rule a
+        <include refid="freightRuleJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        <if test="itemId != null">
+            AND a.item_id = #{itemId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部运费计算规则 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.FreightRule">
+        SELECT
+        <include refid="freightRuleColumns"/>
+        FROM sys_freight_rule a
+        <include refid="freightRuleJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入运费计算规则 -->
+    <insert id="insert">
+		INSERT INTO sys_freight_rule(
+			id,
+            item_id,
+            item_name,
+            section_one,
+            section_value,
+            section_two,
+            min_value,
+            max_value,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+			#{itemId},
+            #{itemName},
+            #{sectionOne},
+            #{sectionValue},
+            #{sectionTwo},
+            #{minValue},
+            #{maxValue},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入运费计算规则 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_freight_rule(
+        id,
+        item_id,
+        item_name,
+        section_one,
+        section_value,
+        section_two,
+        min_value,
+        max_value,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.itemId},
+            #{item.itemName},
+            #{item.sectionOne},
+            #{item.sectionValue},
+            #{item.sectionTwo},
+            #{item.minValue},
+            #{item.maxValue},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新运费计算规则 -->
+    <update id="update">
+		UPDATE sys_freight_rule SET
+		    item_id=#{itemId},
+			item_name=#{itemName},
+			section_one=#{sectionOne},
+			section_value=#{sectionValue},
+			section_two=#{sectionTwo},
+			min_value=#{minValue},
+			max_value=#{maxValue},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除运费计算规则 -->
+   <!-- <update id="delete">
+		DELETE FROM sys_freight_rule
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 运费计算规则 -->
+    <update id="deleteToggle">
+		UPDATE sys_freight_rule SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.FreightRule" statementType="STATEMENT">
+		select * from sys_freight_rule where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

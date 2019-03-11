@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.WarehouseDao">
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.Warehouse">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="warehouse_code" jdbcType="VARCHAR" property="warehouseCode" />
+        <result column="warehouse_name" jdbcType="VARCHAR" property="warehouseName" />
+        <result column="parent_id" jdbcType="BIGINT" property="parentId" />
+        <result column="parent_name" jdbcType="VARCHAR" property="parentName" />
+        <result column="company_id" jdbcType="BIGINT" property="companyId" />
+        <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+        <result column="warehouse_system" jdbcType="VARCHAR" property="warehouseSystem" />
+        <result column="warehouse_type" jdbcType="VARCHAR" property="warehouseType" />
+        <result column="corr_identifying" jdbcType="VARCHAR" property="corrIdentifying" />
+        <result column="inventory" jdbcType="BIT" property="inventory" />
+        <result column="province" jdbcType="VARCHAR" property="province" />
+        <result column="city" jdbcType="VARCHAR" property="city" />
+        <result column="district" jdbcType="VARCHAR" property="district" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="isStorage" jdbcType="BIT" property="isStorage" />
+        <result column="isFactory" jdbcType="BIT" property="isFactory" />
+        <result column="parent_ids" jdbcType="VARCHAR" property="parentIds" />
+        <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+        <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+        <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+        <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+        <result column="version" jdbcType="INTEGER" property="version" />
+    </resultMap>
+
+    <sql id="warehouseColumns">
+        id, warehouse_code, warehouse_name, parent_id, parent_name, company_id, company_name,
+        warehouse_system, warehouse_type, corr_identifying, inventory, province, city, district,
+        address, isStorage, isFactory,  parent_ids, delete_flag, creater_id, creater_name,
+        create_time, modifier_id, modifier_name, modify_time, version
+    </sql>
+
+
+    <sql id="warehouseJoins">
+    </sql>
+
+    <!-- 根据id获得仓库 -->
+    <select id="get" resultMap="BaseResultMap">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        <include refid="warehouseJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据仓库编码获得仓库 -->
+    <select id="getByWarehouseCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        <include refid="warehouseJoins"/>
+        WHERE a.warehouse_code = #{warehouseCode}
+    </select>
+
+    <!-- 根据上级id获得仓库 -->
+    <select id="getByUp" resultMap="BaseResultMap">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        <include refid="warehouseJoins"/>
+        WHERE a.parent_id = #{parentId}
+    </select>
+
+
+    <!-- 分页查询仓库信息 -->
+    <select id="findList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        <include refid="warehouseJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="warehouseCode != null and warehouseCode != ''">
+            AND a.warehouse_code like CONCAT('%', #{warehouseCode}, '%')
+        </if>
+        <if test="warehouseName != null and warehouseName != ''">
+            AND a.warehouse_name like CONCAT('%', #{warehouseName}, '%')
+        </if>
+        <if test="parentId != null">
+            AND a.parent_id = #{parentId}
+        </if>
+        <if test="parentIds != null and parentIds != ''">
+            AND a.parent_ids LIKE CONCAT('%',#{parentIds},'%')
+        </if>
+        <if test="companyId != null">
+            AND a.company_id = #{companyId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部仓库 -->
+    <select id="findAllList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        <include refid="warehouseJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+    <!--模糊查询对应部门未添加的仓库-->
+    <select id="findIsNotAll" resultMap="BaseResultMap">
+      select sw.id,sw.warehouse_name,sw.warehouse_system from sys_warehouse sw
+      where sw.delete_flag = 0
+      <if test="warehouseName != null and warehouseName !=''">
+          and sw.warehouse_name LIKE CONCAT('%',#{warehouseName},'%')
+      </if>
+      and id not in
+      (select sdw.warehouse_id from sys_department_warehouse sdw where sdw.delete_flag = 0 and sdw.department_id = #{departmentId})
+    </select>
+
+    <!-- 插入仓库 -->
+    <insert id="insert">
+        insert into sys_warehouse (id, warehouse_code, warehouse_name,
+                                   parent_id, parent_name, company_id,
+                                   company_name, warehouse_system, warehouse_type,
+                                   corr_identifying, inventory, province,
+                                   city, district, address,
+                                   isStorage, isFactory, parent_ids,
+                                   delete_flag, creater_id, creater_name,
+                                   create_time, modifier_id, modifier_name,
+                                   modify_time, version)
+        values (#{id,jdbcType=BIGINT}, #{warehouseCode,jdbcType=VARCHAR}, #{warehouseName,jdbcType=VARCHAR},
+                                       #{parentId,jdbcType=BIGINT}, #{parentName,jdbcType=VARCHAR}, #{companyId,jdbcType=BIGINT},
+                                       #{companyName,jdbcType=VARCHAR}, #{warehouseSystem,jdbcType=VARCHAR}, #{warehouseType,jdbcType=VARCHAR},
+                                       #{corrIdentifying,jdbcType=VARCHAR}, #{inventory,jdbcType=BIT}, #{province,jdbcType=VARCHAR},
+                                                                                                       #{city,jdbcType=VARCHAR}, #{district,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR},
+                                                                                                       #{isStorage,jdbcType=BIT}, #{isFactory,jdbcType=BIT}, #{parentIds,jdbcType=VARCHAR},
+                                                                                                       #{deleteFlag,jdbcType=BIT}, #{createrId,jdbcType=BIGINT}, #{createrName,jdbcType=VARCHAR},
+                #{createTime,jdbcType=TIMESTAMP}, #{modifierId,jdbcType=BIGINT}, #{modifierName,jdbcType=VARCHAR},
+                #{modifyTime,jdbcType=TIMESTAMP}, #{version,jdbcType=INTEGER})
+	</insert>
+
+    <!-- 批量插入仓库 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_warehouse(
+        id,
+        warehouse_code,
+        warehouse_name,
+        company_id,
+        company_name,
+        parent_id,
+        parent_name,
+        warehouse_system,
+        warehouse_type,
+        corr_identifying,
+        inventory,
+        province,
+        city,
+        district,
+        address,
+
+        parent_id,
+        parent_name,
+        parent_ids,
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.warehouseCode},
+            #{item.warehouseName},
+            #{item.upwarehouseId},
+            #{item.companyId},
+            #{item.companyName},
+            #{item.warehouseSystem},
+            #{item.warehouseType},
+            #{item.corrIdentifying},
+            #{item.inventory},
+            #{item.province},
+            #{item.city},
+            #{item.district},
+            #{item.address},
+
+            #{item.parentId},
+            #{item.parentName},
+            #{item.parentIds},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新仓库 -->
+    <update id="update">
+        update sys_warehouse
+        set warehouse_code = #{warehouseCode,jdbcType=VARCHAR},
+            warehouse_name = #{warehouseName,jdbcType=VARCHAR},
+            parent_id = #{parentId,jdbcType=BIGINT},
+            parent_name = #{parentName,jdbcType=VARCHAR},
+            company_id = #{companyId,jdbcType=BIGINT},
+            company_name = #{companyName,jdbcType=VARCHAR},
+            warehouse_system = #{warehouseSystem,jdbcType=VARCHAR},
+            warehouse_type = #{warehouseType,jdbcType=VARCHAR},
+            corr_identifying = #{corrIdentifying,jdbcType=VARCHAR},
+            inventory = #{inventory,jdbcType=BIT},
+            province = #{province,jdbcType=VARCHAR},
+            city = #{city,jdbcType=VARCHAR},
+            district = #{district,jdbcType=VARCHAR},
+            address = #{address,jdbcType=VARCHAR},
+            isStorage = #{isStorage,jdbcType=BIT},
+            isFactory = #{isFactory,jdbcType=BIT},
+            parent_ids = #{parentIds,jdbcType=VARCHAR},
+            delete_flag = #{deleteFlag,jdbcType=BIT},
+            creater_id = #{createrId,jdbcType=BIGINT},
+            creater_name = #{createrName,jdbcType=VARCHAR},
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+            modifier_id = #{modifierId,jdbcType=BIGINT},
+            modifier_name = #{modifierName,jdbcType=VARCHAR},
+            modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除仓库 -->
+    <!--<update id="delete">
+		DELETE FROM sys_warehouse
+		WHERE id = #{id} OR parent_ids LIKE concat('%',#{id},'%')
+	</update>-->
+
+    <!-- 逻辑 删除/启用 仓库 -->
+    <update id="deleteToggle">
+		UPDATE sys_warehouse SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}  OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Warehouse" statementType="STATEMENT">
+		select * from sys_warehouse where ${propertyName} = '${value}'
+	</select>
+
+    <!-- ########## 用户仓库权限 相关dao ################ -->
+    <!-- 根据用户id查找仓库信息 -->
+    <select id="findListByUserId" resultType="com.dongpeng.entity.system.Warehouse">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        JOIN sys_user_warehouse rm ON rm.warehouse_id=a.id
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL} AND rm.user_id = #{userId}
+        <if test="warehouseId != null">
+            AND rm.warehouse_id =#{warehouseId}
+        </if>
+        ORDER BY a.id
+    </select>
+
+    <!-- 根据用户id查找该用户未有的仓库信息 -->
+    <select id="findListNotInUserId" resultType="com.dongpeng.entity.system.Warehouse">
+        SELECT
+        <include refid="warehouseColumns"/>
+        FROM sys_warehouse a
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        AND a.id NOT IN (select b.warehouse_id from sys_user_warehouse AS b where b.user_id = #{userId})
+        ORDER BY a.id
+    </select>
+
+    <!-- 删除用户仓库 -->
+    <delete id="deleteUserWarehouse">
+        DELETE FROM sys_user_warehouse WHERE 1=1
+        <if test="id != null">
+            AND id =#{id}
+        </if>
+        <if test="userId != null">
+            AND user_id =#{userId}
+        </if>
+        <if test="warehouseId != null">
+            AND warehouse_id =#{warehouseId}
+        </if>
+    </delete>
+
+    <!-- 插入用户仓库 -->
+    <insert id="insertUserWarehouse">
+        INSERT INTO sys_user_warehouse(
+        id,
+        user_id,
+        warehouse_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="userWarehouseList" item="userWarehouse" separator=" union all ">
+            SELECT
+            #{userWarehouse.id},
+            #{userWarehouse.userId},
+            #{userWarehouse.warehouseId},
+
+            #{userWarehouse.createrId},
+            #{userWarehouse.createrName},
+            #{userWarehouse.createTime},
+            #{userWarehouse.modifierId},
+            #{userWarehouse.modifierName},
+            #{userWarehouse.modifyTime},
+            #{userWarehouse.deleteFlag},
+            #{userWarehouse.version}
+            FROM dual
+        </foreach>
+    </insert>
+</mapper>

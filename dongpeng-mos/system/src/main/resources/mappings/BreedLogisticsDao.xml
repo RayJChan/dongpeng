@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.BreedLogisticsDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="breedLogisticsColumns">
+        a.*,
+        b.id AS "breed.id",
+        b.breed_name AS "breed.breedName",
+        c.id AS "logistics.id",
+        c.logistics_name AS "logistics.logisticsName"
+    </sql>
+
+    <sql id="breedLogisticsJoins">
+        LEFT JOIN sys_breed b ON b.id = a.breed_id
+        LEFT JOIN sys_logistics c ON c.id = a.logistics_id
+    </sql>
+
+    <!-- 根据id获得品类物流 -->
+    <select id="get" resultType="com.dongpeng.entity.system.BreedLogistics">
+        SELECT
+        <include refid="breedLogisticsColumns"/>
+        FROM sys_breed_logistics a
+        <include refid="breedLogisticsJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+    <!-- 分页查询品类物流信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.BreedLogistics">
+        SELECT
+        <include refid="breedLogisticsColumns"/>
+        FROM sys_breed_logistics a
+        <include refid="breedLogisticsJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="breed != null and breed.id != null">
+            AND a.breed_id = #{breed.id}
+        </if>
+        <if test="logistics != null and logistics.id != null">
+            AND a.logistics_id = #{logistics.id}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部品类物流 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.BreedLogistics">
+        SELECT
+        <include refid="breedLogisticsColumns"/>
+        FROM sys_breed_logistics a
+        <include refid="breedLogisticsJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入品类物流 -->
+    <insert id="insert">
+		INSERT INTO sys_breed_logistics(
+			id,
+            breed_id,
+            logistics_id,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{breed.id},
+            #{logistics.id},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入品类物流 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_breed_logistics(
+        id,
+        breed_id,
+        logistics_id,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.breed.id},
+            #{item.logistics.id},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新品类物流 -->
+    <update id="update">
+		UPDATE sys_breed_logistics SET
+			breed_id=#{breed.id},
+			logistics_id=#{logistics.id},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除品类物流 -->
+   <!-- <update id="delete">
+		DELETE FROM sys_breed_logistics
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 品类物流 -->
+    <update id="deleteToggle">
+		UPDATE sys_breed_logistics SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.BreedLogistics" statementType="STATEMENT">
+		select * from sys_breed_logistics where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

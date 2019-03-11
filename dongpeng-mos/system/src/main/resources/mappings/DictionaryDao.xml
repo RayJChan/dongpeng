@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.DictionaryDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="dictionaryColumns">
+        a.id AS "id",
+        a.dictionary_name AS "dictionaryName",
+        a.detail_name AS "detailName",
+        a.detail_code AS "detailCode",
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="dictionaryJoins">
+    </sql>
+
+    <!-- 根据id获得字典 -->
+    <select id="get" resultType="com.dongpeng.entity.system.Dictionary">
+        SELECT
+        <include refid="dictionaryColumns"/>
+        FROM sys_dictionary a
+        <include refid="dictionaryJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 根据code获得字典 -->
+    <select id="getByCode" resultType="com.dongpeng.entity.system.Dictionary">
+        SELECT
+        <include refid="dictionaryColumns"/>
+        FROM sys_dictionary a
+        <include refid="dictionaryJoins"/>
+        WHERE a.detail_code = #{detailCode}
+    </select>
+
+    <!-- 根据名称和明细获得字典 -->
+    <select id="getByNameAndDetail" resultType="com.dongpeng.entity.system.Dictionary">
+        SELECT
+        <include refid="dictionaryColumns"/>
+        FROM sys_dictionary a
+        <include refid="dictionaryJoins"/>
+        WHERE a.dictionary_name = #{dictionaryName} and a.detail_name=#{detailName}
+    </select>
+
+
+    <!-- 分页查询字典信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.Dictionary">
+        SELECT
+        <include refid="dictionaryColumns"/>
+        FROM sys_dictionary a
+        <include refid="dictionaryJoins"/>
+
+        WHERE
+        1=1
+        <if test="deleteFlag != null">
+          and  a.delete_flag = #{deleteFlag}
+        </if>
+        <if test="dictionaryName != null and dictionaryName != ''">
+            AND a.dictionary_name LIKE CONCAT(#{dictionaryName},'%')
+        </if>
+        <if test="detailName != null and detailName != ''">
+            AND a.detail_name LIKE CONCAT('%',#{detailName},'%')
+        </if>
+        <if test="detailCode != null and detailCode != ''">
+            AND a.detail_code = #{detailCode}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部字典 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.Dictionary">
+        SELECT
+        <include refid="dictionaryColumns"/>
+        FROM sys_dictionary a
+        <include refid="dictionaryJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入字典 -->
+    <insert id="insert">
+		INSERT INTO sys_dictionary(
+			id,
+            dictionary_name,
+            detail_name,
+            detail_code,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{dictionaryName},
+            #{detailName},
+            #{detailCode},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入字典 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_dictionary(
+        id,
+        dictionary_name,
+        detail_name,
+        detail_code,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.dictionaryName},
+            #{item.detailName},
+            #{item.detailCode},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新字典 -->
+    <update id="update">
+		UPDATE sys_dictionary SET
+			dictionary_name=#{dictionaryName},
+			detail_name=#{detailName},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除字典 -->
+    <!--<update id="delete">
+		DELETE FROM sys_dictionary
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 字典 -->
+    <update id="deleteToggle">
+		UPDATE sys_dictionary SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.Dictionary" statementType="STATEMENT">
+		select * from sys_dictionary where ${propertyName} = '${value}'
+	</select>
+</mapper>

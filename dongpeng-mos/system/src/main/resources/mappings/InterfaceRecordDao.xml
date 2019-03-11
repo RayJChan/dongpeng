@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.InterfaceRecordDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="interfaceRecordColumns">
+        a.*
+    </sql>
+
+    <sql id="interfaceRecordJoins">
+    </sql>
+
+    <!-- 根据id获得接口档案 -->
+    <select id="get" resultType="com.dongpeng.entity.system.InterfaceRecord">
+        SELECT
+        <include refid="interfaceRecordColumns"/>
+        FROM sys_interface_record a
+        <include refid="interfaceRecordJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+
+    <!-- 分页查询接口档案信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.InterfaceRecord">
+        SELECT
+        <include refid="interfaceRecordColumns"/>
+        FROM sys_interface_record a
+        <include refid="interfaceRecordJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+
+        <if test="accountName != null and accountName != ''">
+            AND a.account_name like CONCAT('%', #{accountName}, '%')
+        </if>
+        <if test="interfacePlatform != null and interfacePlatform != ''">
+            AND a.interface_platform =#{interfacePlatform}
+        </if>
+        <if test="interfaceType != null and interfaceType != ''">
+            AND a.interface_type =#{interfaceType}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部接口档案 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.InterfaceRecord">
+        SELECT
+        <include refid="interfaceRecordColumns"/>
+        FROM sys_interface_record a
+        <include refid="interfaceRecordJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入接口档案 -->
+    <insert id="insert">
+		INSERT INTO sys_interface_record(
+			id,
+            account_name,
+            app_key,
+            app_secret,
+            app_token,
+            interface_address,
+            interface_platform,
+            interface_type,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{accountName},
+            #{appKey},
+            #{appSecret},
+            #{appToken},
+            #{interfaceAddress},
+            #{interfacePlatform},
+            #{interfaceType},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入接口档案 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_interface_record(
+        id,
+        account_name,
+        app_key,
+        app_secret,
+        app_token,
+        interface_address,
+        interface_platform,
+        interface_type,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.accountName},
+            #{item.appKey},
+            #{item.appSecret},
+            #{item.appToken},
+            #{item.interfaceAddress},
+            #{item.interfacePlatform},
+            #{item.interfaceType},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新接口档案 -->
+    <update id="update">
+		UPDATE sys_interface_record SET
+			account_name=#{accountName},
+			app_key=#{appKey},
+			app_secret=#{appSecret},
+			app_token=#{appToken},
+			interface_address=#{interfaceAddress},
+			interface_platform=#{interfacePlatform},
+			interface_type=#{interfaceType},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除接口档案 -->
+    <!--<update id="delete">
+		DELETE FROM sys_interface_record
+		WHERE id = #{id} OR parent_ids LIKE concat('%',#{id},'%')
+	</update>-->
+
+    <!-- 逻辑 删除/启用 接口档案 -->
+    <update id="deleteToggle">
+		UPDATE sys_interface_record SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}  OR parent_ids LIKE concat('%',#{id},'%')
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.InterfaceRecord" statementType="STATEMENT">
+		select * from sys_interface_record where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

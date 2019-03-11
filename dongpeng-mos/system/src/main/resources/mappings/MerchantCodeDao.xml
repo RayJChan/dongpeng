@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.MerchantCodeDao">
+  <resultMap id="MerchantResultMap" type="com.dongpeng.entity.system.MerchantCode">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="product_id" jdbcType="BIGINT" property="productId" />
+    <result column="product_code" jdbcType="VARCHAR" property="productCode" />
+    <result column="product_brand" jdbcType="VARCHAR" property="productBrand" />
+    <result column="product_describe" jdbcType="VARCHAR" property="productDescribe" />
+    <result column="merchant_code" jdbcType="VARCHAR" property="merchantCode" />
+    <result column="conversion_logicname" jdbcType="VARCHAR" property="conversionLogicname" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+  <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+  <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+  <sql id="Merchant_Column_List">
+    id, product_code, product_brand, product_describe, merchant_code,
+    conversion_logicname, delete_flag, creater_id, creater_name, create_time, modifier_id, 
+    modifier_name, modify_time
+  </sql>
+
+  <sql id="Merchant_ins_up">
+    id,product_id, product_code, product_brand, product_describe, merchant_code,
+    conversion_logicname, delete_flag, creater_id, creater_name, create_time, modifier_id,
+    modifier_name, modify_time
+  </sql>
+
+  <!--查询商家编码-->
+<select id="findList" resultMap="MerchantResultMap">
+  SELECT
+    <include refid="Merchant_Column_List"/>
+  FROM
+    sys_merchant_code
+  WHERE delete_flag =  #{deleteFlag}
+  <if test="merchantCode != null and merchantCode != ''">
+    and merchant_code like CONCAT('%', #{merchantCode}, '%')
+  </if>
+  <if test="productCode != null and productCode != ''">
+    and product_code like CONCAT('%', #{productCode}, '%')
+  </if>
+  <if test="productDescribe != null and productDescribe != ''">
+    and product_describe like CONCAT('%', #{productDescribe}, '%')
+  </if>
+  ${dataScope}
+  <choose>
+    <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+      ORDER BY ${page.orderBy}
+    </when>
+    <otherwise>
+      ORDER BY create_time desc
+    </otherwise>
+  </choose>
+</select>
+
+  <!--根据商品编码查询商品id-->
+  <select id="getByProductCode" resultType="java.lang.Long">
+    select
+    id
+    from sys_product
+    WHERE delete_flag = 0
+    AND commodity_code = #{productCode}
+  </select>
+
+  <!--根据商家编码查询-->
+  <select id="getMerchantCode" resultType="com.dongpeng.entity.system.MerchantCode">
+    select
+    <include refid="Merchant_Column_List"/>
+    from sys_merchant_code
+    WHERE merchant_code = #{merchantCode}
+  </select>
+
+  <!--添加一条数据-->
+  <insert id="insert">
+    insert into sys_merchant_code (
+    <include refid="Merchant_ins_up" />
+    )values (
+    #{id},
+    #{productId},
+    #{productCode},
+    #{productBrand},
+    #{productDescribe},
+    #{merchantCode},
+    #{conversionLogicname},
+    #{deleteFlag},
+    #{createrId},
+    #{createrName},
+    #{createTime},
+    #{modifierId},
+    #{modifierName},
+    #{modifyTime}
+    )
+  </insert>
+
+  <!--根据id查询商家编码-->
+<select id="getByMerchantId" resultMap="MerchantResultMap">
+    SELECT
+      <include refid="Merchant_ins_up" />
+    FROM
+      sys_merchant_code
+    WHERE id = #{id}
+</select>
+
+  <update id="update">
+    UPDATE sys_merchant_code SET
+    product_id = #{productId},
+    product_code = #{productCode},
+    product_brand = #{productBrand},
+    product_describe = #{productDescribe},
+    merchant_code = #{merchantCode},
+    conversion_logicname = #{conversionLogicname},
+    delete_flag = #{deleteFlag},
+    modifier_id = #{modifierId},
+    modifier_name = #{modifierName},
+    modify_time = #{modifyTime},
+    version = version + 1
+    WHERE 1 = 1
+  <choose>
+    <when test="id != null and id != ''">
+      and id = #{id}
+    </when>
+    <otherwise>
+      and merchant_code = #{merchantCode}
+    </otherwise>
+  </choose>
+</update>
+
+
+  <!--根据商品编码查询商品-->
+  <select id="getProduct" resultType="com.dongpeng.entity.system.Product">
+    select
+    *
+    from sys_product
+    WHERE delete_flag = 0
+    AND commodity_code = #{productCode}
+  </select>
+
+</mapper>

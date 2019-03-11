@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.ProductDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <!--<cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>-->
+
+    <sql id="Base_Column_List">
+        id, brand_id, brand_name, commodity_code, item_code, category_id, first_category_name,
+        second_category_name, third_category_name, weight, volume, area, description, abbreviation,
+        pack_box, pack_pc, size, commodity_type, is_batch, is_factory, bid_price, unit_id,
+        unit_name, identify_id, identify_name, custom, is_discontinued, safe_stock, procurement_date,
+        photograph, delivery_id, delivery_name, delete_flag, bar_code, creater_id, creater_name,
+        create_time, modify_time, modifier_id, modifier_name, version
+    </sql>
+
+    <resultMap id="BaseResultMap" type="com.dongpeng.entity.system.Product">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="brand_id" jdbcType="BIGINT" property="brandId" />
+        <result column="brand_name" jdbcType="VARCHAR" property="brandName" />
+        <result column="commodity_code" jdbcType="VARCHAR" property="commodityCode" />
+        <result column="item_code" jdbcType="VARCHAR" property="itemCode" />
+        <result column="category_id" jdbcType="BIGINT" property="categoryId" />
+        <result column="first_category_name" jdbcType="VARCHAR" property="firstCategoryName" />
+        <result column="second_category_name" jdbcType="VARCHAR" property="secondCategoryName" />
+        <result column="third_category_name" jdbcType="VARCHAR" property="thirdCategoryName" />
+        <result column="weight" jdbcType="DECIMAL" property="weight" />
+        <result column="volume" jdbcType="DECIMAL" property="volume" />
+        <result column="area" jdbcType="DECIMAL" property="area" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="abbreviation" jdbcType="VARCHAR" property="abbreviation" />
+        <result column="pack_box" jdbcType="INTEGER" property="packBox" />
+        <result column="pack_pc" jdbcType="INTEGER" property="packPc" />
+        <result column="size" jdbcType="VARCHAR" property="size" />
+        <result column="commodity_type" jdbcType="INTEGER" property="commodityType" />
+        <result column="is_batch" jdbcType="BIT" property="isBatch" />
+        <result column="is_factory" jdbcType="BIT" property="isFactory" />
+        <result column="bid_price" jdbcType="DECIMAL" property="bidPrice" />
+        <result column="unit_id" jdbcType="BIGINT" property="unitId" />
+        <result column="unit_name" jdbcType="VARCHAR" property="unitName" />
+        <result column="identify_id" jdbcType="BIGINT" property="identifyId" />
+        <result column="identify_name" jdbcType="VARCHAR" property="identifyName" />
+        <result column="custom" jdbcType="BIT" property="custom" />
+        <result column="is_discontinued" jdbcType="BIT" property="isDiscontinued" />
+        <result column="safe_stock" jdbcType="INTEGER" property="safeStock" />
+        <result column="procurement_date" jdbcType="INTEGER" property="procurementDate" />
+        <result column="photograph" jdbcType="VARCHAR" property="photograph" />
+        <result column="delivery_id" jdbcType="BIGINT" property="deliveryId" />
+        <result column="delivery_name" jdbcType="VARCHAR" property="deliveryName" />
+        <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+        <result column="bar_code" jdbcType="VARCHAR" property="barCode" />
+        <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+        <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+        <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+        <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+        <result column="version" jdbcType="INTEGER" property="version" />
+    </resultMap>
+
+    <select id="get" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from sys_product
+        where id = #{id,jdbcType=BIGINT} and delete_flag=0
+    </select>
+
+    <insert id="insert">
+        insert into sys_product (id, brand_id, brand_name,
+                                 commodity_code, item_code, category_id,
+                                 first_category_name, second_category_name,
+                                 third_category_name, weight, volume,
+                                 area, description, abbreviation,
+                                 pack_box, pack_pc, size,
+                                 commodity_type, is_batch, is_factory,
+                                 bid_price, unit_id, unit_name,
+                                 identify_id, identify_name, custom,
+                                 is_discontinued, safe_stock, procurement_date,
+                                 photograph, delivery_id, delivery_name,
+                                 delete_flag, bar_code, creater_id,
+                                 creater_name, create_time, modify_time,
+                                 modifier_id, modifier_name, version
+        )
+        values (#{id,jdbcType=BIGINT}, #{brandId,jdbcType=BIGINT}, #{brandName,jdbcType=VARCHAR},
+                                       #{commodityCode,jdbcType=VARCHAR}, #{itemCode,jdbcType=VARCHAR},
+                                       #{categoryId,jdbcType=BIGINT},
+                                       #{firstCategoryName,jdbcType=VARCHAR}, #{secondCategoryName,jdbcType=VARCHAR},
+                                       #{thirdCategoryName,jdbcType=VARCHAR}, #{weight,jdbcType=DECIMAL},
+                                       #{volume,jdbcType=DECIMAL},
+            #{area,jdbcType=DECIMAL}, #{description,jdbcType=VARCHAR}, #{abbreviation,jdbcType=VARCHAR},
+            #{packBox,jdbcType=INTEGER}, #{packPc,jdbcType=INTEGER}, #{size,jdbcType=VARCHAR},
+            #{commodityType,jdbcType=INTEGER}, #{isBatch,jdbcType=BIT}, #{isFactory,jdbcType=BIT},
+            #{bidPrice,jdbcType=DECIMAL}, #{unitId,jdbcType=INTEGER}, #{unitName,jdbcType=VARCHAR},
+                                          #{identifyId,jdbcType=INTEGER}, #{identifyName,jdbcType=VARCHAR},
+                                          #{custom,jdbcType=BIT},
+                                          #{isDiscontinued,jdbcType=BIT}, #{safeStock,jdbcType=INTEGER},
+                                          #{procurementDate,jdbcType=INTEGER},
+                                          #{photograph,jdbcType=VARCHAR}, #{deliveryId,jdbcType=BIGINT},
+            #{deliveryName,jdbcType=VARCHAR},
+            #{deleteFlag,jdbcType=BIT}, #{barCode,jdbcType=VARCHAR}, #{createrId,jdbcType=BIGINT},
+            #{createrName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyTime,jdbcType=TIMESTAMP},
+            #{modifierId,jdbcType=BIGINT}, #{modifierName,jdbcType=VARCHAR}, #{version,jdbcType=INTEGER}
+        )
+    </insert>
+
+    <update id="update">
+        update sys_product
+        set brand_id = #{brandId,jdbcType=BIGINT},
+            brand_name = #{brandName,jdbcType=VARCHAR},
+            commodity_code = #{commodityCode,jdbcType=VARCHAR},
+            item_code = #{itemCode,jdbcType=VARCHAR},
+            category_id = #{categoryId,jdbcType=BIGINT},
+            first_category_name = #{firstCategoryName,jdbcType=VARCHAR},
+            second_category_name = #{secondCategoryName,jdbcType=VARCHAR},
+            third_category_name = #{thirdCategoryName,jdbcType=VARCHAR},
+            weight = #{weight,jdbcType=DECIMAL},
+            volume = #{volume,jdbcType=DECIMAL},
+            area = #{area,jdbcType=DECIMAL},
+            description = #{description,jdbcType=VARCHAR},
+            abbreviation = #{abbreviation,jdbcType=VARCHAR},
+            pack_box = #{packBox,jdbcType=INTEGER},
+            pack_pc = #{packPc,jdbcType=INTEGER},
+            size = #{size,jdbcType=VARCHAR},
+            commodity_type = #{commodityType,jdbcType=INTEGER},
+            is_batch = #{isBatch,jdbcType=BIT},
+            is_factory = #{isFactory,jdbcType=BIT},
+            bid_price = #{bidPrice,jdbcType=DECIMAL},
+            unit_id = #{unitId,jdbcType=BIGINT},
+            unit_name = #{unitName,jdbcType=VARCHAR},
+            identify_id = #{identifyId,jdbcType=BIGINT},
+            identify_name = #{identifyName,jdbcType=VARCHAR},
+            custom = #{custom,jdbcType=BIT},
+            is_discontinued = #{isDiscontinued,jdbcType=BIT},
+            safe_stock = #{safeStock,jdbcType=INTEGER},
+            procurement_date = #{procurementDate,jdbcType=INTEGER},
+            photograph = #{photograph,jdbcType=VARCHAR},
+            delivery_id = #{deliveryId,jdbcType=BIGINT},
+            delivery_name = #{deliveryName,jdbcType=VARCHAR},
+            delete_flag = #{deleteFlag,jdbcType=BIT},
+            bar_code = #{barCode,jdbcType=VARCHAR},
+            creater_id = #{createrId,jdbcType=BIGINT},
+            creater_name = #{createrName,jdbcType=VARCHAR},
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+            modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            modifier_id = #{modifierId,jdbcType=BIGINT},
+            modifier_name = #{modifierName,jdbcType=VARCHAR},
+            version          = version + 1
+        where id = #{id,jdbcType=BIGINT}
+        and version = #{version,jdbcType=INTEGER}
+    </update>
+
+    <!--<delete id="delete">
+        delete from sys_product
+        where id = #{id,jdbcType=BIGINT}
+    </delete>-->
+
+    <update id="deleteToggle">
+        UPDATE sys_product
+        SET delete_flag=#{deleteFlag}
+        WHERE id=#{id}
+    </update>
+
+    <select id="findList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sys_product
+        WHERE 1=1
+        <if test='commodityCode != null and commodityCode != "" '>
+            and commodity_code like '%${commodityCode}%'
+        </if>
+        <if test='identifyId != null '>
+            and identify_id =#{identifyId}
+        </if>
+        <if test="itemCode!=null and itemCode!=''">
+            and item_code like '%${itemCode}%'
+        </if>
+        <if test="brandName!=null and brandName!=''">
+            and brand_name like '%${brandName}%'
+        </if>
+        <if test="deleteFlag!=null">
+            and delete_flag =#{deleteFlag}
+        </if>
+        <if test="description!=null and description!=''">
+            and description like '%${description}%'
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY id
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List"/>
+            FROM sys_product
+        WHERE delete_flag=0
+        <if test='commodityCode != null and commodityCode != "" '>
+            and commodity_code like '%${commodityCode}%'
+        </if>
+        <if test='commodityCode != null and commodityCode != "" '>
+            and commodity_code like '%${commodityCode}%'
+        </if>
+        <if test="itemCode!=null and itemCode!=''">
+            and item_code like '%${itemCode}%'
+        </if>
+        <if test="brandName!=null and brandName!=''">
+            and brand_name like '%${brandName}%'
+        </if>
+        <if test="deleteFlag!=null">
+            and delete_flag =#{deleteFlag}
+        </if>
+        <if test="description!=null and description!=''">
+            and description like '%${description}%'
+        </if>
+        ${dataScope}
+    </select>
+
+    <insert id="insertBatch">
+        insert into sys_product (
+        brand_id,
+        brand_name,
+        commodity_code,
+        item_code,
+        category_id, category_name, weight, volume, area, description, pack_box, pack_pc, size, commodity_type,
+                                 is_batch, is_factory, bid_price, unit_id, unit_name, identify_id, identify_name, custom, is_discontinued, safe_stock, procurement_date, photograph, delivery_id,
+                                 delivery_name,bar_code, creater_id, creater_name, create_time, modify_time, modifier_id, modifier_name)
+        VALUES
+        <foreach collection="entitys" item="item" separator=",">(
+            #{item.brandId},
+            #{item.brandName},
+            #{item.commodityCode},
+            #{item.itemCode},
+            #{item.categoryId},
+            #{item.categoryName},
+            #{item.weight},
+            #{item.volume},
+            #{item.area},
+            #{item.description},
+            #{item.packBox},
+            #{item.packPc},
+            #{item.size},
+            #{item.commodityType},
+            #{item.isBatch},
+            #{item.isFactory},
+            #{item.bidPrice},
+            #{item.unitId},
+            #{item.unitName},
+            #{item.identifyId},
+            #{item.identifyName},
+            #{item.custom},
+            #{item.isDiscontinued},
+            #{item.safeStock},
+            #{item.procurementDate},
+            #{item.photograph},
+            #{item.deliveryId},
+            #{item.deliveryName},
+            #{item.barCode},
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifyTime},
+            #{item.modifierId},
+            #{item.modifierName}
+        )
+        </foreach>
+    </insert>
+
+    <update id="updateById" >
+        update sys_product
+        <set>
+            <if test="brandId != null">
+                brand_id = #{brandId,jdbcType=BIGINT},
+            </if>
+            <if test="brandName != null">
+                brand_name = #{brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="commodityCode != null">
+                commodity_code = #{commodityCode,jdbcType=VARCHAR},
+            </if>
+            <if test="itemCode != null">
+                item_code = #{itemCode,jdbcType=VARCHAR},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId,jdbcType=BIGINT},
+            </if>
+            <if test="firstCategoryName != null">
+                first_category_name = #{firstCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="secondCategoryName != null">
+                second_category_name = #{secondCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="thirdCategoryName != null">
+                third_category_name = #{thirdCategoryName,jdbcType=VARCHAR},
+            </if>
+            <if test="weight != null">
+                weight = #{weight,jdbcType=DECIMAL},
+            </if>
+            <if test="volume != null">
+                volume = #{volume,jdbcType=DECIMAL},
+            </if>
+            <if test="area != null">
+                area = #{area,jdbcType=DECIMAL},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="abbreviation != null">
+                abbreviation = #{abbreviation,jdbcType=VARCHAR},
+            </if>
+            <if test="packBox != null">
+                pack_box = #{packBox,jdbcType=INTEGER},
+            </if>
+            <if test="packPc != null">
+                pack_pc = #{packPc,jdbcType=INTEGER},
+            </if>
+            <if test="size != null">
+                size = #{size,jdbcType=VARCHAR},
+            </if>
+            <if test="commodityType != null">
+                commodity_type = #{commodityType,jdbcType=INTEGER},
+            </if>
+            <if test="isBatch != null">
+                is_batch = #{isBatch,jdbcType=BIT},
+            </if>
+            <if test="isFactory != null">
+                is_factory = #{isFactory,jdbcType=BIT},
+            </if>
+            <if test="bidPrice != null">
+                bid_price = #{bidPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="unitId != null">
+                unit_id = #{unitId,jdbcType=BIGINT},
+            </if>
+            <if test="unitName != null">
+                unit_name = #{unitName,jdbcType=VARCHAR},
+            </if>
+            <if test="identifyId != null">
+                identify_id = #{identifyId,jdbcType=BIGINT},
+            </if>
+            <if test="identifyName != null">
+                identify_name = #{identifyName,jdbcType=VARCHAR},
+            </if>
+            <if test="custom != null">
+                custom = #{custom,jdbcType=BIT},
+            </if>
+            <if test="isDiscontinued != null">
+                is_discontinued = #{isDiscontinued,jdbcType=BIT},
+            </if>
+            <if test="safeStock != null">
+                safe_stock = #{safeStock,jdbcType=INTEGER},
+            </if>
+            <if test="procurementDate != null">
+                procurement_date = #{procurementDate,jdbcType=INTEGER},
+            </if>
+            <if test="photograph != null">
+                photograph = #{photograph,jdbcType=VARCHAR},
+            </if>
+            <if test="deliveryId != null">
+                delivery_id = #{deliveryId,jdbcType=BIGINT},
+            </if>
+            <if test="deliveryName != null">
+                delivery_name = #{deliveryName,jdbcType=VARCHAR},
+            </if>
+            <if test="deleteFlag != null">
+                delete_flag = #{deleteFlag,jdbcType=BIT},
+            </if>
+            <if test="barCode != null">
+                bar_code = #{barCode,jdbcType=VARCHAR},
+            </if>
+            <if test="createrId != null">
+                creater_id = #{createrId,jdbcType=BIGINT},
+            </if>
+            <if test="createrName != null">
+                creater_name = #{createrName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifierId != null">
+                modifier_id = #{modifierId,jdbcType=BIGINT},
+            </if>
+            <if test="modifierName != null">
+                modifier_name = #{modifierName,jdbcType=VARCHAR},
+            </if>
+            version          = version + 1
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+        and version = #{version,jdbcType=INTEGER}
+    </update>
+
+</mapper>

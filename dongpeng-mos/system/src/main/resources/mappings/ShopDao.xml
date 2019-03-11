@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.ShopDao">
+  <resultMap id="ShopResultMap" type="com.dongpeng.entity.system.Shop">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="shop_code" jdbcType="VARCHAR" property="shopCode" />
+    <result column="shop_name" jdbcType="VARCHAR" property="shopName" />
+    <result column="client_id" jdbcType="INTEGER" property="clientId" />
+    <result column="client_name" jdbcType="VARCHAR" property="clientName" />
+    <result column="leader" jdbcType="VARCHAR" property="leader" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="district" jdbcType="VARCHAR" property="district" />
+    <result column="shop_address" jdbcType="VARCHAR" property="shopAddress" />
+    <result column="shop_account" jdbcType="VARCHAR" property="shopAccount" />
+    <result column="shop_longitude" jdbcType="VARCHAR" property="shopLongitude" />
+    <result column="shop_latitude" jdbcType="VARCHAR" property="shopLatitude" />
+    <result column="service_radius" jdbcType="VARCHAR" property="serviceRadius" />
+    <result column="leader_tel" jdbcType="VARCHAR" property="leaderTel" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="client_code" jdbcType="TIMESTAMP" property="clientCode" />
+  </resultMap>
+
+  <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+  <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+  <sql id="shopListColumns">
+    s.id, s.shop_code, s.shop_name,c.client_code,s.client_name, s.leader, s.province, s.city, s.district,
+    s.shop_address, s.shop_account, s.shop_longitude, s.shop_latitude, s.service_radius, s.leader_tel,
+    s.delete_flag, s.creater_id, s.creater_name, s.create_time, s.modifier_id, s.modifier_name, s.modify_time,s.version
+  </sql>
+
+    <sql id="shopColumns">
+    id, shop_code, shop_name, client_id, client_name, leader, province, city, district,
+    shop_address, shop_account, shop_longitude, shop_latitude, service_radius, leader_tel,
+    delete_flag, creater_id, creater_name, create_time, modifier_id, modifier_name, modify_time
+  </sql>
+
+  <sql id="ShopJoins_Client">
+    left join sys_client_record c on s.client_id = c.id
+  </sql>
+  <!-- 查询门店刘表 -->
+  <select id="findList" resultMap="ShopResultMap">
+    SELECT
+    <include refid="shopListColumns"/>
+    FROM sys_shop_record s
+    <include refid="ShopJoins_Client"/>
+    WHERE s.delete_flag = #{deleteFlag}
+    <if test="clientCode != null and clientCode != ''">
+      AND c.client_code like CONCAT('%', #{clientCode}, '%')
+    </if>
+    <if test="clientName != null and clientName != ''">
+      AND s.client_name like CONCAT('%', #{clientName}, '%')
+    </if>
+    <if test="shopName != null and shopName != ''">
+      AND s.shop_name like CONCAT('%', #{shopName}, '%')
+    </if>
+    <if test="province != null and province != ''">
+      AND s.province like CONCAT('%', #{province}, '%')
+    </if>
+    <if test="city != null and city != ''">
+      AND s.city like CONCAT('%', #{city}, '%')
+    </if>
+    <if test="district != null and district != ''">
+      AND s.district like CONCAT('%', #{district}, '%')
+    </if>
+    ${dataScope}
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+      <otherwise>
+        ORDER BY s.id
+      </otherwise>
+    </choose>
+  </select>
+
+
+  <!-- 根据门店编码查询门店 -->
+  <select id="getByShopCode"  resultMap="ShopResultMap">
+    SELECT
+    <include refid="shopColumns"/>
+    FROM sys_shop_record
+    WHERE shop_code = #{shopCode}
+  </select>
+
+    <!-- 根据客编码查询客户id -->
+    <select id="getClientId"  resultType="java.lang.Long">
+        SELECT
+        id
+        FROM sys_client_record
+        WHERE delete_flag = 0
+        AND client_code = #{clientCode}
+    </select>
+
+  <!-- 根据门店id查询门店 -->
+  <select id="getById" resultMap="ShopResultMap" >
+    SELECT
+    <include refid="shopColumns"/>
+    FROM sys_shop_record
+    WHERE id = #{id}
+  </select>
+
+  <!--添加一条门店数据-->
+ <insert id="insert">
+   insert into sys_shop_record (
+   <include refid="shopColumns"/>
+   )values (
+   #{id},
+   #{shopCode},
+   #{shopName},
+   #{clientId},
+   #{clientName},
+   #{leader},
+   #{province},
+   #{city},
+   #{district},
+   #{shopAddress},
+   #{shopAccount},
+   #{shopLongitude},
+   #{shopLatitude},
+   #{serviceRadius},
+   #{leaderTel},
+   #{deleteFlag},
+   #{createrId},
+   #{createrName},
+   #{createTime},
+   #{modifierId},
+   #{modifierName},
+   #{modifyTime}
+   )
+ </insert>
+
+  <!-- 导入的时候更新公司 -->
+  <update id="update">
+		UPDATE sys_shop_record SET
+			shop_name=#{shopName},
+			client_id=#{clientId},
+			client_name=#{clientName},
+			leader=#{leader},
+			province=#{province},
+			city=#{city},
+			district=#{district},
+			shop_address=#{shopAddress},
+			shop_account=#{shopAccount},
+			shop_longitude=#{shopLongitude},
+			shop_latitude=#{shopLatitude},
+			service_radius=#{serviceRadius},
+			leader_tel=#{leaderTel},
+			modifier_id=#{modifierId},
+			modifier_name=#{modifierName},
+			modify_time=#{modifyTime},
+			version=version + 1
+		WHERE shop_code = #{shopCode}
+	</update>
+
+  <!-- 更新公司 -->
+  <update id="upShop">
+		UPDATE sys_shop_record SET
+		    shop_code=#{shopCode},
+			shop_name=#{shopName},
+			client_id=#{clientId},
+			client_name=#{clientName},
+			leader=#{leader},
+			province=#{province},
+			city=#{city},
+			district=#{district},
+			shop_address=#{shopAddress},
+			shop_account=#{shopAccount},
+			shop_longitude=#{shopLongitude},
+			shop_latitude=#{shopLatitude},
+			service_radius=#{serviceRadius},
+			leader_tel=#{leaderTel},
+			modifier_id=#{modifierId},
+			modifier_name=#{modifierName},
+			modify_time=#{modifyTime},
+            delete_flag=#{deleteFlag},
+			version=version + 1
+		WHERE id = #{id}
+	</update>
+
+
+</mapper>

@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.ClientRecordDao">
+  <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+  <!--<cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>-->
+  <resultMap id="BaseClientResultPoJoMap" type="com.dongpeng.common.pojo.ClientRegionPoJo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <id column="client_id" jdbcType="BIGINT" property="clientId" />
+    <result column="client_code" jdbcType="VARCHAR" property="clientCode" />
+    <result column="client_name" jdbcType="VARCHAR" property="clientName" />
+    <result column="receipt_proportion" jdbcType="INTEGER" property="receiptProportion" />
+  </resultMap>
+  <resultMap id="ClientResultMap" type="com.dongpeng.entity.system.ClientRecord">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="client_code" jdbcType="VARCHAR" property="clientCode" />
+    <result column="client_name" jdbcType="VARCHAR" property="clientName" />
+    <result column="salesman" jdbcType="VARCHAR" property="salesman" />
+    <result column="client_type_id" jdbcType="BIGINT" property="clientTypeId" />
+    <result column="client_type" jdbcType="VARCHAR" property="clientType" />
+    <result column="department_id" jdbcType="BIGINT" property="departmentId" />
+    <result column="department_name" jdbcType="VARCHAR" property="departmentName" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+    <result column="company_adress" jdbcType="VARCHAR" property="companyAdress" />
+    <result column="Signing_date" jdbcType="VARCHAR" property="signingDate" />
+    <result column="invoice_issuing" jdbcType="VARCHAR" property="invoiceIssuing" />
+    <result column="channel_id" jdbcType="BIGINT" property="channelId" />
+    <result column="channel_name" jdbcType="VARCHAR" property="channelName" />
+    <result column="wechat" jdbcType="VARCHAR" property="wechat" />
+    <result column="interest" jdbcType="VARCHAR" property="interest" />
+    <result column="interest_starttime" jdbcType="TIMESTAMP" property="interestStarttime" />
+    <result column="interest_endtime" jdbcType="TIMESTAMP" property="interestEndtime" />
+    <result column="bankname" jdbcType="VARCHAR" property="bankname" />
+    <result column="bankaccount" jdbcType="VARCHAR" property="bankaccount" />
+    <result column="thetaxno" jdbcType="VARCHAR" property="thetaxno" />
+    <result column="creditlimes" jdbcType="VARCHAR" property="creditlimes" />
+    <result column="credit_starttime" jdbcType="TIMESTAMP" property="creditStarttime" />
+    <result column="credit_endtime" jdbcType="TIMESTAMP" property="creditEndtime" />
+    <result column="credit_percent" jdbcType="VARCHAR" property="creditPercent" />
+    <result column="client_grade" jdbcType="BIT" property="clientGrade" />
+    <result column="storage_fee" jdbcType="BIT" property="storageFee" />
+    <result column="province_id" jdbcType="BIGINT" property="provinceId" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city_id" jdbcType="BIGINT" property="cityId" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="district_id" jdbcType="BIGINT" property="districtId" />
+    <result column="district" jdbcType="VARCHAR" property="district" />
+    <result column="client_address" jdbcType="VARCHAR" property="clientAddress" />
+    <result column="client_man" jdbcType="VARCHAR" property="clientMan" />
+    <result column="client_tel" jdbcType="VARCHAR" property="clientTel" />
+    <result column="client_abbreviation" jdbcType="VARCHAR" property="clientAbbreviation" />
+    <result column="delete_flag" jdbcType="BIT" property="deleteFlag" />
+    <result column="sal_undertake" jdbcType="BIT" property="salUndertake" />
+    <result column="privilege_undertake" jdbcType="BIT" property="privilegeUndertake" />
+    <result column="material_undertake" jdbcType="BIT" property="materialUndertake" />
+    <result column="alipaynum" jdbcType="VARCHAR" property="Alipaynum" />
+    <result column="integral" jdbcType="BIT" property="integral" />
+    <result column="integral_conversion" jdbcType="DOUBLE" property="integralConversion" />
+    <result column="credit" jdbcType="BIT" property="credit" />
+    <result column="integral_percent" jdbcType="VARCHAR" property="integralPercent"/>
+    <result column="creater_id" jdbcType="BIGINT" property="createrId" />
+    <result column="creater_name" jdbcType="VARCHAR" property="createrName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modifier_id" jdbcType="BIGINT" property="modifierId" />
+    <result column="modifier_name" jdbcType="VARCHAR" property="modifierName" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+
+  <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+  <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+  <sql id="Base_Column_List">
+    id, client_code, client_name,client_abbreviation, client_type_id, client_type,salesman, department_id,
+    department_name, company_id, company_name, company_adress, Signing_date, invoice_issuing,
+    channel_id, channel_name, wechat, interest, interest_starttime, interest_endtime,
+    bankname, bankaccount, thetaxno, creditlimes, credit_starttime, credit_endtime, credit_percent,
+    client_grade, storage_fee,province_id, province,city_id, city,district_id, district, client_address, client_man,
+    client_tel,sal_undertake,privilege_undertake,material_undertake,delete_flag,alipaynum,integral,integral_conversion,credit,integral_percent, creater_id, creater_name, create_time, modifier_id, modifier_name,
+    modify_time
+  </sql>
+  <sql id="Base_Client_List">
+    cr.id, cr.client_code, cr.client_name,cr.client_abbreviation, cr.client_type,cr.salesman,
+    cr.department_name, cr.company_name, cr.company_adress, cr.Signing_date, cr.invoice_issuing,
+    cr.channel_name, cr.wechat, cr.interest, cr.interest_starttime, cr.interest_endtime,
+    cr.bankname, cr.bankaccount, cr.thetaxno, cr.creditlimes, cr.credit_starttime, cr.credit_endtime, cr.credit_percent,
+    cr.client_grade, cr.storage_fee, cr.province, cr.city, cr.district, cr.client_address, cr.client_man,
+    cr.client_tel, cr.delete_flag,cr.sal_undertake,cr.privilege_undertake,cr.material_undertake,cr.alipaynum,cr.integral,cr.integral_conversion,cr.credit,cr.integral_percent, cr.creater_id, cr.creater_name, cr.create_time, cr.modifier_id, cr.modifier_name,
+    cr.modify_time, cr.version
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultType="com.dongpeng.entity.system.ClientRecord">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_client_record
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <!--分页查询所有客户信息-->
+  <select id="findList" resultMap="ClientResultMap">
+    select
+    <include refid="Base_Client_List" />
+    from
+    sys_client_record cr
+    where cr.delete_flag = #{deleteFlag}
+    <if test="clientCode != null and clientCode != ''">
+     and cr.client_code like CONCAT('%', #{clientCode}, '%')
+    </if>
+    <if test="clientName != null and clientName != ''">
+     and cr.client_name like CONCAT('%', #{clientName}, '%')
+    </if>
+    <if test="departmentName != null and departmentName != ''">
+     and cr.department_name like CONCAT('%', #{departmentName}, '%')
+    </if>
+    ${dataScope}
+    <choose>
+      <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+        ORDER BY ${page.orderBy}
+      </when>
+      <otherwise>
+        ORDER BY create_time desc 
+      </otherwise>
+    </choose>
+  </select>
+
+  <!--根据客编查询客户-->
+  <select id="getByClientCode" resultMap="ClientResultMap">
+    select
+    <include refid="Base_Column_List" />
+     from
+    sys_client_record
+    where  delete_flag = 0
+    AND client_code = #{clientCode}
+  </select>
+
+  <!--根据id查询客户-->
+  <select id="getById" resultMap="ClientResultMap">
+    select
+    <include refid="Base_Column_List" />
+     from
+    sys_client_record
+    where  id = #{id}
+  </select>
+
+  <!--根据客编查询无效客户-->
+  <select id="getByClientIsDelete" resultMap="ClientResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from
+    sys_client_record
+    where delete_flag = 1
+    AND client_code = #{clientCode}
+  </select>
+
+  <!--根据部门名称查询部门id-->
+  <select id="getByDepartment" resultType="com.dongpeng.entity.system.Department">
+    select
+    *
+    from sys_department
+    WHERE delete_flag = 0
+    AND id = #{id}
+  </select>
+
+<!--根据名称查询公司id-->
+  <select id="getCompany" resultType="com.dongpeng.entity.system.Company">
+    select
+    *
+    from sys_company
+    WHERE delete_flag = 0
+    AND id = #{id}
+  </select>
+
+<!--查询字典项-->
+  <select id="getByDictionary" resultType="com.dongpeng.entity.system.Dictionary">
+    select
+    *
+    from sys_dictionary
+    WHERE delete_flag = 0
+    AND id = #{id}
+  </select>
+
+
+<!--添加一条数据-->
+<insert id="insert">
+  insert into sys_client_record (
+  <include refid="Base_Column_List" />
+)values (
+  #{id},
+  #{clientCode},
+  #{clientName},
+  #{clientAbbreviation},
+  #{clientTypeId},
+  #{clientType},
+  #{salesman},
+  #{departmentId},
+  #{departmentName},
+  #{companyId},
+  #{companyName},
+  #{companyAdress},
+  #{signingDate},
+  #{invoiceIssuing},
+  #{channelId},
+  #{channelName},
+  #{wechat},
+  #{interest},
+  #{interestStarttime},
+  #{interestEndtime},
+  #{bankname},
+  #{bankaccount},
+  #{thetaxno},
+  #{integralPercent},
+  #{creditStarttime},
+  #{creditEndtime},
+  #{creditPercent},
+  #{clientGrade},
+  #{storageFee},
+  #{provinceId},
+  #{province},
+  #{cityId},
+  #{city},
+  #{districtId},
+  #{district},
+  #{clientAddress},
+  #{clientMan},
+  #{clientTel},
+  #{salUndertake},
+  #{privilegeUndertake},
+  #{materialUndertake},
+  #{deleteFlag},
+  #{Alipaynum},
+  #{integral},
+  #{integralConversion},
+  #{credit},
+  #{creditlimes},
+  #{createrId},
+  #{createrName},
+  #{createTime},
+  #{modifierId},
+  #{modifierName},
+  #{modifyTime}
+  )
+</insert>
+
+  <update id="update">
+    UPDATE sys_client_record SET
+  client_code = #{clientCode},
+  client_name = #{clientName},
+  salesman = #{salesman},
+  client_type_id = #{clientTypeId},
+  client_type = #{clientType},
+  department_id = #{departmentId},
+  department_name = #{departmentName},
+  company_id = #{companyId},
+  company_name = #{companyName},
+  company_adress = #{companyAdress},
+  Signing_date = #{signingDate},
+  invoice_issuing = #{invoiceIssuing},
+  channel_id = #{channelId},
+  channel_name = #{channelName},
+  wechat = #{wechat},
+  interest = #{interest},
+  integral_percent = #{integralPercent},
+  integral_conversion = #{integralConversion},
+  interest_starttime = #{interestStarttime},
+  interest_endtime = #{interestEndtime},
+  bankname = #{bankname},
+  bankaccount = #{bankaccount},
+  thetaxno = #{thetaxno},
+  creditlimes = #{creditlimes},
+  credit_starttime = #{creditStarttime},
+  credit_endtime = #{creditEndtime},
+  credit_percent = #{creditPercent},
+  client_grade = #{clientGrade},
+  storage_fee = #{storageFee},
+  province_id = #{provinceId},
+  province = #{province},
+  city_id = #{cityId},
+  city = #{city},
+  district_id = #{districtId},
+  district = #{district},
+  client_address = #{clientAddress},
+  client_man = #{clientMan},
+  client_tel = #{clientTel},
+  client_abbreviation = #{clientAbbreviation},
+  delete_flag = #{deleteFlag},
+  sal_undertake = #{salUndertake},
+  privilege_undertake = #{privilegeUndertake},
+  material_undertake = #{materialUndertake},
+  alipaynum = #{alipaynum},
+  integral = #{integral},
+  credit = #{credit},
+  modifier_id = #{modifierId},
+  modifier_name = #{modifierName},
+  modify_time = #{modifyTime},
+  version = version + 1
+  WHERE 1 = 1
+      <choose>
+          <when test="id != null and id != ''">
+              and id = #{id}
+          </when>
+          <otherwise>
+              and client_code = #{clientCode}
+          </otherwise>
+      </choose>
+</update>
+  
+
+  <!--根据部门名称查询部门-->
+  <select id="getByDepartmentName" resultType="com.dongpeng.entity.system.Department">
+    select
+    *
+    from sys_department
+    WHERE delete_flag = 0
+    AND department_name = #{departmentName}
+  </select>
+
+  <!--根据公司名称查询公司-->
+  <select id="getCompanyName" resultType="com.dongpeng.entity.system.Company">
+    select
+    *
+    from sys_company
+    WHERE delete_flag = 0
+    AND company_name = #{companyName}
+  </select>
+
+  <!--查询字典项-->
+  <select id="getByDictionaryName" resultType="com.dongpeng.entity.system.Dictionary">
+    select
+    *
+    from sys_dictionary
+    WHERE delete_flag = 0
+    AND detail_name = #{name}
+  </select>
+  
+  <!--根据id查询省市区-->
+  <select id="getByProvinceId" resultType="com.dongpeng.entity.system.Region">
+    select
+    *
+    from sys_region
+    WHERE delete_flag = 0
+    AND id = #{id}
+  </select>
+
+  <!--根据id查询省市区-->
+  <select id="getByProvinceName" resultType="com.dongpeng.entity.system.Region">
+    select
+    *
+    from sys_region
+    WHERE delete_flag = 0
+    AND name = #{name}
+  </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <!--根据省市区表关联查询对应的客户-->
+  <select id="findByRegion" resultMap="BaseClientResultPoJoMap">
+    select
+    cr.id,
+    rc.client_id,
+    cr.client_code,
+    cr.client_name,
+    rc.receipt_proportion
+    from sys_client_record cr left join sys_region_client rc on cr.id = rc.client_id
+    where rc.delete_flag = #{DEL_FLAG_NORMAL}
+    <if test="districtId != null">
+      and  rc.district_id = #{districtId}
+    </if>
+    <if test="clientId != null">
+      and  rc.client_id = #{clientId}
+    </if>
+
+  </select>
+
+  <!--根据id删除单条数据-->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sys_client_record
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insertSelective">
+    insert into sys_client_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="clientCode != null">
+        client_code,
+      </if>
+      <if test="clientName != null">
+        client_name,
+      </if>
+      <if test="clientCategory != null">
+        client_category,
+      </if>
+      <if test="clientCategoryname != null">
+        client_categoryname,
+      </if>
+      <if test="departmentId != null">
+        department_id,
+      </if>
+      <if test="departmentName != null">
+        department_name,
+      </if>
+      <if test="companyId != null">
+        company_id,
+      </if>
+      <if test="companyName != null">
+        company_name,
+      </if>
+      <if test="companyAdress != null">
+        company_adress,
+      </if>
+      <if test="signingDate != null">
+        Signing_date,
+      </if>
+      <if test="invoiceIssuing != null">
+        invoice_issuing,
+      </if>
+      <if test="channelId != null">
+        channel_id,
+      </if>
+      <if test="channelName != null">
+        channel_name,
+      </if>
+      <if test="wechat != null">
+        wechat,
+      </if>
+      <if test="interest != null">
+        interest,
+      </if>
+      <if test="interestStarttime != null">
+        interest_starttime,
+      </if>
+      <if test="interestEndtime != null">
+        interest_endtime,
+      </if>
+      <if test="bankname != null">
+        bankname,
+      </if>
+      <if test="bankaccount != null">
+        bankaccount,
+      </if>
+      <if test="thetaxno != null">
+        thetaxno,
+      </if>
+      <if test="creditlimes != null">
+        creditlimes,
+      </if>
+      <if test="creditStarttime != null">
+        credit_starttime,
+      </if>
+      <if test="creditEndtime != null">
+        credit_endtime,
+      </if>
+      <if test="creditPercent != null">
+        credit_percent,
+      </if>
+      <if test="creditGrade != null">
+        credit_grade,
+      </if>
+      <if test="storageFee != null">
+        storage_fee,
+      </if>
+      <if test="province != null">
+        province,
+      </if>
+      <if test="city != null">
+        city,
+      </if>
+      <if test="district != null">
+        district,
+      </if>
+      <if test="clientAddress != null">
+        client_address,
+      </if>
+      <if test="clientMan != null">
+        client_man,
+      </if>
+      <if test="clientTel != null">
+        client_tel,
+      </if>
+      <if test="deleteFlag != null">
+        delete_flag,
+      </if>
+      <if test="createrId != null">
+        creater_id,
+      </if>
+      <if test="createrName != null">
+        creater_name,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifierId != null">
+        modifier_id,
+      </if>
+      <if test="modifierName != null">
+        modifier_name,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+      <if test="version != null">
+        version,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="clientCode != null">
+        #{clientCode,jdbcType=VARCHAR},
+      </if>
+      <if test="clientName != null">
+        #{clientName,jdbcType=VARCHAR},
+      </if>
+      <if test="clientCategory != null">
+        #{clientCategory,jdbcType=INTEGER},
+      </if>
+      <if test="clientCategoryname != null">
+        #{clientCategoryname,jdbcType=VARCHAR},
+      </if>
+      <if test="departmentId != null">
+        #{departmentId,jdbcType=BIGINT},
+      </if>
+      <if test="departmentName != null">
+        #{departmentName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyId != null">
+        #{companyId,jdbcType=BIGINT},
+      </if>
+      <if test="companyName != null">
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyAdress != null">
+        #{companyAdress,jdbcType=VARCHAR},
+      </if>
+      <if test="signingDate != null">
+        #{signingDate,jdbcType=TINYINT},
+      </if>
+      <if test="invoiceIssuing != null">
+        #{invoiceIssuing,jdbcType=VARCHAR},
+      </if>
+      <if test="channelId != null">
+        #{channelId,jdbcType=INTEGER},
+      </if>
+      <if test="channelName != null">
+        #{channelName,jdbcType=VARCHAR},
+      </if>
+      <if test="wechat != null">
+        #{wechat,jdbcType=VARCHAR},
+      </if>
+      <if test="interest != null">
+        #{interest,jdbcType=VARCHAR},
+      </if>
+      <if test="interestStarttime != null">
+        #{interestStarttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="interestEndtime != null">
+        #{interestEndtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="bankname != null">
+        #{bankname,jdbcType=VARCHAR},
+      </if>
+      <if test="bankaccount != null">
+        #{bankaccount,jdbcType=VARCHAR},
+      </if>
+      <if test="thetaxno != null">
+        #{thetaxno,jdbcType=VARCHAR},
+      </if>
+      <if test="creditlimes != null">
+        #{creditlimes,jdbcType=VARCHAR},
+      </if>
+      <if test="creditStarttime != null">
+        #{creditStarttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="creditEndtime != null">
+        #{creditEndtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="creditPercent != null">
+        #{creditPercent,jdbcType=VARCHAR},
+      </if>
+      <if test="creditGrade != null">
+        #{creditGrade,jdbcType=VARCHAR},
+      </if>
+      <if test="storageFee != null">
+        #{storageFee,jdbcType=DOUBLE},
+      </if>
+      <if test="province != null">
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="district != null">
+        #{district,jdbcType=VARCHAR},
+      </if>
+      <if test="clientAddress != null">
+        #{clientAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="clientMan != null">
+        #{clientMan,jdbcType=VARCHAR},
+      </if>
+      <if test="clientTel != null">
+        #{clientTel,jdbcType=VARCHAR},
+      </if>
+      <if test="deleteFlag != null">
+        #{deleteFlag,jdbcType=TINYINT},
+      </if>
+      <if test="createrId != null">
+        #{createrId,jdbcType=BIGINT},
+      </if>
+      <if test="createrName != null">
+        #{createrName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifierId != null">
+        #{modifierId,jdbcType=BIGINT},
+      </if>
+      <if test="modifierName != null">
+        #{modifierName,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="version != null">
+        #{version,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+</mapper>

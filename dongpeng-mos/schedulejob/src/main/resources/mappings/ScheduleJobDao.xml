@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.schedulejob.dao.ScheduleJobDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="scheduleJobColumns">
+        a.*
+    </sql>
+
+    <sql id="scheduleJobJoins">
+    </sql>
+
+    <!-- 根据id获得定时任务 -->
+    <select id="get" resultType="ScheduleJob">
+        SELECT
+        <include refid="scheduleJobColumns"/>
+        FROM sys_schedule_job a
+        <include refid="scheduleJobJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页查询定时任务信息 -->
+    <select id="findList" resultType="ScheduleJob">
+        SELECT
+        <include refid="scheduleJobColumns"/>
+        FROM sys_schedule_job a
+        <include refid="scheduleJobJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        <if test="taskName != null and taskName != ''">
+            AND a.task_name like CONCAT('%', #{taskName}, '%')
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部定时任务 -->
+    <select id="findAllList" resultType="ScheduleJob">
+        SELECT
+        <include refid="scheduleJobColumns"/>
+        FROM sys_schedule_job a
+        <include refid="scheduleJobJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入定时任务 -->
+    <insert id="insert">
+		INSERT INTO sys_schedule_job(
+			id,
+            task_name,
+            task_group,
+            description,
+            expression,
+            status,
+            notify_user,
+            classname,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{taskName},
+            #{taskGroup},
+            #{description},
+            #{expression},
+            #{status},
+            #{notifyUser},
+            #{classname},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入定时任务 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_schedule_job(
+        id,
+        task_name,
+        task_group,
+        description,
+        expression,
+        status,
+        notify_user,
+        classname,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.taskName},
+            #{item.taskGroup},
+            #{item.description},
+            #{item.expression},
+            #{item.status},
+            #{item.notifyUser},
+            #{item.classname},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新定时任务 -->
+    <update id="update">
+		UPDATE sys_schedule_job SET
+			task_name=#{taskName},
+			task_group=#{taskGroup},
+			description=#{description},
+			expression=#{expression},
+			status=#{status},
+			notify_user=#{notifyUser},
+			classname=#{classname},
+
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除定时任务 -->
+    <update id="delete">
+		DELETE FROM sys_schedule_job
+		WHERE id = #{id}
+	</update>
+
+    <!-- 逻辑 删除/启用 定时任务 -->
+    <update id="deleteToggle">
+		UPDATE sys_schedule_job SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="ScheduleJob" statementType="STATEMENT">
+		select * from sys_schedule_job where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>

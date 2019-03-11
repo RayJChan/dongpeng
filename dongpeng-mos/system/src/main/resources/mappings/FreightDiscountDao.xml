@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dongpeng.system.dao.FreightDiscountDao">
+
+    <!-- mapper.xml中需要显式加入以下节点才可使用缓存 -->
+    <cache type="com.dongpeng.common.db.cache.J2CacheAdapter"/>
+
+    <sql id="freightDiscountColumns">
+        a.id AS "id",
+        a.freightt_id,
+        a.amount,
+        a.discount,
+
+        a.creater_id AS "createrId",
+        a.creater_name AS "createrName",
+		a.create_time AS "createTime",
+		a.modifier_id AS "modifierId",
+        a.modifier_name AS "modifierName",
+		a.modify_time AS "modifyTime",
+		a.delete_flag AS "deleteFlag",
+		a.version AS "version"
+    </sql>
+
+    <sql id="freightDiscountJoins">
+    </sql>
+
+    <!-- 根据id获得费用折扣 -->
+    <select id="get" resultType="com.dongpeng.entity.system.FreightDiscount">
+        SELECT
+        <include refid="freightDiscountColumns"/>
+        FROM sys_freight_discount a
+        <include refid="freightDiscountJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 分页查询费用折扣信息 -->
+    <select id="findList" resultType="com.dongpeng.entity.system.FreightDiscount">
+        SELECT
+        <include refid="freightDiscountColumns"/>
+        FROM sys_freight_discount a
+        <include refid="freightDiscountJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        <if test="freighttId != null">
+            AND a.freightt_id = #{freighttId}
+        </if>
+        ${dataScope}
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.id
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询全部费用折扣 -->
+    <select id="findAllList" resultType="com.dongpeng.entity.system.FreightDiscount">
+        SELECT
+        <include refid="freightDiscountColumns"/>
+        FROM sys_freight_discount a
+        <include refid="freightDiscountJoins"/>
+        WHERE a.delete_flag = #{DEL_FLAG_NORMAL}
+        ${dataScope}
+        ORDER BY a.id
+    </select>
+
+    <!-- 插入费用折扣 -->
+    <insert id="insert">
+		INSERT INTO sys_freight_discount(
+			id,
+            freightt_id,
+            amount,
+            discount,
+
+			creater_id,
+			creater_name,
+			create_time,
+			modifier_id,
+			modifier_name,
+			modify_time,
+			delete_flag,
+			version
+		) VALUES (
+			#{id},
+            #{freighttId},
+            #{amount},
+            #{discount},
+
+			#{createrId},
+			#{createrName},
+			#{createTime},
+			#{modifierId},
+			#{modifierName},
+			#{modifyTime},
+			#{deleteFlag},
+			#{version}
+		)
+	</insert>
+
+    <!-- 批量插入费用折扣 -->
+    <insert id="insertBatch">
+        INSERT INTO sys_freight_discount(
+        id,
+        freightt_id,
+        amount,
+        discount,
+
+        creater_id,
+        creater_name,
+        create_time,
+        modifier_id,
+        modifier_name,
+        modify_time,
+        delete_flag,
+        version
+        )
+        <foreach collection="entitys" item="item" separator=" union all ">
+            SELECT
+            #{item.id},
+            #{item.freighttId},
+            #{item.amount},
+            #{item.discount},
+
+            #{item.createrId},
+            #{item.createrName},
+            #{item.createTime},
+            #{item.modifierId},
+            #{item.modifierName},
+            #{item.modifyTime},
+            #{item.deleteFlag},
+            #{item.version}
+            FROM dual
+        </foreach>
+    </insert>
+
+    <!-- 更新费用折扣 -->
+    <update id="update">
+		UPDATE sys_freight_discount SET
+			freightt_id=#{freighttId},
+			amount=#{amount},
+			discount=#{discount},
+			modifier_id = #{modifierId},
+			modifier_name = #{modifierName},
+			modify_time = #{modifyTime},
+			delete_flag = #{deleteFlag},
+			version=version + 1
+		WHERE id = #{id} and version=#{version}
+	</update>
+
+
+    <!-- 物理删除费用折扣 -->
+    <!--<update id="delete">
+		DELETE FROM sys_freight_discount
+		WHERE id = #{id}
+	</update>-->
+
+    <!-- 逻辑 删除/启用 费用折扣 -->
+    <update id="deleteToggle">
+		UPDATE sys_freight_discount SET
+			delete_flag = #{deleteFlag}
+		WHERE id = #{id}
+	</update>
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="com.dongpeng.entity.system.FreightDiscount" statementType="STATEMENT">
+		select * from sys_freight_discount where ${propertyName} = '${value}'
+	</select>
+
+
+</mapper>
