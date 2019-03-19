@@ -1,0 +1,166 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.midea.alm</groupId>
+	<artifactId>alm</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>alm</name>
+
+	<modules>
+		<module>common-domain</module>
+		<module>common-util</module>
+		<module>common-gateway</module>
+		<module>common-service</module>
+		<module>gateway-open</module>
+		<module>gateway</module>
+		<module>service-system</module>
+		<module>service-entity</module>
+		<module>service-plug</module>
+	</modules>
+
+	<properties>
+		<org.springframework.boot.version>1.5.6.RELEASE</org.springframework.boot.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<java.source.version>1.8</java.source.version>
+		<java.target.version>1.8</java.target.version>
+		<fastjson.version>1.2.38</fastjson.version>
+		<commons.lang3.version>3.6</commons.lang3.version>
+		<com.alibaba.dubbo.version>2.5.8</com.alibaba.dubbo.version>
+		<org.apache.zookeeper.version>3.4.6</org.apache.zookeeper.version>
+		<com.github.sgroschupf.vsersion>0.1</com.github.sgroschupf.vsersion>
+		<jdbc.oracle.version>10.2.0.4.0</jdbc.oracle.version>
+		<jdbc.mybatis.version>1.0.0</jdbc.mybatis.version>
+		<jedis.version>2.9.0</jedis.version>
+		<elasticsearch.vserion>5.6.2</elasticsearch.vserion>
+		<elastic.job.version>2.1.5</elastic.job.version>
+		<log4j.version>2.9.1</log4j.version>
+		<lz4.version>1.4.0</lz4.version>
+		<pagehelper.version>1.0.0</pagehelper.version>
+		<jsch.vserion>0.1.54</jsch.vserion>
+		<poi.version>3.15</poi.version>
+		<ganymed.vserion>262</ganymed.vserion>
+		<json.vserion>20160810</json.vserion>
+		<transmittable.thread.local.version>2.2.0</transmittable.thread.local.version>
+		<org.apache.cxf.version>3.2.0</org.apache.cxf.version>
+		<itsm.version>1.0.0-SNAPSHOT</itsm.version>
+		<io.searchbox.verision>5.3.3</io.searchbox.verision>
+		<guava.version>18.0</guava.version>
+		<mpxj.version>4.7.3</mpxj.version>
+		<jacob.version>1.9</jacob.version>
+		<openoffice.version>3.2.1</openoffice.version>
+		<commons-io.version>1.4</commons-io.version>
+		<commons-cli.version>1.4</commons-cli.version>
+		<hyperic.version>1.6.5.132</hyperic.version>
+		<jsoup.version>1.11.3</jsoup.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${org.springframework.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>io.searchbox</groupId>
+				<artifactId>jest</artifactId>
+				<version>${io.searchbox.verision}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+				<version>${elasticsearch.vserion}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>${json.vserion}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons.lang3.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>transmittable-thread-local</artifactId>
+			<version>${transmittable.thread.local.version}</version>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>rdm-release</id>
+			<name>rdm-release</name>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<url>http://mvn.midea.com/nexus/content/repositories/rdm-release/</url>
+		</repository>
+
+		<repository>
+			<id>rdm-snapshot</id>
+			<name>rdm-snapshot</name>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>http://mvn.midea.com/nexus/content/repositories/rdm-snapshot/</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>rdm-release</id>
+			<url>http://mvn.midea.com/nexus/content/repositories/rdm-release/</url>
+		</repository>
+
+		<snapshotRepository>
+			<id>rdm-snapshot</id>
+			<url>http://mvn.midea.com/nexus/content/repositories/rdm-snapshot/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
