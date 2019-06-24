@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.dpmall.db.bean.PictureEntity;
 
-public interface PictureDao {
+public interface PictureDao  {
 	 
 	 /**
      * 查看图片
