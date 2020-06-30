@@ -25,7 +25,7 @@
 		<hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
 		<orocle_driver_version>11.2.0.3</orocle_driver_version>
 		<mysql_driver_version>5.1.38</mysql_driver_version>
-		<xstream_version>1.4.1</xstream_version>
+		<xstream_version>1.4.10-java7</xstream_version>
 		<fastjson_version>1.2.28</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<sorcerer_version>0.8</sorcerer_version>
