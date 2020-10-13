@@ -54,7 +54,7 @@
 		<log4j_version>1.2.16</log4j_version>
 		<logback_version>1.2.2</logback_version>
 		<!-- Test libs -->
-		<junit_version>4.10</junit_version>
+		<junit_version>4.13.1</junit_version>
 		<easymock_version>3.0</easymock_version>
 		<jmockit_version>0.999.8</jmockit_version>
 		<skip_maven_deploy>true</skip_maven_deploy>
