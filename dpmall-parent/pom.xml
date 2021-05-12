@@ -13,7 +13,7 @@
 		<spring_mvc_version>3.2.16.RELEASE</spring_mvc_version>
 		<spring_test_version>3.2.16.RELEASE</spring_test_version>
 		<mybatis_spring_version>1.3.1</mybatis_spring_version>
-		<spring_security_web_version>4.0.0.RELEASE</spring_security_web_version>
+		<spring_security_web_version>5.2.10.RELEASE</spring_security_web_version>
 		<spring_tx_version>3.2.16.RELEASE</spring_tx_version>
 		<spring_jdbc_version>3.2.16.RELEASE</spring_jdbc_version>
 		<dubbo_version>2.5.3</dubbo_version>
